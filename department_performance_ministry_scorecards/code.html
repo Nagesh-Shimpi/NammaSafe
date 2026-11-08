@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-secondary-fixed-variant": "#3f465c", "inverse-surface": "#213145", "inverse-primary": "#b4c5ff", "primary-fixed-dim": "#b4c5ff", "surface-container-highest": "#d3e4fe", "secondary-fixed": "#dae2fd", "tertiary-fixed": "#e2dfff", "on-error": "#ffffff", "on-surface": "#0b1c30", "surface-container-high": "#dce9ff", "surface": "#f8f9ff", "on-error-container": "#93000a", "outline": "#737686", "on-primary-fixed-variant": "#003ea8", "error-container": "#ffdad6", "secondary-fixed-dim": "#bec6e0", "background": "#f8f9ff", "on-tertiary": "#ffffff", "surface-container-low": "#eff4ff", "secondary": "#565e74", "primary-container": "#2563eb", "tertiary-container": "#5d55f3", "on-tertiary-fixed": "#0f0069", "on-tertiary-fixed-variant": "#3323cc", "on-primary-fixed": "#00174b", "surface-container-lowest": "#ffffff", "surface-container": "#e5eeff", "surface-bright": "#f8f9ff", "primary": "#004ac6", "on-secondary": "#ffffff", "on-secondary-fixed": "#131b2e", "tertiary-fixed-dim": "#c3c0ff", "error": "#ba1a1a", "on-primary": "#ffffff", "on-surface-variant": "#434655", "surface-dim": "#cbdbf5", "on-secondary-container": "#5c647a", "on-background": "#0b1c30", "primary-fixed": "#dbe1ff", "inverse-on-surface": "#eaf1ff", "surface-tint": "#0053db", "on-tertiary-container": "#f2eeff", "on-primary-container": "#eeefff", "tertiary": "#4338d9", "surface-variant": "#d3e4fe", "secondary-container": "#dae2fd", "outline-variant": "#c3c6d7" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.5rem", "space-md": "1rem", "gutter-sm": "0.75rem", "margin": "2rem", "margin-lg": "2.5rem", "gutter-lg": "2rem", "margin-sm": "1rem", "space-lg": "1.5rem", "space-xl": "2rem", "space-xs": "0.25rem", "gutter": "1.5rem" }, "fontFamily": { "metric-display": [ "Plus Jakarta Sans" ], "headline-lg-mobile": [ "Plus Jakarta Sans" ], "body-sm": [ "Inter" ], "body-md": [ "Inter" ], "headline-sm": [ "Plus Jakarta Sans" ], "data-mono": [ "Inter" ], "headline-xl-mobile": [ "Plus Jakarta Sans" ], "label-md": [ "Inter" ], "label-lg": [ "Inter" ], "headline-md": [ "Plus Jakarta Sans" ], "headline-xl": [ "Plus Jakarta Sans" ], "label-sm": [ "Inter" ], "body-lg": [ "Inter" ], "headline-lg": [ "Plus Jakarta Sans" ] }, "fontSize": { "metric-display": [ "32px", { "lineHeight": "38px", "fontWeight": "700" } ], "headline-lg-mobile": [ "22px", { "lineHeight": "28px", "fontWeight": "600" } ], "body-sm": [ "12px", { "lineHeight": "18px", "fontWeight": "400" } ], "body-md": [ "14px", { "lineHeight": "20px", "fontWeight": "400" } ], "headline-sm": [ "16px", { "lineHeight": "22px", "fontWeight": "600" } ], "data-mono": [ "13px", { "lineHeight": "18px", "fontWeight": "500" } ], "headline-xl-mobile": [ "28px", { "lineHeight": "36px", "fontWeight": "700" } ], "label-md": [ "12px", { "lineHeight": "16px", "fontWeight": "500" } ], "label-lg": [ "14px", { "lineHeight": "20px", "fontWeight": "500" } ], "headline-md": [ "20px", { "lineHeight": "26px", "fontWeight": "600" } ], "headline-xl": [ "36px", { "lineHeight": "44px", "fontWeight": "700" } ], "label-sm": [ "11px", { "lineHeight": "14px", "fontWeight": "600" } ], "body-lg": [ "16px", { "lineHeight": "24px", "fontWeight": "400" } ], "headline-lg": [ "28px", { "lineHeight": "36px", "fontWeight": "600" } ] } } } };</script></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 bottom-0 w-72 bg-inverse-surface z-50 flex flex-col justify-between overflow-y-auto"><div class="flex flex-col"><div class="h-16 px-space-lg flex items-center justify-between bg-inverse-surface"><div class="flex items-center gap-space-sm"><img alt="ResolveTrack Emblem" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrDSPr3fqfDWGKkWdhIZvGbOGhRl4AzquE5otBDShWyWvWSKcZxiZZt6wRw14SDnGuavHKB7JKPRpHvsOsTcojgH5OcBTShX8XCglc1uiW-MnCPstB6BsPf7amyV-gx1rAhqAcau68O4qivPhCA9wZQ5-yqxuFwiL9ZJ3DP3G4NRfkyDAFAt38cuNupnrn2eVFT0PlOl21brV7WEDu0GkFAuMUUCCGstha5YX1nXPMs"/><span class="font-headline-sm text-headline-sm text-inverse-on-surface tracking-tight font-bold">ResolveTrack</span></div><span class="px-space-sm py-space-xs rounded-full bg-tertiary-container text-on-tertiary-container font-label-sm text-label-sm uppercase tracking-wider">GovOps AI</span></div><div class="px-space-md py-space-sm"><nav class="flex flex-col gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-on-secondary-fixed-variant hover:text-inverse-on-surface transition-colors" data-path="overview" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-lg">dashboard</span><span class="font-label-lg text-label-lg">Overview</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-on-secondary-fixed-variant hover:text-inverse-on-surface transition-colors" data-path="all-complaints" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-lg">inbox</span><span class="font-label-lg text-label-lg">All Complaints</span></div><span class="px-space-sm py-space-xs rounded-full bg-secondary-fixed text-on-secondary-fixed font-data-mono text-label-sm">14,892</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-on-secondary-fixed-variant hover:text-inverse-on-surface transition-colors" data-path="pending-complaints" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-lg">pending_actions</span><span class="font-label-lg text-label-lg">Pending Complaints</span></div><span class="px-space-sm py-space-xs rounded-full bg-surface-container-high text-on-surface-variant font-data-mono text-label-sm">1,204</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-on-secondary-fixed-variant hover:text-inverse-on-surface transition-colors" data-path="overdue-complaints" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-lg">alarm_on</span><span class="font-label-lg text-label-lg">Overdue Complaints</span></div><span class="px-space-sm py-space-xs rounded-full bg-error text-on-error font-data-mono text-label-sm font-bold animate-pulse">184</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-on-secondary-fixed-variant hover:text-inverse-on-surface transition-colors" data-path="escalations" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-lg">crisis_alert</span><span class="font-label-lg text-label-lg">Escalations</span></div><span class="px-space-sm py-space-xs rounded-full bg-error-container text-on-error-container font-data-mono text-label-sm font-semibold">42</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-on-secondary-fixed-variant hover:text-inverse-on-surface transition-colors" data-path="departments" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-lg">account_balance</span><span class="font-label-lg text-label-lg">Departments</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-on-secondary-fixed-variant hover:text-inverse-on-surface transition-colors" data-path="officers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-lg">badge</span><span class="font-label-lg text-label-lg">Officers</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-on-secondary-fixed-variant hover:text-inverse-on-surface transition-colors" data-path="reminder-centre" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-lg">notification_important</span><span class="font-label-lg text-label-lg">Reminder Centre</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-on-secondary-fixed-variant hover:text-inverse-on-surface transition-colors" data-path="analytics" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-lg">analytics</span><span class="font-label-lg text-label-lg">Analytics</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-on-secondary-fixed-variant hover:text-inverse-on-surface transition-colors" data-path="settings" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-lg">settings</span><span class="font-label-lg text-label-lg">Settings</span></div></a></nav></div></div><div class="p-space-md m-space-md rounded-xl bg-on-secondary-fixed-variant/40 flex flex-col gap-space-sm"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-secondary-fixed-dim font-medium">Central Redressal Portal v2.4</span><div class="flex items-center gap-space-xs"><span class="w-2 h-2 rounded-full bg-primary-fixed"></span><span class="font-label-sm text-label-sm text-primary-fixed">Live Sync</span></div></div><div class="pt-space-xs flex items-center justify-between"><div class="flex items-center gap-space-xs text-error-container"><span class="material-symbols-outlined text-sm">support_agent</span><span class="font-label-sm text-label-sm uppercase font-bold tracking-wider">SLA Hotline</span></div><span class="font-data-mono text-label-sm text-on-error font-bold">1800-GOV-911</span></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><div class="relative w-full"><span class="material-symbols-outlined absolute left-space-md top-1/2 -translate-y-1/2 text-outline text-lg">search</span><input class="w-full h-10 pl-10 pr-space-md bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-all" placeholder="Search complaints by token ID, citizen name, Aadhaar/Gov ID, or keyword (⌘K)..." type="text"/></div><div class="hidden xl:flex items-center gap-space-xs px-space-md py-space-xs bg-surface-container-low rounded-lg cursor-pointer hover:bg-surface-container transition-colors whitespace-nowrap"><span class="material-symbols-outlined text-primary text-base">verified_user</span><span class="font-label-sm text-label-sm font-semibold text-on-surface">National Portal · Min. Public Administration</span><span class="material-symbols-outlined text-outline text-sm">arrow_drop_down</span></div></div><div class="flex items-center gap-space-lg ml-space-md"><div class="flex items-center gap-space-sm"><button class="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors relative"><span class="material-symbols-outlined text-xl">smart_toy</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-tertiary"></span></button><button class="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors relative"><span class="material-symbols-outlined text-xl">notifications</span><span class="absolute top-1.5 right-1.5 px-1 min-w-[16px] h-4 rounded-full bg-error text-on-error font-data-mono text-[10px] leading-none flex items-center justify-center font-bold">9+</span></button></div><div class="flex items-center gap-space-sm pl-space-sm"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdubVBPWCUn7xQTQ3E_doDZoDzYVb7CaXPPVdbCDYirDZ0xJqymVAVwEgJqPm6QkFAOYszDds2XVabHH9B0Wbdxr9Pf2qQ3lMs6J3FXFygA0efdK_fUUlSj5acrkfu98DIl_h6lE5RprZltJbUtsOYFZT03SgkIC6QCImO-e4qLwDKDhjduEWIoznwzHFBVdI5bkJsGHswlS7xlgNF6onfW33sR_OxWYcKUQ9Ej8c"/><div class="hidden sm:flex flex-col text-left"><span class="font-label-lg text-label-lg font-bold text-on-surface leading-tight">Dr. Rajeshwar Varma</span><span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Chief Grievance Commissioner</span></div></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Subtle Ambient Glow Canvas Decor -->
+<div class="relative w-full overflow-hidden px-gutter py-space-lg flex flex-col gap-space-lg">
+<div class="absolute top-0 right-1/4 w-96 h-96 bg-primary-fixed/30 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="absolute top-48 left-1/3 w-80 h-80 bg-tertiary-fixed/25 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<!-- Breadcrumb & Header Bar -->
+<header class="flex flex-col xl:flex-row xl:items-end justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs max-w-3xl">
+<div class="flex items-center gap-space-xs text-secondary font-label-sm text-label-sm tracking-wider uppercase">
+<span>Dashboard</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span>Ministries &amp; Departments</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-primary font-bold">Performance Benchmarks &amp; Scorecards</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight font-extrabold flex items-center gap-space-sm">
+          Department Performance &amp; Ministry Scorecards
+          <span class="px-space-sm py-space-xs rounded-full bg-surface-container-high text-primary font-data-mono text-label-sm font-semibold tracking-normal">
+            Q3 FY2024
+          </span>
+</h1>
+<p class="font-body-md text-body-md text-secondary">
+          Comparative redressal efficiency, statutory SLA compliance audits, citizen CSAT satisfaction indexes, and institutional accountability tracking across 24 national ministries.
+        </p>
+</div>
+<!-- Action Cluster -->
+<div class="flex flex-wrap items-center gap-space-sm">
+<button class="px-space-md py-space-sm rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-all flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-lg text-secondary">download</span>
+<span>Comparative Gazette Report</span>
+</button>
+<button class="px-space-md py-space-sm rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-all flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-lg text-secondary">calendar_clock</span>
+<span>Schedule Performance Hearing</span>
+</button>
+<button class="px-space-md py-space-sm rounded-lg bg-primary text-on-primary font-label-md text-label-md shadow-sm hover:bg-primary-container transition-all flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-lg">flag_circle</span>
+<span>Set Quarterly Targets</span>
+</button>
+</div>
+</header>
+<!-- KPI Ribbon / Executive Overview (4 Cards) -->
+<section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-gutter">
+<!-- Card 1: Benchmark Vanguard -->
+<div class="relative bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between overflow-hidden">
+<div class="absolute -right-6 -bottom-6 w-28 h-28 bg-surface-container rounded-full pointer-events-none -z-0"></div>
+<div class="relative z-10 flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="px-space-sm py-space-xs rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm uppercase font-bold tracking-wide">
+              Top Ranked Ministry
+            </span>
+<span class="material-symbols-outlined text-primary text-xl">military_tech</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold mt-space-xs line-clamp-1">
+            Road Transport &amp; Highways
+          </h2>
+<div class="flex items-baseline gap-space-xs mt-space-xs">
+<span class="font-metric-display text-metric-display text-primary font-extrabold tracking-tight">94.8</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">/ 100 Composite</span>
+</div>
+</div>
+<div class="relative z-10 mt-space-md pt-space-sm flex items-center justify-between text-secondary font-data-mono text-body-sm bg-surface-container-low rounded-lg p-space-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">SLA Resolved</span>
+<span class="font-bold text-on-surface">96.2%</span>
+</div>
+<div class="w-px h-6 bg-surface-container"></div>
+<div class="flex flex-col text-right">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Avg Resolution</span>
+<span class="font-bold text-on-surface">2.1 Days</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Backlog & Scrutiny Alert -->
+<div class="relative bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between overflow-hidden">
+<div class="relative z-10 flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="px-space-sm py-space-xs rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm uppercase font-bold tracking-wide flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-ping"></span>
+              Under Scrutiny Tier
+            </span>
+<span class="material-symbols-outlined text-error text-xl">warning</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold mt-space-xs line-clamp-1">
+            Urban Dev. &amp; Municipal Corp.
+          </h2>
+<div class="flex items-baseline gap-space-xs mt-space-xs">
+<span class="font-metric-display text-metric-display text-error font-extrabold tracking-tight">68.4</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">/ 100 Composite</span>
+</div>
+</div>
+<div class="relative z-10 mt-space-md pt-space-sm flex items-center justify-between text-secondary font-data-mono text-body-sm bg-error-container/20 rounded-lg p-space-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Active Load</span>
+<span class="font-bold text-on-surface">5,210 Recv</span>
+</div>
+<div class="w-px h-6 bg-error-container"></div>
+<div class="flex flex-col text-right">
+<span class="font-label-sm text-label-sm text-error">Overdue Violations</span>
+<span class="font-bold text-error">412 Overdue</span>
+</div>
+</div>
+</div>
+<!-- Card 3: National Redressal Index -->
+<div class="relative bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between overflow-hidden">
+<div class="relative z-10 flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="px-space-sm py-space-xs rounded-full bg-surface-container-low text-secondary font-label-sm text-label-sm uppercase font-bold tracking-wide">
+              Aggregate Index
+            </span>
+<span class="material-symbols-outlined text-secondary text-xl">insights</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold mt-space-xs">
+            National Redressal Index
+          </h2>
+<div class="flex items-baseline gap-space-xs mt-space-xs">
+<span class="font-metric-display text-metric-display text-on-surface font-extrabold tracking-tight">88.6%</span>
+<span class="font-label-sm text-label-sm text-primary font-bold flex items-center">
+<span class="material-symbols-outlined text-xs">arrow_upward</span> +3.4% YoY
+            </span>
+</div>
+</div>
+<div class="relative z-10 mt-space-md flex flex-col gap-space-xs">
+<div class="flex items-center justify-between font-label-sm text-label-sm text-secondary">
+<span>Sovereign Target: 85.2%</span>
+<span class="font-data-mono text-primary font-bold">Passed Benchmark</span>
+</div>
+<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 88.6%;"></div>
+</div>
+</div>
+</div>
+<!-- Card 4: Verified Citizen CSAT -->
+<div class="relative bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between overflow-hidden">
+<div class="relative z-10 flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="px-space-sm py-space-xs rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm uppercase font-bold tracking-wide">
+              Citizen Sentiment
+            </span>
+<span class="material-symbols-outlined text-tertiary text-xl">reviews</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold mt-space-xs">
+            Validated Post-Redressal CSAT
+          </h2>
+<div class="flex items-baseline gap-space-xs mt-space-xs">
+<span class="font-metric-display text-metric-display text-on-surface font-extrabold tracking-tight">4.3</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">/ 5.0 Star Avg</span>
+</div>
+</div>
+<div class="relative z-10 mt-space-md pt-space-sm flex items-center justify-between text-secondary font-body-sm bg-surface-container-low rounded-lg p-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-sm">verified</span>
+<span class="font-data-mono text-label-sm font-semibold text-on-surface">124,800+ Audited</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">92.4% Completion</span>
+</div>
+</div>
+</section>
+<!-- GovOps AI Diagnostic Callout Section -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col xl:flex-row items-start xl:items-center justify-between gap-space-lg">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-tertiary-container flex items-center justify-center shrink-0 text-on-tertiary-container shadow-sm">
+<span class="material-symbols-outlined text-2xl">neurology</span>
+</div>
+<div class="flex flex-col gap-space-xs max-w-4xl">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">GovOps AI Autonomous Diagnostic Pulse</span>
+<span class="px-space-sm py-space-xs rounded-full bg-surface-container-high text-tertiary font-data-mono text-label-sm font-semibold uppercase">Engine v4.9 Active</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+<strong class="text-on-surface font-bold">Urban Development &amp; Municipal Corporation</strong> delays correlate directly with vehicle procurement bottlenecks in Ward 7 (Sanitation Cluster), causing 63% of SLA overages. Conversely, <strong class="text-on-surface font-bold">Ministry of Jal Shakti</strong> achieved a +28% reduction in turnaround velocity following the automated nodal officer reassignment executed on Oct 12.
+          </p>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm shrink-0">
+<button class="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-sm">assignment_late</span>
+<span>Issue Advisory Notice</span>
+</button>
+<button class="px-space-md py-space-sm rounded-lg bg-tertiary text-on-tertiary font-label-md text-label-md shadow-sm hover:bg-tertiary-container transition-colors flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-sm">hub</span>
+<span>Review Reallocation Plan</span>
+</button>
+</div>
+</section>
+<!-- Filter & Control Toolbar -->
+<section class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-space-md">
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-sm flex-1">
+<!-- Search bar -->
+<div class="relative flex-1 max-w-md">
+<span class="material-symbols-outlined absolute left-space-md top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
+<input class="w-full h-10 pl-10 pr-space-md bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container transition-all" id="deptSearchInput" placeholder="Filter by ministry name, nodal secretary, or code..." type="text"/>
+</div>
+<!-- Sector Dropdown -->
+<div class="relative">
+<select class="h-10 px-space-md bg-surface-container-low rounded-lg font-label-md text-label-md text-on-surface appearance-none pr-9 focus:outline-none focus:bg-surface-container cursor-pointer" id="sectorFilter">
+<option value="all">All Sectors (24 Ministries)</option>
+<option value="infrastructure">Infrastructure &amp; Transport</option>
+<option value="civic">Civic Amenities &amp; Housing</option>
+<option value="welfare">Social Welfare &amp; Justice</option>
+<option value="energy">Energy &amp; Natural Resources</option>
+<option value="finance">Finance &amp; Distribution</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-outline pointer-events-none text-base">expand_more</span>
+</div>
+<!-- Time Range Selector -->
+<div class="relative">
+<select class="h-10 px-space-md bg-surface-container-low rounded-lg font-label-md text-label-md text-on-surface appearance-none pr-9 focus:outline-none focus:bg-surface-container cursor-pointer">
+<option>Quarter 3 (FY 2024-25)</option>
+<option>Last 30 Days (Real-time)</option>
+<option>Year-to-Date Performance</option>
+<option>Previous FY Benchmark</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-outline pointer-events-none text-base">calendar_month</span>
+</div>
+</div>
+<!-- Sorting Pill Group -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-1 xl:pb-0">
+<span class="font-label-sm text-label-sm text-secondary uppercase whitespace-nowrap mr-space-xs font-bold">Sort By:</span>
+<button class="px-space-sm py-space-xs rounded-lg bg-primary-container text-on-primary-container font-label-sm text-label-sm font-semibold flex items-center gap-space-xs whitespace-nowrap shadow-sm">
+<span>Composite Score</span>
+<span class="material-symbols-outlined text-xs">arrow_downward</span>
+</button>
+<button class="px-space-sm py-space-xs rounded-lg bg-surface-container-low text-secondary hover:text-on-surface font-label-sm text-label-sm font-medium whitespace-nowrap transition-colors">
+          SLA Compliance %
+        </button>
+<button class="px-space-sm py-space-xs rounded-lg bg-surface-container-low text-secondary hover:text-on-surface font-label-sm text-label-sm font-medium whitespace-nowrap transition-colors">
+          Backlog Volume
+        </button>
+<button class="px-space-sm py-space-xs rounded-lg bg-surface-container-low text-secondary hover:text-on-surface font-label-sm text-label-sm font-medium whitespace-nowrap transition-colors">
+          Resolution Velocity
+        </button>
+</div>
+</section>
+<!-- Scorecard League Table (Ranks 1 to 6 Showcase) -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="p-space-lg flex items-center justify-between bg-surface-container-lowest">
+<div class="flex flex-col">
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">
+            Inter-Ministerial League Table
+          </h2>
+<span class="font-body-sm text-body-sm text-secondary">
+            Statutory redressal audits certified under the Citizen Charter Standards Act. Updated 14 minutes ago.
+          </span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="font-data-mono text-label-sm text-secondary">Showing 6 of 24 Departments</span>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface-variant flex items-center justify-center hover:bg-surface-container">
+<span class="material-symbols-outlined text-sm">tune</span>
+</button>
+</div>
+</div>
+<!-- High-Density Responsive Table -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low text-secondary font-label-sm text-label-sm tracking-wider uppercase h-11">
+<th class="px-space-lg font-bold">Rank &amp; Ministry / Department</th>
+<th class="px-space-md font-bold">Inflow vs. Resolved</th>
+<th class="px-space-md font-bold">SLA Adherence</th>
+<th class="px-space-md font-bold">Avg Velocity</th>
+<th class="px-space-md font-bold">Citizen CSAT</th>
+<th class="px-space-md font-bold">Escalations</th>
+<th class="px-space-md font-bold">Statutory Grade</th>
+<th class="px-space-lg text-right font-bold">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-none font-body-md text-body-md text-on-surface">
+<!-- Row 1: MoRTH -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-space-lg py-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-7 h-7 rounded-full bg-primary-fixed text-primary font-data-mono text-label-sm font-bold flex items-center justify-center">
+                    01
+                  </div>
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-xl">add_road</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight group-hover:text-primary transition-colors">
+                      Ministry of Road Transport &amp; Highways (MoRTH)
+                    </span>
+<span class="font-body-sm text-body-sm text-secondary">
+                      Sec. S.K. Mohanty, IAS · Toll &amp; Highway Redressal Cell
+                    </span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<div class="flex flex-col gap-1 w-44">
+<div class="flex items-center justify-between font-data-mono text-body-sm">
+<span class="font-bold text-on-surface">3,963</span>
+<span class="text-secondary">/ 4,120 Recv</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 96.1%;"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-full bg-secondary-container text-on-secondary-container font-data-mono text-label-sm font-bold inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  96.2%
+                </span>
+</td>
+<td class="px-space-md py-space-md font-data-mono font-semibold text-on-surface">
+                2.1 Days
+              </td>
+<td class="px-space-md py-space-md">
+<div class="flex items-center gap-space-xs font-data-mono font-bold text-on-surface">
+<span class="material-symbols-outlined text-sm text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>4.7</span>
+<span class="text-secondary font-normal text-body-sm">(18.2k)</span>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-full bg-surface-container-low text-secondary font-data-mono text-label-sm font-semibold">
+                  12 Active
+                </span>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-lg bg-primary-fixed text-primary font-headline-sm text-label-sm font-extrabold uppercase">
+                  A+ (94.8)
+                </span>
+</td>
+<td class="px-space-lg py-space-md text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-space-xs rounded-md bg-surface-container-low text-on-surface font-label-sm text-label-sm font-semibold hover:bg-surface-container transition-colors">
+                    Dossier
+                  </button>
+<button class="w-8 h-8 rounded-md hover:bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-base">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: DFPD -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-space-lg py-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-7 h-7 rounded-full bg-primary-fixed text-primary font-data-mono text-label-sm font-bold flex items-center justify-center">
+                    02
+                  </div>
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-xl">fastfood</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight group-hover:text-primary transition-colors">
+                      Min. of Food &amp; Public Distribution (DFPD)
+                    </span>
+<span class="font-body-sm text-body-sm text-secondary">
+                      Sec. Anita K. Rathod, IAS · Ration Card &amp; PDS Nodal Board
+                    </span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<div class="flex flex-col gap-1 w-44">
+<div class="flex items-center justify-between font-data-mono text-body-sm">
+<span class="font-bold text-on-surface">8,102</span>
+<span class="text-secondary">/ 8,620 Recv</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 93.9%;"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-full bg-secondary-container text-on-secondary-container font-data-mono text-label-sm font-bold inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  94.1%
+                </span>
+</td>
+<td class="px-space-md py-space-md font-data-mono font-semibold text-on-surface">
+                2.8 Days
+              </td>
+<td class="px-space-md py-space-md">
+<div class="flex items-center gap-space-xs font-data-mono font-bold text-on-surface">
+<span class="material-symbols-outlined text-sm text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>4.5</span>
+<span class="text-secondary font-normal text-body-sm">(34.1k)</span>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-full bg-surface-container-low text-secondary font-data-mono text-label-sm font-semibold">
+                  34 Active
+                </span>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-lg bg-primary-fixed text-primary font-headline-sm text-label-sm font-extrabold uppercase">
+                  A+ (93.1)
+                </span>
+</td>
+<td class="px-space-lg py-space-md text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-space-xs rounded-md bg-surface-container-low text-on-surface font-label-sm text-label-sm font-semibold hover:bg-surface-container transition-colors">
+                    Dossier
+                  </button>
+<button class="w-8 h-8 rounded-md hover:bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-base">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Jal Shakti -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-space-lg py-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-7 h-7 rounded-full bg-surface-container text-secondary font-data-mono text-label-sm font-bold flex items-center justify-center">
+                    03
+                  </div>
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-tertiary shrink-0">
+<span class="material-symbols-outlined text-xl">water_drop</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight group-hover:text-primary transition-colors">
+                      Ministry of Jal Shakti (Water Supply)
+                    </span>
+<span class="font-body-sm text-body-sm text-secondary">
+                      Sec. Vikramaditya Das, IAS · Har Ghar Jal Monitoring Wing
+                    </span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<div class="flex flex-col gap-1 w-44">
+<div class="flex items-center justify-between font-data-mono text-body-sm">
+<span class="font-bold text-on-surface">6,240</span>
+<span class="text-secondary">/ 7,120 Recv</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary rounded-full" style="width: 87.6%;"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-full bg-surface-container-high text-on-surface-variant font-data-mono text-label-sm font-bold inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                  88.4%
+                </span>
+</td>
+<td class="px-space-md py-space-md font-data-mono font-semibold text-on-surface">
+                3.4 Days
+              </td>
+<td class="px-space-md py-space-md">
+<div class="flex items-center gap-space-xs font-data-mono font-bold text-on-surface">
+<span class="material-symbols-outlined text-sm text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>4.1</span>
+<span class="text-secondary font-normal text-body-sm">(12.9k)</span>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-full bg-surface-container-low text-secondary font-data-mono text-label-sm font-semibold">
+                  67 Active
+                </span>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-lg bg-surface-container-high text-on-surface font-headline-sm text-label-sm font-extrabold uppercase">
+                  A (88.4)
+                </span>
+</td>
+<td class="px-space-lg py-space-md text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-space-xs rounded-md bg-surface-container-low text-on-surface font-label-sm text-label-sm font-semibold hover:bg-surface-container transition-colors">
+                    Dossier
+                  </button>
+<button class="w-8 h-8 rounded-md hover:bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-base">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Power & Renewable Energy -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-space-lg py-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-7 h-7 rounded-full bg-surface-container text-secondary font-data-mono text-label-sm font-bold flex items-center justify-center">
+                    04
+                  </div>
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-xl">bolt</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight group-hover:text-primary transition-colors">
+                      Min. of Power &amp; Renewable Energy (MoP)
+                    </span>
+<span class="font-body-sm text-body-sm text-secondary">
+                      Sec. Tariq Alvi, IAS · National Grid Discom Grievance Cell
+                    </span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<div class="flex flex-col gap-1 w-44">
+<div class="flex items-center justify-between font-data-mono text-body-sm">
+<span class="font-bold text-on-surface">5,110</span>
+<span class="text-secondary">/ 6,050 Recv</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 84.4%;"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-full bg-surface-container-high text-on-surface-variant font-data-mono text-label-sm font-bold inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  84.2%
+                </span>
+</td>
+<td class="px-space-md py-space-md font-data-mono font-semibold text-on-surface">
+                4.2 Days
+              </td>
+<td class="px-space-md py-space-md">
+<div class="flex items-center gap-space-xs font-data-mono font-bold text-on-surface">
+<span class="material-symbols-outlined text-sm text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>3.9</span>
+<span class="text-secondary font-normal text-body-sm">(9.4k)</span>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-full bg-surface-container-low text-secondary font-data-mono text-label-sm font-semibold">
+                  104 Active
+                </span>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-lg bg-surface-container-low text-secondary font-headline-sm text-label-sm font-extrabold uppercase">
+                  B+ (84.2)
+                </span>
+</td>
+<td class="px-space-lg py-space-md text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-space-xs rounded-md bg-surface-container-low text-on-surface font-label-sm text-label-sm font-semibold hover:bg-surface-container transition-colors">
+                    Dossier
+                  </button>
+<button class="w-8 h-8 rounded-md hover:bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-base">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Social Justice -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-space-lg py-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-7 h-7 rounded-full bg-surface-container text-secondary font-data-mono text-label-sm font-bold flex items-center justify-center">
+                    05
+                  </div>
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-xl">diversity_3</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight group-hover:text-primary transition-colors">
+                      Min. of Social Justice &amp; Empowerment (MSJE)
+                    </span>
+<span class="font-body-sm text-body-sm text-secondary">
+                      Sec. Dr. K. Meenakshi, IAS · Direct Benefit Pension Redressal
+                    </span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<div class="flex flex-col gap-1 w-44">
+<div class="flex items-center justify-between font-data-mono text-body-sm">
+<span class="font-bold text-on-surface">3,450</span>
+<span class="text-secondary">/ 4,210 Recv</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 81.9%;"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-full bg-surface-container text-on-surface-variant font-data-mono text-label-sm font-bold inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  81.0%
+                </span>
+</td>
+<td class="px-space-md py-space-md font-data-mono font-semibold text-on-surface">
+                5.6 Days
+              </td>
+<td class="px-space-md py-space-md">
+<div class="flex items-center gap-space-xs font-data-mono font-bold text-on-surface">
+<span class="material-symbols-outlined text-sm text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>3.7</span>
+<span class="text-secondary font-normal text-body-sm">(7.8k)</span>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-full bg-surface-container-low text-secondary font-data-mono text-label-sm font-semibold">
+                  148 Active
+                </span>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-lg bg-surface-container-low text-secondary font-headline-sm text-label-sm font-extrabold uppercase">
+                  B (81.0)
+                </span>
+</td>
+<td class="px-space-lg py-space-md text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-space-xs rounded-md bg-surface-container-low text-on-surface font-label-sm text-label-sm font-semibold hover:bg-surface-container transition-colors">
+                    Dossier
+                  </button>
+<button class="w-8 h-8 rounded-md hover:bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-base">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6: Urban Dev & Municipal Corp (FLAGGED SCRUTINY) -->
+<tr class="bg-error-container/10 hover:bg-error-container/20 transition-colors group">
+<td class="px-space-lg py-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-7 h-7 rounded-full bg-error text-on-error font-data-mono text-label-sm font-bold flex items-center justify-center">
+                    06
+                  </div>
+<div class="w-10 h-10 rounded-lg bg-error-container flex items-center justify-center text-error shrink-0">
+<span class="material-symbols-outlined text-xl">location_city</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight group-hover:text-error transition-colors">
+                        Urban Development &amp; Municipal Corp.
+                      </span>
+<span class="px-1.5 py-0.5 rounded text-[10px] bg-error text-on-error font-bold uppercase tracking-wider">Breach Alert</span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary">
+                      Sec. Er. P.K. Sundaram, IAS · Municipal Governance Directorate
+                    </span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<div class="flex flex-col gap-1 w-44">
+<div class="flex items-center justify-between font-data-mono text-body-sm">
+<span class="font-bold text-error">3,124</span>
+<span class="text-secondary">/ 5,210 Recv</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-error rounded-full" style="width: 59.9%;"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-full bg-error-container text-on-error-container font-data-mono text-label-sm font-bold inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
+                  79.0%
+                </span>
+</td>
+<td class="px-space-md py-space-md font-data-mono font-semibold text-error">
+                7.8 Days
+              </td>
+<td class="px-space-md py-space-md">
+<div class="flex items-center gap-space-xs font-data-mono font-bold text-on-surface">
+<span class="material-symbols-outlined text-sm text-error" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-error font-bold">3.2</span>
+<span class="text-secondary font-normal text-body-sm">(29.4k)</span>
+</div>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-full bg-error text-on-error font-data-mono text-label-sm font-bold animate-pulse">
+                  412 Overdue
+                </span>
+</td>
+<td class="px-space-md py-space-md">
+<span class="px-space-sm py-space-xs rounded-lg bg-error-container text-on-error-container font-headline-sm text-label-sm font-extrabold uppercase">
+                  C (68.4)
+                </span>
+</td>
+<td class="px-space-lg py-space-md text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-space-xs rounded-md bg-error text-on-error font-label-sm text-label-sm font-bold hover:bg-error/90 transition-colors">
+                    Inspect Dossier
+                  </button>
+<button class="w-8 h-8 rounded-md bg-error-container/50 hover:bg-error-container flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-base">emergency</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination / League Footer -->
+<div class="px-space-lg py-space-md bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<span class="font-body-sm text-body-sm text-secondary">
+          Displaying top tier departments. Statutory recalculation run scheduled in 02:46:12.
+        </span>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-md py-space-xs rounded-lg bg-surface-container-lowest text-secondary font-label-sm text-label-sm hover:text-on-surface">
+            Previous
+          </button>
+<button class="px-space-sm py-space-xs rounded-lg bg-primary text-on-primary font-data-mono text-label-sm font-bold">
+            1
+          </button>
+<button class="px-space-sm py-space-xs rounded-lg bg-surface-container-lowest text-secondary font-data-mono text-label-sm hover:bg-surface-container">
+            2
+          </button>
+<button class="px-space-sm py-space-xs rounded-lg bg-surface-container-lowest text-secondary font-data-mono text-label-sm hover:bg-surface-container">
+            3
+          </button>
+<button class="px-space-md py-space-xs rounded-lg bg-surface-container-lowest text-secondary font-label-sm text-label-sm hover:text-on-surface">
+            Next
+          </button>
+</div>
+</div>
+</section>
+<!-- Deep-Dive Department Dossier Panel: Urban Dev & Municipal Corp -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col mt-space-sm">
+<!-- Dossier Header Ribbon -->
+<div class="p-space-lg bg-surface-container-low flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-14 h-14 rounded-xl bg-error-container text-error flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-3xl">corporate_fare</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="font-headline-md text-headline-md text-on-surface font-extrabold">
+                Deep-Dive Dossier: Urban Development &amp; Municipal Corporation
+              </span>
+<span class="px-space-sm py-space-xs rounded-full bg-error text-on-error font-data-mono text-label-sm font-bold uppercase">
+                Under Active Section 14 Scrutiny
+              </span>
+</div>
+<span class="font-body-md text-body-md text-secondary mt-0.5">
+              Statutory Grievance Redressal Audit Reference: <strong class="font-data-mono text-on-surface">GOI-AUD-2024-UDMC-091</strong> · State &amp; Municipal Union Level
+            </span>
+</div>
+</div>
+<!-- Direct Civic Intervention Actions -->
+<div class="flex flex-wrap items-center gap-space-sm">
+<button class="px-space-md py-space-sm rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container transition-colors flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-base text-secondary">gavel</span>
+<span>Summon Principal Secretary</span>
+</button>
+<button class="px-space-md py-space-sm rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container transition-colors flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-base text-primary">local_shipping</span>
+<span>Reallocate Emergency Fleet</span>
+</button>
+<button class="px-space-md py-space-sm rounded-lg bg-error text-on-error font-label-md text-label-md shadow-sm hover:bg-error/90 transition-colors flex items-center gap-space-xs font-bold">
+<span class="material-symbols-outlined text-base">verified_user</span>
+<span>Impose Section 14 Oversight</span>
+</button>
+</div>
+</div>
+<!-- Dossier Metadata Strip -->
+<div class="grid grid-cols-2 md:grid-cols-4 bg-surface-container-lowest p-space-lg gap-space-md">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-secondary uppercase font-bold">Principal Secretary In-Charge</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold mt-1">Er. P.K. Sundaram, IAS</span>
+<span class="font-body-sm text-body-sm text-secondary">Tenure: 18 Months (Batch 2008)</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-secondary uppercase font-bold">Fiscal Redressal Utilization</span>
+<div class="flex items-baseline gap-space-xs mt-1">
+<span class="font-metric-display text-headline-md text-on-surface font-extrabold font-data-mono">₹48.2 Cr</span>
+<span class="font-body-sm text-body-sm text-secondary">/ ₹62.0 Cr (77.7%)</span>
+</div>
+<span class="font-body-sm text-body-sm text-primary font-medium">₹13.8 Cr Unutilized Capital</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-secondary uppercase font-bold">Escalated Breach Index</span>
+<span class="font-headline-sm text-headline-sm text-error font-bold mt-1">412 Overdue Tickets</span>
+<span class="font-body-sm text-body-sm text-error">Average Breach Age: 11.4 Days</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-secondary uppercase font-bold">Citizen Redressal CSAT</span>
+<div class="flex items-center gap-1 mt-1 font-headline-sm text-headline-sm font-bold text-error">
+<span>3.2 / 5.0</span>
+<span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary">29,410 Verified Submissions</span>
+</div>
+</div>
+<!-- Dossier Body Split: 3 Columns (Regional Breakdown, Bottleneck Heatmap, Officer Accountability) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 p-space-lg gap-gutter bg-surface-container-lowest">
+<!-- Column A: Regional & Sub-division Breakdown (4 cols) -->
+<div class="lg:col-span-4 flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Regional Cluster Redressal</h3>
+<span class="font-label-sm text-label-sm text-secondary font-data-mono">4 Administrative Zones</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- Zone 1 -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">Central Ward (Civic Core)</span>
+<span class="px-space-sm py-0.5 rounded-full bg-error-container text-on-error-container font-data-mono text-label-sm font-bold">61.2% SLA</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm text-secondary">
+<span>1,840 Complaints Active</span>
+<span class="text-error font-semibold font-data-mono">184 Overdue</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden mt-1">
+<div class="h-full bg-error rounded-full" style="width: 61.2%;"></div>
+</div>
+</div>
+<!-- Zone 2 -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">North Industrial Sector</span>
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container text-on-surface-variant font-data-mono text-label-sm font-bold">78.4% SLA</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm text-secondary">
+<span>1,120 Complaints Active</span>
+<span class="text-error font-semibold font-data-mono">112 Overdue</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden mt-1">
+<div class="h-full bg-secondary rounded-full" style="width: 78.4%;"></div>
+</div>
+</div>
+<!-- Zone 3 -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">West Corridor (Suburban)</span>
+<span class="px-space-sm py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-data-mono text-label-sm font-bold">84.0% SLA</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm text-secondary">
+<span>1,340 Complaints Active</span>
+<span class="text-secondary font-semibold font-data-mono">72 Overdue</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden mt-1">
+<div class="h-full bg-secondary rounded-full" style="width: 84%;"></div>
+</div>
+</div>
+<!-- Zone 4 -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">South Coastal Zone</span>
+<span class="px-space-sm py-0.5 rounded-full bg-primary-fixed text-primary font-data-mono text-label-sm font-bold">91.8% SLA</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm text-secondary">
+<span>910 Complaints Active</span>
+<span class="text-secondary font-semibold font-data-mono">44 Overdue</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden mt-1">
+<div class="h-full bg-primary rounded-full" style="width: 91.8%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Column B: Root Cause SLA Bottleneck Heatmap (4 cols) -->
+<div class="lg:col-span-4 flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Root Cause Bottlenecks</h3>
+<span class="font-label-sm text-label-sm text-secondary">Telemetry Cluster</span>
+</div>
+<!-- Bottleneck Distribution Bars -->
+<div class="flex flex-col gap-space-md p-space-md rounded-xl bg-surface-container-low">
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-body-sm">
+<span class="font-bold text-on-surface flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-sm bg-error"></span>
+                  Sanitation &amp; Sewage Blockage
+                </span>
+<span class="font-data-mono font-bold text-error">44% (2,292 Tkts)</span>
+</div>
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-error rounded-full" style="width: 44%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">Compactor vehicle deficit in Ward 7 &amp; 12</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-body-sm">
+<span class="font-bold text-on-surface flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-sm bg-secondary"></span>
+                  Potholes &amp; Road Patching
+                </span>
+<span class="font-data-mono font-bold text-on-surface">28% (1,458 Tkts)</span>
+</div>
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 28%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">Monsoon asphalt contractor default audit active</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-body-sm">
+<span class="font-bold text-on-surface flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-sm bg-tertiary"></span>
+                  Street Lighting &amp; Cabling
+                </span>
+<span class="font-data-mono font-bold text-on-surface">16% (833 Tkts)</span>
+</div>
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary rounded-full" style="width: 16%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">Smart metering conversion pending in North Zone</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-body-sm">
+<span class="font-bold text-on-surface flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-sm bg-outline"></span>
+                  Illegal Encroachments
+                </span>
+<span class="font-data-mono font-bold text-on-surface">12% (625 Tkts)</span>
+</div>
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-outline rounded-full" style="width: 12%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">Demolition squad schedule compliance at 42%</span>
+</div>
+</div>
+<!-- Micro AI Recommendation -->
+<div class="p-space-sm bg-surface-container-high rounded-lg flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-base">lightbulb</span>
+<span class="font-body-sm text-body-sm text-on-surface">
+              Procuring 8 temporary refuse vehicles reduces Ward 7 backlog by <strong>52% within 9 days</strong>.
+            </span>
+</div>
+</div>
+<!-- Column C: Officer Performance Matrix (4 cols) -->
+<div class="lg:col-span-4 flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Officer Accountability Matrix</h3>
+<span class="font-label-sm text-label-sm text-secondary">Nodal Roster</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- Defaulter 1 -->
+<div class="p-space-sm rounded-xl bg-error-container/20 flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<img class="w-10 h-10 rounded-full object-cover shrink-0" data-alt="Official portrait photograph of municipal executive engineer S. Ramanathan, wearing professional attire in an administrative municipal office setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWh1S98eCpZF57B-1IwON3hCpD8m7yTLCvFUyo6iaCo5zDV1TuukeKCPBxiIH3Q89D1UverUUz6DXqVuirYdUUCwdav49KKbZyGaPqsLwD-ofu_t-DsxrtTlPU3-NP06QJGX2RCXMOPfiAKIBulvF-q9LpE91PT61N8QqkvhnRM91SEPnBnInwwBjiWsUiLF6iY8GN-Mh0NxOaTB2Zjbtcz-kM3gbOT35k4n6pAmM"/>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-on-surface leading-tight">S. Ramanathan</span>
+<span class="font-label-sm text-label-sm text-secondary">Exec. Engr, Central Ward</span>
+</div>
+</div>
+<div class="flex flex-col text-right">
+<span class="font-data-mono font-bold text-error text-label-sm">118 Overdue</span>
+<span class="font-label-sm text-label-sm text-error uppercase font-bold">Show-Cause</span>
+</div>
+</div>
+<!-- Defaulter 2 -->
+<div class="p-space-sm rounded-xl bg-error-container/20 flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<img class="w-10 h-10 rounded-full object-cover shrink-0" data-alt="Official portrait photograph of senior sanitation officer Vandana Sen, captured against standard public ministry office backdrop." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDa8RvPPaEpd6WL0mntWTlmH6VfWePrLUTCLMqljXbDRUB_pVC-yty8JlwcaCRAGFIgvoQI3xnC47sv65mhXGGIRNfRzXxb3MURpazSGHd4woQRPZoehGBbGDeqK-Ma6Y3GUOZzbbsdopzAuvoHJeSbNAr-7knM1-JGes3tR3eEZMlk2sAe3ugn8it0IwAdlpWkMMfBfgK6sFAYpF3Fiq4tbypNVcZt3NFUYioR4s"/>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-on-surface leading-tight">Vandana Sen</span>
+<span class="font-label-sm text-label-sm text-secondary">Chief Sanitation Supt., North</span>
+</div>
+</div>
+<div class="flex flex-col text-right">
+<span class="font-data-mono font-bold text-error text-label-sm">84 Overdue</span>
+<span class="font-label-sm text-label-sm text-error uppercase font-bold">Penalty Notice</span>
+</div>
+</div>
+<!-- Top Performer Nodal -->
+<div class="p-space-sm rounded-xl bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<img class="w-10 h-10 rounded-full object-cover shrink-0" data-alt="Official portrait photograph of civic nodal officer Harish Chopra, IAS, smiling in modern government operations center." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMDyF2YXjvkzcF-l2OiLcf9yF1isgC8nmDmTjeGW1-BAoqknM7cjIEtJ7hTDIkC_pO-Epv8XslqZljL0dcb8Jlopukpesbq--_u5boEtBjQ6TwYwIX0xbMPrDF5v1Zj2pD4lkyTQD4LqFu8RZKvVWjxcrwFcdsqP2TQf8YamDTAGoDVwFETMouHZLAEvjzZGGna6A2gO63NS_fO8GYLOTs4I6THV3wy5VYPpHr3LQ"/>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-on-surface leading-tight">Harish Chopra</span>
+<span class="font-label-sm text-label-sm text-secondary">Zonal Officer, South Coastal</span>
+</div>
+</div>
+<div class="flex flex-col text-right">
+<span class="font-data-mono font-bold text-primary text-label-sm">98.1% SLA</span>
+<span class="font-label-sm text-label-sm text-primary uppercase font-bold">Commended</span>
+</div>
+</div>
+</div>
+<button class="w-full py-space-sm rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center justify-center gap-space-xs font-semibold">
+<span class="material-symbols-outlined text-sm">badge</span>
+<span>Inspect All 18 Officers Attached</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+<script>
+  // Simple interactive filter hooks for search input
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('deptSearchInput');
+    const rows = document.querySelectorAll('tbody tr');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        rows.forEach(row => {
+          const text = row.innerText.toLowerCase();
+          if (text.includes(query)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+    }
+  });
+</script></main></div></body></html>

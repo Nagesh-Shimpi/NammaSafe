@@ -12,6 +12,8 @@ import { INITIAL_ESCALATION_RECORDS } from '../data/escalationRecords';
 import { INITIAL_REMINDER_RECORDS } from '../data/reminderRecords';
 import { INITIAL_COMPLAINT_HISTORY } from '../data/complaintHistory';
 import { COMPLAINT_CATEGORIES } from '../data/complaintCategories';
+import { INITIAL_FEEDBACK_RECORDS } from '../data/feedbackData';
+import { INITIAL_CITIZEN_NOTIFICATIONS } from '../data/citizenNotificationsData';
 import { PRIORITY_CONFIG, isValidStatusTransition } from '../utils/constants';
 import { generateNextTrackingId } from '../utils/trackingIdGenerator';
 
@@ -125,6 +127,8 @@ export const ComplaintProvider = ({ children }) => {
   const [communications, setCommunications] = useState(COMMUNICATIONS_DATA);
   const [reassignments, setReassignments] = useState(INITIAL_REASSIGNMENTS);
   const [complaintHistory, setComplaintHistory] = useState(INITIAL_COMPLAINT_HISTORY);
+  const [feedbackRecords, setFeedbackRecords] = useState(INITIAL_FEEDBACK_RECORDS);
+  const [citizenNotifications, setCitizenNotifications] = useState(INITIAL_CITIZEN_NOTIFICATIONS);
 
   // Generate Unique Canonical Token ID (RTK-2026-XXXXXX)
   const generateTrackingId = () => {
@@ -906,6 +910,415 @@ export const ComplaintProvider = ({ children }) => {
     }));
   };
 
+  // -------------------------------------------------------------------------
+  // CITIZEN TRACKING & FEEDBACK PORTAL SHARED STATE FUNCTIONS
+  // -------------------------------------------------------------------------
+
+  // 1. Identity Verification for Complaint Tracking
+  const verifyCitizenAccess = (trackingId, mobileNumber) => {
+    if (!trackingId?.trim() || !mobileNumber?.trim()) {
+      return {
+        success: false,
+        error: 'MISSING_FIELDS',
+        message: 'Both Complaint Tracking ID and Registered Mobile Number are required.'
+      };
+    }
+
+    const cleanToken = trackingId.trim().toUpperCase();
+    const cleanInputDigits = mobileNumber.replace(/\D/g, '');
+
+    const matched = complaints.find(c => {
+      const cToken = (c.token || '').toUpperCase();
+      const cTrackingId = (c.trackingId || '').toUpperCase();
+      const cId = (c.id || '').toUpperCase();
+      const cLegacy = (c.legacyToken || '').toUpperCase();
+      return cToken === cleanToken || cTrackingId === cleanToken || cId === cleanToken || cLegacy === cleanToken;
+    });
+
+    if (!matched) {
+      return {
+        success: false,
+        error: 'COMPLAINT_NOT_FOUND',
+        message: `No grievance ticket found for Tracking ID "${trackingId}". Please verify your docket token.`
+      };
+    }
+
+    const citizenPhoneDigits = (matched.citizenPhone || matched.mobileNumber || '').replace(/\D/g, '');
+    const isMobileMatch = citizenPhoneDigits.endsWith(cleanInputDigits) || cleanInputDigits.endsWith(citizenPhoneDigits);
+
+    if (!isMobileMatch) {
+      return {
+        success: false,
+        error: 'MOBILE_MISMATCH',
+        message: 'The mobile number entered does not match the registration records for this complaint.'
+      };
+    }
+
+    return {
+      success: true,
+      ticket: matched
+    };
+  };
+
+  // 2. Retrieve All Complaints for a Citizen Mobile Number
+  const getCitizenComplaints = (mobileNumber) => {
+    if (!mobileNumber) return [];
+    const cleanDigits = mobileNumber.replace(/\D/g, '');
+    if (cleanDigits.length < 5) return [];
+
+    return complaints.filter(c => {
+      const cDigits = (c.citizenPhone || c.mobileNumber || '').replace(/\D/g, '');
+      return cDigits.endsWith(cleanDigits) || cleanDigits.endsWith(cDigits);
+    });
+  };
+
+  // 3. Citizen Response to Additional Information Requests
+  const submitCitizenResponse = (trackingId, responseText, attachments = []) => {
+    if (!responseText?.trim()) {
+      return { success: false, message: 'Response description is required.' };
+    }
+
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    let updatedTicket = null;
+
+    setComplaints(prev => prev.map(c => {
+      const isMatch = c.token === trackingId || c.trackingId === trackingId || c.id === trackingId || c.legacyToken === trackingId;
+      if (isMatch) {
+        const curActions = Array.isArray(c.actions) ? c.actions : [];
+        const curResponses = Array.isArray(c.citizenResponses) ? c.citizenResponses : [];
+        const nextStatus = (c.status === 'ADDITIONAL_INFO_REQUIRED') ? 'PENDING_VERIFICATION' : c.status;
+
+        updatedTicket = {
+          ...c,
+          status: nextStatus,
+          verificationStatus: 'PENDING',
+          updatedAt: nowStr,
+          citizenResponses: [
+            ...curResponses,
+            {
+              id: `RESP-${Date.now()}`,
+              text: responseText,
+              attachments: attachments || [],
+              timestamp: nowStr
+            }
+          ],
+          actions: [
+            ...curActions,
+            {
+              id: curActions.length + 1,
+              type: 'CITIZEN_RESPONSE',
+              date: nowStr,
+              user: `${c.citizenName} (Citizen)`,
+              text: `Citizen submitted supplementary information: "${responseText}". Attached files: ${(attachments || []).length}.`
+            }
+          ]
+        };
+        return updatedTicket;
+      }
+      return c;
+    }));
+
+    if (updatedTicket) {
+      // Record in complaint history
+      setComplaintHistory(prev => [
+        {
+          id: `HIST-RESP-${Date.now().toString().slice(-4)}`,
+          complaintId: updatedTicket.token,
+          complaintToken: updatedTicket.token,
+          eventType: 'Citizen Information Submitted',
+          description: `Citizen uploaded supplementary evidence: "${responseText}"`,
+          responsibleUser: updatedTicket.citizenName,
+          timestamp: nowStr,
+          previousValue: 'ADDITIONAL_INFO_REQUIRED',
+          newValue: updatedTicket.status
+        },
+        ...prev
+      ]);
+
+      // Add to citizen notifications
+      const cleanPhone = (updatedTicket.citizenPhone || '').replace(/\D/g, '');
+      setCitizenNotifications(prev => [
+        {
+          id: `CNOTIF-${Date.now().toString().slice(-4)}`,
+          complaintId: updatedTicket.token,
+          mobileNumber: cleanPhone,
+          type: 'INFO_SUBMITTED',
+          category: 'Info Request',
+          title: 'Supplementary Information Received',
+          message: `Your information regarding #${updatedTicket.token} has been logged and routed to the scrutiny officer.`,
+          timestamp: nowStr,
+          read: false,
+          severity: 'success'
+        },
+        ...prev
+      ]);
+
+      // Add administrative notification for officer
+      setNotifications(prev => [
+        {
+          id: `NOTIF-${Date.now().toString().slice(-4)}`,
+          token: updatedTicket.token,
+          type: 'STATUS_UPDATE',
+          title: 'Citizen Response Submitted',
+          message: `${updatedTicket.citizenName} submitted supplementary information for #${updatedTicket.token}.`,
+          time: 'Just now',
+          unread: true,
+          severity: 'info',
+          actionRoute: `/admin/pending-complaints`
+        },
+        ...prev
+      ]);
+    }
+
+    return { success: true, ticket: updatedTicket };
+  };
+
+  // 4. Accept Resolution Workflow (Citizen Satisfaction -> Closure)
+  const acceptResolution = (trackingId, citizenNotes = '') => {
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    let updatedTicket = null;
+
+    setComplaints(prev => prev.map(c => {
+      const isMatch = c.token === trackingId || c.trackingId === trackingId || c.id === trackingId || c.legacyToken === trackingId;
+      if (isMatch) {
+        const curActions = Array.isArray(c.actions) ? c.actions : [];
+        updatedTicket = {
+          ...c,
+          status: 'CLOSED',
+          closureDate: nowStr,
+          updatedAt: nowStr,
+          citizenConfirmation: {
+            accepted: true,
+            notes: citizenNotes || 'Resolution confirmed on-site by applicant.',
+            date: nowStr
+          },
+          actions: [
+            ...curActions,
+            {
+              id: curActions.length + 1,
+              type: 'CITIZEN_ACCEPTED',
+              date: nowStr,
+              user: `${c.citizenName} (Citizen)`,
+              text: `Citizen accepted departmental resolution as satisfactory. Case officially closed. Notes: "${citizenNotes || 'Confirmed satisfactory.'}"`
+            }
+          ]
+        };
+        return updatedTicket;
+      }
+      return c;
+    }));
+
+    if (updatedTicket) {
+      setComplaintHistory(prev => [
+        {
+          id: `HIST-CLOSE-${Date.now().toString().slice(-4)}`,
+          complaintId: updatedTicket.token,
+          complaintToken: updatedTicket.token,
+          eventType: 'Complaint Closed',
+          description: `Docket closed with citizen acceptance. Notes: ${citizenNotes || 'Satisfactory redressal.'}`,
+          responsibleUser: updatedTicket.citizenName,
+          timestamp: nowStr,
+          previousValue: 'RESOLVED',
+          newValue: 'CLOSED'
+        },
+        ...prev
+      ]);
+
+      const cleanPhone = (updatedTicket.citizenPhone || '').replace(/\D/g, '');
+      setCitizenNotifications(prev => [
+        {
+          id: `CNOTIF-${Date.now().toString().slice(-4)}`,
+          complaintId: updatedTicket.token,
+          mobileNumber: cleanPhone,
+          type: 'CASE_CLOSED',
+          category: 'Resolution',
+          title: 'Grievance Formally Closed',
+          message: `Docket #${updatedTicket.token} has been formally closed with your confirmation. Thank you for your feedback!`,
+          timestamp: nowStr,
+          read: false,
+          severity: 'success'
+        },
+        ...prev
+      ]);
+    }
+
+    return { success: true, ticket: updatedTicket };
+  };
+
+  // 5. Request Further Action (Reopen Grievance with Reason & Attachments)
+  const requestFurtherAction = (trackingId, reasonCategory, reasonDetails, attachments = []) => {
+    if (!reasonDetails?.trim()) {
+      return { success: false, message: 'Please provide details explaining why the resolution was unsatisfactory.' };
+    }
+
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    let updatedTicket = null;
+
+    setComplaints(prev => prev.map(c => {
+      const isMatch = c.token === trackingId || c.trackingId === trackingId || c.id === trackingId || c.legacyToken === trackingId;
+      if (isMatch) {
+        const curActions = Array.isArray(c.actions) ? c.actions : [];
+        const curReopenings = Array.isArray(c.reopeningRequests) ? c.reopeningRequests : [];
+
+        updatedTicket = {
+          ...c,
+          status: 'REOPENED',
+          updatedAt: nowStr,
+          healthScore: 25,
+          daysOverdue: 0,
+          reopeningRequests: [
+            ...curReopenings,
+            {
+              id: `REOPEN-${Date.now()}`,
+              category: reasonCategory || 'Work Incomplete',
+              details: reasonDetails,
+              attachments: attachments || [],
+              date: nowStr
+            }
+          ],
+          actions: [
+            ...curActions,
+            {
+              id: curActions.length + 1,
+              type: 'REOPENED',
+              date: nowStr,
+              user: `${c.citizenName} (Citizen)`,
+              text: `Citizen requested further action. Reason: [${reasonCategory || 'Incomplete'}] "${reasonDetails}". Docket reopened for re-inspection.`
+            }
+          ]
+        };
+        return updatedTicket;
+      }
+      return c;
+    }));
+
+    if (updatedTicket) {
+      // Update assigned officer workload count
+      if (updatedTicket.assignedOfficer) {
+        setOfficers(prev => prev.map(o => {
+          if (o.id === updatedTicket.assignedOfficer.id) {
+            return {
+              ...o,
+              pendingCount: (o.pendingCount || 0) + 1,
+              activeCaseload: (o.activeCaseload || 0) + 1,
+              recentActivity: `Grievance #${updatedTicket.token} reopened by citizen for re-inspection on ${nowStr}.`
+            };
+          }
+          return o;
+        }));
+      }
+
+      setComplaintHistory(prev => [
+        {
+          id: `HIST-REOPEN-${Date.now().toString().slice(-4)}`,
+          complaintId: updatedTicket.token,
+          complaintToken: updatedTicket.token,
+          eventType: 'Complaint Reopened',
+          description: `Reopened by citizen: ${reasonCategory} - "${reasonDetails}"`,
+          responsibleUser: updatedTicket.citizenName,
+          timestamp: nowStr,
+          previousValue: 'RESOLVED',
+          newValue: 'REOPENED'
+        },
+        ...prev
+      ]);
+
+      const cleanPhone = (updatedTicket.citizenPhone || '').replace(/\D/g, '');
+      setCitizenNotifications(prev => [
+        {
+          id: `CNOTIF-${Date.now().toString().slice(-4)}`,
+          complaintId: updatedTicket.token,
+          mobileNumber: cleanPhone,
+          type: 'REOPENED_CONFIRMATION',
+          category: 'Reopened',
+          title: 'Grievance Reopened for Re-Inspection',
+          message: `Your request for further action on #${updatedTicket.token} has been registered. The assigned officer and supervisor have been alerted.`,
+          timestamp: nowStr,
+          read: false,
+          severity: 'info'
+        },
+        ...prev
+      ]);
+
+      // Alert supervisor and officer
+      setNotifications(prev => [
+        {
+          id: `NOTIF-${Date.now().toString().slice(-4)}`,
+          token: updatedTicket.token,
+          type: 'STATUS_UPDATE',
+          title: 'Grievance Reopened by Citizen',
+          message: `Citizen disputed resolution for #${updatedTicket.token} (${reasonCategory}). Re-inspection mandated.`,
+          time: 'Just now',
+          unread: true,
+          severity: 'warning',
+          actionRoute: `/supervisor/escalation-review`
+        },
+        ...prev
+      ]);
+    }
+
+    return { success: true, ticket: updatedTicket };
+  };
+
+  // 6. Submit Structured Citizen Feedback (4 Criteria)
+  const submitCitizenFeedback = (trackingId, feedbackData) => {
+    const matched = complaints.find(c => c.token === trackingId || c.trackingId === trackingId || c.id === trackingId || c.legacyToken === trackingId);
+    if (!matched) return { success: false, message: 'Complaint not found.' };
+
+    // Prevent duplicate feedback
+    const alreadySubmitted = feedbackRecords.some(f => f.complaintId === trackingId || f.complaintId === matched.token);
+    if (alreadySubmitted) {
+      return { success: false, duplicate: true, message: `Feedback has already been submitted for grievance #${trackingId}.` };
+    }
+
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const newFeedback = {
+      id: `FB-${Date.now().toString().slice(-4)}`,
+      complaintId: matched.token,
+      legacyToken: matched.legacyToken || null,
+      citizenName: feedbackData.isAnonymous ? 'Anonymous Citizen' : matched.citizenName,
+      citizenPhone: feedbackData.isAnonymous ? '••••••••••' : matched.citizenPhone,
+      overallRating: feedbackData.overallRating || 5,
+      qualityRating: feedbackData.qualityRating || 5,
+      responsivenessRating: feedbackData.responsivenessRating || 5,
+      timelinessRating: feedbackData.timelinessRating || 5,
+      category: feedbackData.category || 'Satisfactory',
+      comments: feedbackData.comments || 'No written remarks.',
+      isAnonymous: feedbackData.isAnonymous || false,
+      createdAt: nowStr,
+      departmentId: matched.departmentId,
+      departmentName: matched.departmentName
+    };
+
+    setFeedbackRecords(prev => [newFeedback, ...prev]);
+
+    // Update ticket's CSAT rating
+    setComplaints(prev => prev.map(c => {
+      if (c.token === matched.token || c.id === matched.id) {
+        return {
+          ...c,
+          csatRating: feedbackData.overallRating || 5
+        };
+      }
+      return c;
+    }));
+
+    return { success: true, feedback: newFeedback };
+  };
+
+  // 7. Citizen Notifications Management
+  const markCitizenNotificationRead = (notifId) => {
+    setCitizenNotifications(prev => prev.map(n => n.id === notifId ? { ...n, read: true } : n));
+  };
+
+  const markAllCitizenNotificationsRead = (mobileNumber) => {
+    const cleanDigits = (mobileNumber || '').replace(/\D/g, '');
+    setCitizenNotifications(prev => prev.map(n => {
+      const match = !cleanDigits || n.mobileNumber?.endsWith(cleanDigits);
+      return match ? { ...n, read: true } : n;
+    }));
+  };
+
   // Send Demonstration Reminder with Idempotency Safeguard
   const sendComplaintReminder = ({ complaintToken, channel = 'IN_APP', recipientName, recipientRole = 'Department Officer', subject, notes = '' }) => {
     const now = new Date();
@@ -1578,6 +1991,8 @@ export const ComplaintProvider = ({ children }) => {
         reassignments,
         setReassignments,
         complaintHistory,
+        feedbackRecords,
+        citizenNotifications,
         notices: reminders,
         metrics,
         generateTrackingId,
@@ -1604,6 +2019,14 @@ export const ComplaintProvider = ({ children }) => {
         resolveComplaintDirect,
         createReminder,
         verifyResolution,
+        verifyCitizenAccess,
+        getCitizenComplaints,
+        submitCitizenResponse,
+        acceptResolution,
+        requestFurtherAction,
+        submitCitizenFeedback,
+        markCitizenNotificationRead,
+        markAllCitizenNotificationsRead,
         markNotificationRead,
         markAllNotificationsRead
       }}

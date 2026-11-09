@@ -1,86 +1,145 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useComplaints } from '../../context/ComplaintContext';
+import { COMPLAINT_CATEGORIES } from '../../data/complaintCategories';
 
 export const CitizenHome = () => {
-  const { t, lang } = useLanguage();
+  const { lang, setLanguage, t } = useLanguage();
   const { metrics, complaints } = useComplaints();
 
-  const services = [
+  const [openFaqIndex, setOpenFaqIndex] = useState(0);
+
+  const faqs = [
     {
-      title: lang === 'kn' ? 'ಕುಡಿಯುವ ನೀರು ಮತ್ತು ಒಳಚರಂಡಿ' : 'Drinking Water & Sanitation',
-      desc: lang === 'kn' ? 'ಪೈಪ್‌ಲೈನ್ ಸೋರಿಕೆ, ಕಲುಷಿತ ನೀರು ಸರಬರಾಜು ಅಥವಾ ಚರಂಡಿ ಸಮಸ್ಯೆಗಳು' : 'Pipeline leaks, contaminated water, or sewage overflow reports',
-      icon: 'water_drop',
-      color: 'bg-primary/10 text-primary',
-      sla: '24-48 Hours'
+      qEn: 'How do I track my submitted grievance?',
+      qKn: 'ನನ್ನ ಸಲ್ಲಿಕೆಯಾದ ದೂರನ್ನು ನಾನು ಹೇಗೆ ಟ್ರ್ಯಾಕ್ ಮಾಡುವುದು?',
+      aEn: 'Every successfully submitted grievance receives a unique tracking token (e.g., RTK-2026-000001). Visit the "Track Complaint" page, enter your Tracking ID and your registered 10-digit mobile number to view real-time inspection updates and timelines.',
+      aKn: 'ಪ್ರತಿ ಯಶಸ್ವಿ ದೂರನ್ನು ಸಲ್ಲಿಸಿದ ನಂತರ ವಿಶಿಷ್ಟ ಟ್ರ್ಯಾಕಿಂಗ್ ಟೋಕನ್ (ಉದಾ: RTK-2026-000001) ನೀಡಲಾಗುತ್ತದೆ. "ದೂರು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ" ಪುಟಕ್ಕೆ ಭೇಟಿ ನೀಡಿ ನಿಮ್ಮ ಟ್ರ್ಯಾಕಿಂಗ್ ಐಡಿ ಮತ್ತು ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ ನೈಜ-ಸಮಯದ ಸ್ಥಿತಿಯನ್ನು ಪರಿಶೀಲಿಸಿ.'
     },
     {
-      title: lang === 'kn' ? 'ರಸ್ತೆಗಳು ಮತ್ತು ಸಾರಿಗೆ' : 'Roads & Infrastructure',
-      desc: lang === 'kn' ? 'ರಸ್ತೆ ಗುಂಡಿಗಳು, ಮುರಿದ ಬೀದಿ ದೀಪಗಳು ಅಥವಾ ಹೆದ್ದಾರಿ ಅಪಾಯಗಳು' : 'Dangerous potholes, streetlight failures, or expressway hazards',
-      icon: 'traffic',
-      color: 'bg-blue-600/10 text-blue-700',
-      sla: '48 Hours'
+      qEn: 'What happens if the nodal officer fails to resolve within the SLA window?',
+      qKn: 'ನಿಗದಿತ ಗಡುವಿನೊಳಗೆ ನೋಡಲ್ ಅಧಿಕಾರಿ ಸಮಸ್ಯೆಯನ್ನು ಬಗೆಹರಿಸದಿದ್ದರೆ ಏನಾಗುತ್ತದೆ?',
+      aEn: 'Under Section 8 of the Karnataka Guarantee of Services to Citizens (Sakala) Act 2011, grievances that cross their statutory deadline automatically trigger Level 1–3 hierarchical escalations to Supervisory Engineers and District Magistrates with mandatory daily accountability penalties.',
+      aKn: 'ಕರ್ನಾಟಕ ಸಕಾಲ ಕಾಯ್ದೆಯನ್ವಯ, ನಿಗದಿತ ಅವಧಿ ಮೀರಿದ ದೂರುಗಳು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಹಿರಿಯ ಮೇಲ್ವಿಚಾರಣಾ ಇಂಜಿನಿಯರ್‌ಗಳು ಮತ್ತು ಜಿಲ್ಲಾಧಿಕಾರಿಗಳಿಗೆ ಹಂತ 1-3 ರ ಅಡಿಯಲ್ಲಿ ವರ್ಗಾವಣೆಯಾಗುತ್ತವೆ.'
     },
     {
-      title: lang === 'kn' ? 'ವಿದ್ಯುತ್ ಸರಬರಾಜು ಮತ್ತು ಮೀಟರ್' : 'Electricity & BESCOM',
-      desc: lang === 'kn' ? 'ವಿದ್ಯುತ್ ಕಡಿತ, ತಪ್ಪು ಮೀಟರ್ ಬಿಲ್ಲಿಂಗ್ ಅಥವಾ ಅಪಾಯಕಾರಿ ತಂತಿಗಳು' : 'Power outages, faulty meter billing spikes, or loose wiring',
-      icon: 'bolt',
-      color: 'bg-amber-500/10 text-amber-700',
-      sla: '24 Hours'
+      qEn: 'Can I reopen a complaint if the physical resolution on the ground is unsatisfactory?',
+      qKn: 'ಪರಿಹಾರವು ತೃಪ್ತಿಕರವಾಗಿಲ್ಲದಿದ್ದರೆ ದೂರನ್ನು ಮರುತೆರೆಯಬಹುದೇ?',
+      aEn: 'Yes! ResolveTrack enforces a strict Citizen Verification requirement. When an officer reports completion, the ticket is not automatically closed. You can inspect the submitted completion proof and choose either "Accept Resolution" or "Request Further Action" with written reasons and photos.',
+      aKn: 'ಖಂಡಿತವಾಗಿ! ಅಧಿಕಾರಿ ಪರಿಹಾರ ವರದಿ ಸಲ್ಲಿಸಿದ ನಂತರ, ನೀವು ಪರಿಶೀಲಿಸಿ ತೃಪ್ತರಾಗದಿದ್ದರೆ "ಹೆಚ್ಚಿನ ಕ್ರಮಕ್ಕಾಗಿ ವಿನಂತಿ" (Reopen) ಆಯ್ಕೆ ಮಾಡಿ ಫೋಟೋ ಸಮೇತ ಮರುಪರಿಶೀಲನೆಗೆ ಕಳುಹಿಸಬಹುದು.'
     },
     {
-      title: lang === 'kn' ? 'ಕಂದಾಯ ಮತ್ತು ಪಾಲಿಕೆ ತೆರಿಗೆ' : 'Revenue & Urban Local Body',
-      desc: lang === 'kn' ? 'ಇ-ಖಾತಾ, ಆಸ್ತಿ ತೆರಿಗೆ ರಶೀದಿಗಳು ಅಥವಾ ನಾಗರಿಕ ಪ್ರಮಾಣಪತ್ರಗಳು' : 'Khata extracts, property tax clearance, or municipality clearances',
-      icon: 'domain',
-      color: 'bg-indigo-600/10 text-indigo-700',
-      sla: '72 Hours'
+      qEn: 'What documents are required to file a civic complaint?',
+      qKn: 'ದೂರು ದಾಖಲಿಸಲು ಯಾವ ದಾಖಲೆಗಳು ಬೇಕಾಗುತ್ತವೆ?',
+      aEn: 'No physical paperwork is mandatory. You only need your verified contact details and a clear description of the civic issue. Optionally, you can attach site photographs, electricity bills, or revenue receipts (JPG, PNG, PDF) to accelerate zonal triage.',
+      aKn: 'ಯಾವುದೇ ಕಡ್ಡಾಯ ಕಾಗದಪತ್ರಗಳ ಅಗತ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ವಿವರಗಳು ಮತ್ತು ಸಮಸ್ಯೆಯ ಸ್ಪಷ್ಟ ವಿವರಣೆ ಸಾಕು. ಸ್ಥಳದ ಫೋಟೋ ಅಥವಾ ವಿದ್ಯುತ್ ಬಿಲ್ಲುಗಳನ್ನು ಐಚ್ಛಿಕವಾಗಿ ಲಗತ್ತಿಸಬಹುದು.'
     },
     {
-      title: lang === 'kn' ? 'ಸಾಮಾಜಿಕ ಕಲ್ಯಾಣ ಮತ್ತು ಪಿಂಚಣಿ' : 'Social Welfare & Pensions',
-      desc: lang === 'kn' ? 'ವೃದ್ಧಾಪ್ಯ ಪಿಂಚಣಿ, ವಿಧವಾ ವೇತನ ಅಥವಾ ವಿದ್ಯಾರ್ಥಿವೇತನ ವಿಳಂಬ' : 'Senior citizen pensions, disability allowances, or scholarship delays',
-      icon: 'elderly',
-      color: 'bg-emerald-600/10 text-emerald-700',
-      sla: '7 Days'
-    },
-    {
-      title: lang === 'kn' ? 'ಆಹಾರ ಮತ್ತು ಪಡಿತರ ಚೀಟಿ' : 'Food & Civil Supplies (PDS)',
-      desc: lang === 'kn' ? 'ಪಡಿತರ ವಿತರಣೆ ವ್ಯತ್ಯಯ, ಕಾರ್ಡ್ ನವೀಕರಣ ಅಥವಾ ಧಾನ್ಯ ಗುಣಮಟ್ಟ' : 'Ration distribution anomalies, Fair Price Shop delays, or card issues',
-      icon: 'local_mall',
-      color: 'bg-rose-600/10 text-rose-700',
-      sla: '48 Hours'
+      qEn: 'Can I submit anonymous feedback after resolution?',
+      qKn: 'ಪರಿಹಾರದ ನಂತರ ಅನಾಮಧೇಯ ಪ್ರತಿಕ್ರಿಯೆ ನೀಡಬಹುದೇ?',
+      aEn: 'Yes. When filling out the 4-criteria CSAT feedback form, you can toggle the "Submit Anonymously" option. Your rating and comments will be delivered directly to the departmental audit desk without disclosing your identity.',
+      aKn: 'ಹೌದು. ಪ್ರತಿಕ್ರಿಯೆ ನಮೂನೆಯಲ್ಲಿ "ಅನಾಮಧೇಯವಾಗಿ ಸಲ್ಲಿಸಿ" ಆಯ್ಕೆಯನ್ನು ಬಳಸಬಹುದು. ನಿಮ್ಮ ಗುರುತನ್ನು ಮರೆಮಾಚಿ ಇಲಾಖಾ ಮೇಲ್ವಿಚಾರಕರಿಗೆ ರೇಟಿಂಗ್ ತಲುಪಿಸಲಾಗುತ್ತದೆ.'
     }
   ];
 
+  const helpSteps = [
+    {
+      step: '1',
+      titleEn: 'Register Grievance',
+      titleKn: 'ದೂರು ದಾಖಲಿಸಿ',
+      descEn: 'Fill out the simple 4-section form with your location and issue details.',
+      descKn: 'ನಿಮ್ಮ ಸ್ಥಳ ಮತ್ತು ಸಮಸ್ಯೆಯ ವಿವರಗಳೊಂದಿಗೆ ಸರಳ ನಮೂನೆಯನ್ನು ಭರ್ತಿ ಮಾಡಿ.',
+      icon: 'edit_document'
+    },
+    {
+      step: '2',
+      titleEn: 'Receive Tracking ID',
+      titleKn: 'ಟ್ರ್ಯಾಕಿಂಗ್ ಐಡಿ ಪಡೆಯಿರಿ',
+      descEn: 'Get an immutable digital token (RTK-2026-XXXXXX) with instant SMS confirmation.',
+      descKn: 'ತ್ವರಿತ ಎಸ್‌ಎಂಎಸ್ ದೃಢೀಕರಣದೊಂದಿಗೆ ವಿಶಿಷ್ಟ ಟೋಕನ್ ಪಡೆಯಿರಿ.',
+      icon: 'qr_code_2'
+    },
+    {
+      step: '3',
+      titleEn: 'Field Inspection',
+      titleKn: 'ಸ್ಥಳ ಪರಿಶೀಲನೆ',
+      descEn: 'Assigned nodal engineers inspect the site and upload work completion evidence.',
+      descKn: 'ನಿಯೋಜಿತ ಎಂಜಿನಿಯರ್‌ಗಳು ಸ್ಥಳಕ್ಕೆ ಭೇಟಿ ನೀಡಿ ಕಾಮಗಾರಿ ನಡೆಸಿ ಸಾಕ್ಷ್ಯ ಅಪ್‌ಲೋಡ್ ಮಾಡುತ್ತಾರೆ.',
+      icon: 'engineering'
+    },
+    {
+      step: '4',
+      titleEn: 'Citizen Verification',
+      titleKn: 'ನಾಗರಿಕ ದೃಢೀಕರಣ',
+      descEn: 'Confirm physical resolution on site or reopen if dissatisfied. Rate your experience.',
+      descKn: 'ಪರಿಹಾರವನ್ನು ಪರಿಶೀಲಿಸಿ ಅನುಮೋದಿಸಿ ಅಥವಾ ಮರುಪರಿಶೀಲನೆಗೆ ಕಳುಹಿಸಿ. ರೇಟಿಂಗ್ ನೀಡಿ.',
+      icon: 'verified'
+    }
+  ];
+
+  const helplines = [
+    { name: 'Sakala Citizen Helpline', number: '080-44554455', icon: 'support_agent', hours: '24x7 Toll Free' },
+    { name: 'BESCOM Power Redressal', number: '1912', icon: 'bolt', hours: 'Toll Free · 24 Hours' },
+    { name: 'BWSSB Drinking Water', number: '1916', icon: 'water_drop', hours: 'Toll Free' },
+    { name: 'Municipal BBMP Sahaya', number: '1533', icon: 'domain', hours: 'Emergency Control' },
+    { name: 'Emergency Police & Fire', number: '112', icon: 'local_police', hours: 'Instant Dispatch' }
+  ];
+
   return (
-    <div className="flex flex-col gap-10">
-      {/* Hero Civic Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-inverse-surface via-slate-900 to-primary-container p-8 sm:p-12 text-inverse-on-surface shadow-lg">
-        <div className="relative z-10 max-w-3xl flex flex-col gap-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-fixed/20 text-primary-fixed font-mono text-xs font-bold border border-primary-fixed/30 w-fit">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Guaranteed Public Service Delivery · Karnataka Sakala Act</span>
+    <div className="space-y-12">
+      {/* =================================================================== */}
+      {/* 1. HERO CIVIC BANNER WITH BILINGUAL TOGGLE & INSTANT SHORTCUTS */}
+      {/* =================================================================== */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 p-6 sm:p-10 lg:p-14 text-white shadow-xl border border-slate-800">
+        <div className="relative z-10 max-w-3xl space-y-4">
+
+          {/* Statutory Sub-banner & Language Switcher */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 font-mono text-xs font-bold border border-teal-500/30">
+              <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+              <span>Karnataka Sakala Redressal Mandate · Act 2011</span>
+            </div>
+
+            {/* In-banner Language Switcher */}
+            <div className="flex items-center gap-1 bg-slate-900/80 backdrop-blur-sm p-1 rounded-xl border border-slate-700 text-xs font-bold">
+              <button
+                onClick={() => setLanguage('en')}
+                className={`px-3 py-1 rounded-lg transition-all ${lang === 'en' ? 'bg-teal-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                  }`}
+              >
+                English
+              </button>
+              <button
+                onClick={() => setLanguage('kn')}
+                className={`px-3 py-1 rounded-lg transition-all ${lang === 'kn' ? 'bg-teal-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                  }`}
+              >
+                ಕನ್ನಡ
+              </button>
+            </div>
           </div>
 
-          <h1 className="font-headline text-headline-xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-headline leading-tight tracking-tight text-white">
             {lang === 'kn'
               ? 'ಸಾರ್ವಜನಿಕ ಕುಂದುಕೊರತೆ ನಿವಾರಣೆ ಮತ್ತು ನೈಜ-ಸಮಯದ ಮೇಲ್ವಿಚಾರಣೆ'
-              : 'Direct Civic Grievance Redressal with Automated Follow-up & Escalation'}
+              : 'Direct Civic Grievance Redressal & Accountable Resolution'}
           </h1>
 
-          <p className="font-body text-body-lg text-slate-300 leading-relaxed">
+          <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
             {lang === 'kn'
-              ? 'ನಿಮ್ಮ ದೂರುಗಳನ್ನು ನೇರವಾಗಿ ಸಂಬಂಧಪಟ್ಟ ಇಲಾಖೆಯ ನೋಡಲ್ ಅಧಿಕಾರಿಗೆ ತಲುಪಿಸಿ. ಸ್ವಯಂಚಾಲಿತ ಎಸ್‌ಎಂಎಸ್ ಮತ್ತು ವಾಟ್ಸಾಪ್ ಮೂಲಕ ಸ್ಥಿತಿಯನ್ನು ನೈಜ ಸಮಯದಲ್ಲಿ ಟ್ರ್ಯಾಕ್ ಮಾಡಿ.'
-              : 'Submit grievances directly to department nodal officers. Every ticket receives an autonomous tracking ID with binding statutory resolution deadlines.'}
+              ? 'ನಿಮ್ಮ ದೂರುಗಳನ್ನು ಕರ್ನಾಟಕ ಸರ್ಕಾರದ ನೋಡಲ್ ಅಧಿಕಾರಿಗಳಿಗೆ ನೇರವಾಗಿ ಸಲ್ಲಿಸಿ. ಪ್ರತಿ ದೂರಿಗೂ ಕಡ್ಡಾಯ ಕಾಲಮಿತಿ ಮತ್ತು ಎಸ್‌ಎಂಎಸ್ ಟ್ರ್ಯಾಕಿಂಗ್ ನೀಡಲಾಗುತ್ತದೆ.'
+              : 'Empowering Karnataka citizens with transparent grievance intake, automated nodal engineer routing, binding statutory resolution timelines, and citizen-first verification.'}
           </p>
 
-          <div className="flex flex-wrap items-center gap-4 pt-4">
+          {/* Call-to-Action Buttons */}
+          <div className="flex flex-wrap items-center gap-4 pt-3">
             <Link
               to="/citizen/register"
-              className="px-6 py-3.5 rounded-xl bg-primary text-on-primary font-headline text-label-lg font-bold shadow-lg hover:bg-primary-container transition-all flex items-center gap-2 group"
+              className="px-6 py-3.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-headline font-bold text-sm shadow-lg hover:shadow-teal-500/25 transition-all flex items-center gap-2 group"
             >
               <span className="material-symbols-outlined text-xl">add_circle</span>
-              <span>{t('registerGrievance')}</span>
+              <span>{lang === 'kn' ? 'ಹೊಸ ದೂರು ದಾಖಲಿಸಿ' : 'Register New Complaint'}</span>
               <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">
                 arrow_forward
               </span>
@@ -88,144 +147,223 @@ export const CitizenHome = () => {
 
             <Link
               to="/citizen/track"
-              className="px-6 py-3.5 rounded-xl bg-surface-container-lowest/15 backdrop-blur-md text-white font-headline text-label-lg font-bold border border-white/20 hover:bg-white/25 transition-all flex items-center gap-2"
+              className="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-headline font-bold text-sm border border-white/20 transition-all flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-xl">search</span>
-              <span>{t('navTrack')}</span>
+              <span className="material-symbols-outlined text-xl">qr_code_scanner</span>
+              <span>{lang === 'kn' ? 'ದೂರು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ' : 'Track Existing Complaint'}</span>
             </Link>
           </div>
         </div>
 
-        {/* Ambient Decorative Emblem */}
-        <div className="absolute -right-16 -bottom-16 w-80 h-80 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+        {/* Decorative Watermark */}
+        <div className="absolute -right-16 -bottom-16 w-80 h-80 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
       </div>
 
-      {/* 4 Quick Telemetry Stats */}
+      {/* =================================================================== */}
+      {/* 2. FOUR QUICK TELEMETRY METRIC CARDS */}
+      {/* =================================================================== */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-        <div className="bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between">
-          <span className="text-secondary font-body text-label-sm font-medium">National SLA Compliance</span>
-          <div className="font-headline text-3xl font-extrabold text-on-surface mt-2 text-primary">
-            {metrics.slaCompliance}
-          </div>
-          <span className="font-mono text-[11px] text-emerald-700 font-semibold mt-1">
-            Target 90.0% met
-          </span>
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Statutory SLA Compliance</span>
+          <p className="text-2xl sm:text-3xl font-extrabold font-headline text-teal-700 mt-1">94.2%</p>
+          <span className="text-[11px] font-semibold text-emerald-700 mt-1 block">Karnataka Sakala Target Met</span>
         </div>
 
-        <div className="bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between">
-          <span className="text-secondary font-body text-label-sm font-medium">Total Cases Resolved</span>
-          <div className="font-headline text-3xl font-extrabold text-on-surface mt-2 text-emerald-700">
-            {metrics.resolved.toLocaleString()}
-          </div>
-          <span className="font-mono text-[11px] text-secondary mt-1">
-            Across 24 Ministries
-          </span>
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Grievance Pool</span>
+          <p className="text-2xl sm:text-3xl font-extrabold font-headline text-slate-900 mt-1">{complaints.length}</p>
+          <span className="text-[11px] text-slate-500 mt-1 block">Live Digital Records</span>
         </div>
 
-        <div className="bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between">
-          <span className="text-secondary font-body text-label-sm font-medium">Avg. Redressal Turnaround</span>
-          <div className="font-headline text-3xl font-extrabold text-on-surface mt-2">
-            2.4 Days
-          </div>
-          <span className="font-mono text-[11px] text-primary font-semibold mt-1">
-            +14.2% faster turnaround
-          </span>
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avg Redressal Speed</span>
+          <p className="text-2xl sm:text-3xl font-extrabold font-headline text-teal-700 mt-1">2.4 Days</p>
+          <span className="text-[11px] font-semibold text-teal-700 mt-1 block">Field Turnaround Target: 48h</span>
         </div>
 
-        <div className="bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between">
-          <span className="text-secondary font-body text-label-sm font-medium">Citizen CSAT Rating</span>
-          <div className="font-headline text-3xl font-extrabold text-on-surface mt-2 flex items-center gap-1 text-amber-600">
-            <span>4.6</span>
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Citizen CSAT Rating</span>
+          <p className="text-2xl sm:text-3xl font-extrabold font-headline text-amber-600 mt-1 flex items-center gap-1">
+            <span>4.8</span>
             <span className="material-symbols-outlined text-2xl text-amber-500 fill-current">star</span>
-          </div>
-          <span className="font-mono text-[11px] text-secondary mt-1">
-            94.2% Verified Satisfaction
-          </span>
+          </p>
+          <span className="text-[11px] text-slate-500 mt-1 block">From Verified Citizen Audits</span>
         </div>
       </div>
 
-      {/* Select Category to Report */}
-      <div className="flex flex-col gap-6">
+      {/* =================================================================== */}
+      {/* 3. CITIZEN HELP: HOW IT WORKS STEPPER */}
+      {/* =================================================================== */}
+      <div className="bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+        <div>
+          <span className="text-xs font-bold text-teal-700 uppercase tracking-wider font-mono">
+            Citizen Guidance Matrix
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold font-headline text-slate-900 mt-1">
+            {lang === 'kn' ? 'ದೂರು ಪರಿಹಾರ ಪ್ರಕ್ರಿಯೆ ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ?' : 'How Does Grievance Redressal Work?'}
+          </h2>
+          <p className="text-slate-600 text-sm mt-1 max-w-2xl">
+            From filing to final on-site verification, every step is transparently audited with binding departmental service levels.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
+          {helpSteps.map((s) => (
+            <div key={s.step} className="p-5 rounded-2xl bg-slate-50 border border-slate-200 relative flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold">
+                    <span className="material-symbols-outlined text-xl">{s.icon}</span>
+                  </div>
+                  <span className="font-mono text-xs font-extrabold text-teal-800 bg-teal-100 px-2.5 py-1 rounded-full">
+                    Step {s.step}
+                  </span>
+                </div>
+                <h3 className="font-bold text-slate-900 text-base font-headline">
+                  {lang === 'kn' ? s.titleKn : s.titleEn}
+                </h3>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  {lang === 'kn' ? s.descKn : s.descEn}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* =================================================================== */}
+      {/* 4. OPERATIONAL CATEGORIES DIRECT ACCESS */}
+      {/* =================================================================== */}
+      <div className="space-y-6">
         <div className="flex items-end justify-between">
           <div>
-            <h2 className="font-headline text-headline-lg font-bold text-on-surface">
-              {lang === 'kn' ? 'ಪ್ರಮುಖ ಸೇವಾ ವಿಭಾಗಗಳು' : 'Select Department Category'}
+            <span className="text-xs font-bold text-teal-700 uppercase tracking-wider font-mono">
+              11 Civic Sectors
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold font-headline text-slate-900 mt-1">
+              {lang === 'kn' ? 'ಪ್ರಮುಖ ಸೇವಾ ವಿಭಾಗಗಳು' : 'Select Department Category to File'}
             </h2>
-            <p className="font-body text-body-md text-secondary mt-1">
-              {lang === 'kn'
-                ? 'ಸಂಬಂಧಿತ ಇಲಾಖೆಯನ್ನು ಆರಿಸಿ ಮತ್ತು ನಿಗದಿತ ಕಾಲಮಿತಿಯೊಳಗೆ ಪರಿಹಾರ ಪಡೆಯಿರಿ'
-                : 'Select an operational sector to lodge your grievance with guaranteed statutory resolution window'}
+            <p className="text-slate-600 text-sm mt-1">
+              Select a sector to instantly launch the intake form pre-mapped to the designated department.
             </p>
           </div>
           <Link
             to="/citizen/register"
-            className="text-primary font-body text-label-md font-bold hover:underline hidden sm:inline-flex items-center gap-1"
+            className="text-teal-700 font-bold text-xs hover:underline hidden sm:flex items-center gap-1"
           >
-            <span>View All Sectors</span>
-            <span className="material-symbols-outlined text-base">arrow_forward</span>
+            <span>View All Departments</span>
+            <span className="material-symbols-outlined text-sm">arrow_forward</span>
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((srv, idx) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {COMPLAINT_CATEGORIES.map((cat) => (
             <Link
-              key={idx}
-              to={`/citizen/register?category=${encodeURIComponent(srv.title)}`}
-              className="p-6 rounded-xl bg-surface-container-lowest border border-outline-variant/40 hover:border-primary/50 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
+              key={cat.id}
+              to={`/citizen/register?category=${encodeURIComponent(cat.name)}`}
+              className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-teal-600 hover:shadow-md transition-all flex flex-col justify-between group"
             >
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${srv.color}`}>
-                    <span className="material-symbols-outlined text-2xl">{srv.icon}</span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                    <span className="material-symbols-outlined text-xl">{cat.icon}</span>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-surface-container font-mono text-[11px] font-semibold text-secondary">
-                    SLA: {srv.sla}
+                  <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-mono text-[10px] font-bold">
+                    SLA: {cat.defaultSlaHours}h Target
                   </span>
                 </div>
-
-                <h3 className="font-headline text-headline-sm font-bold text-on-surface group-hover:text-primary transition-colors">
-                  {srv.title}
+                <h3 className="font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
+                  {lang === 'kn' ? cat.nameKn : cat.name}
                 </h3>
-                <p className="font-body text-body-sm text-secondary mt-2 leading-relaxed">
-                  {srv.desc}
+                <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                  {cat.subcategories.slice(0, 3).join(' · ')}...
                 </p>
               </div>
 
-              <div className="mt-5 pt-3 border-t border-outline-variant/20 flex items-center justify-between text-primary font-body text-label-sm font-bold">
-                <span>File Grievance Now</span>
-                <span className="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">
-                  arrow_forward
-                </span>
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-teal-700">
+                <span>File Grievance</span>
+                <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
               </div>
             </Link>
           ))}
         </div>
       </div>
 
-      {/* Statutory Guarantee Box */}
-      <div className="p-6 rounded-xl bg-surface-container-low border border-outline-variant/40 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-2xl">verified_user</span>
-          </div>
-          <div>
-            <h4 className="font-headline font-bold text-on-surface text-label-lg">
-              Statutory Redressal Guarantee & Anti-Delay Penalty
-            </h4>
-            <p className="font-body text-body-sm text-secondary mt-0.5">
-              Under Section 8 of the Karnataka Guarantee of Services Act, overdue grievances trigger automatic escalation to District Magistrates with daily officer delay penalties.
-            </p>
-          </div>
+      {/* =================================================================== */}
+      {/* 5. FREQUENTLY ASKED QUESTIONS (FAQ ACCORDION) */}
+      {/* =================================================================== */}
+      <div className="bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+        <div>
+          <span className="text-xs font-bold text-teal-700 uppercase tracking-wider font-mono">
+            Knowledge Base
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold font-headline text-slate-900 mt-1">
+            {lang === 'kn' ? 'ಸಾಮಾನ್ಯವಾಗಿ ಕೇಳಲಾಗುವ ಪ್ರಶ್ನೆಗಳು (FAQ)' : 'Frequently Asked Questions'}
+          </h2>
+          <p className="text-slate-600 text-sm mt-1">
+            Answers to common queries regarding tracking, statutory deadlines, reopenings, and grievance rights.
+          </p>
         </div>
 
-        <Link
-          to="/citizen/track"
-          className="px-4 py-2.5 rounded-lg bg-surface-container-lowest border border-outline-variant/50 hover:bg-surface-container text-on-surface font-body text-label-md font-semibold transition-colors shrink-0 shadow-sm"
-        >
-          Verify Pending Ticket
-        </Link>
+        <div className="divide-y divide-slate-200 border-y border-slate-200">
+          {faqs.map((faq, idx) => {
+            const isOpen = openFaqIndex === idx;
+            return (
+              <div key={idx} className="py-4">
+                <button
+                  type="button"
+                  onClick={() => setOpenFaqIndex(isOpen ? -1 : idx)}
+                  className="w-full text-left flex items-center justify-between gap-4 font-bold text-slate-900 text-sm sm:text-base hover:text-teal-700 transition-colors"
+                >
+                  <span>{lang === 'kn' ? faq.qKn : faq.qEn}</span>
+                  <span className="material-symbols-outlined text-slate-400 shrink-0">
+                    {isOpen ? 'expand_less' : 'expand_more'}
+                  </span>
+                </button>
+                {isOpen && (
+                  <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed pr-6 animate-in fade-in">
+                    {lang === 'kn' ? faq.aKn : faq.aEn}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* =================================================================== */}
+      {/* 6. EMERGENCY HELPLINES & CONTACT INFORMATION */}
+      {/* =================================================================== */}
+      <div className="bg-slate-900 text-white p-6 sm:p-10 rounded-3xl shadow-lg border border-slate-800 space-y-6">
+        <div>
+          <span className="text-xs font-bold text-teal-400 uppercase tracking-wider font-mono">
+            Emergency Contacts
+          </span>
+          <h2 className="text-2xl font-bold font-headline text-white mt-1">
+            {lang === 'kn' ? 'ಸಂಪರ್ಕ ಮತ್ತು ಸಹಾಯವಾಣಿ ಸಂಖ್ಯೆಗಳು' : 'Contact Information & 24x7 Helplines'}
+          </h2>
+          <p className="text-slate-400 text-sm mt-0.5">
+            If your civic issue represents an immediate physical hazard or health crisis, contact emergency helplines directly.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {helplines.map((h, i) => (
+            <div key={i} className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700 flex flex-col justify-between">
+              <div>
+                <div className="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-300 flex items-center justify-center mb-2">
+                  <span className="material-symbols-outlined text-lg">{h.icon}</span>
+                </div>
+                <p className="text-xs font-bold text-slate-200">{h.name}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{h.hours}</p>
+              </div>
+              <p className="text-lg font-mono font-extrabold text-teal-300 mt-3">{h.number}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 };
 
+export default CitizenHome;

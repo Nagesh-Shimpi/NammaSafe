@@ -1,0 +1,72 @@
+// Initial Feedback Records for Resolved Grievances
+export const INITIAL_FEEDBACK_RECORDS = [
+  {
+    id: 'FB-2026-001',
+    complaintId: 'RTK-2026-000030',
+    legacyToken: null,
+    citizenName: 'Sunil Mehta',
+    citizenPhone: '+91 98402 11928',
+    overallRating: 5,
+    qualityRating: 5,
+    responsivenessRating: 5,
+    timelinessRating: 4,
+    category: 'Exemplary Service',
+    comments: 'Pipeline burst repair was executed on the same day. Quality of drinking water tested clear by the junior engineer on site.',
+    isAnonymous: false,
+    createdAt: '2026-11-08 16:45',
+    departmentId: 'dept-2',
+    departmentName: 'Ministry of Jal Shakti (Water Supply)'
+  },
+  {
+    id: 'FB-2026-002',
+    complaintId: 'RTK-2026-000031',
+    legacyToken: null,
+    citizenName: 'Pooja Hegde',
+    citizenPhone: '+91 98801 44520',
+    overallRating: 4,
+    qualityRating: 4,
+    responsivenessRating: 4,
+    timelinessRating: 5,
+    category: 'Satisfactory',
+    comments: 'Asphalt patching of Ring Road crater completed before evening peak traffic. Smooth ride restored.',
+    isAnonymous: false,
+    createdAt: '2026-11-08 18:20',
+    departmentId: 'dept-1',
+    departmentName: 'Ministry of Road Transport & Highways'
+  },
+  {
+    id: 'FB-2026-003',
+    complaintId: 'RTK-2026-000032',
+    legacyToken: null,
+    citizenName: 'Ramesh Gowda',
+    citizenPhone: '+91 94481 22319',
+    overallRating: 5,
+    qualityRating: 5,
+    responsivenessRating: 5,
+    timelinessRating: 5,
+    category: 'Exemplary Service',
+    comments: 'Replacement transformer installed within 18 hours. Rapid action prevented agricultural harvest loss.',
+    isAnonymous: true,
+    createdAt: '2026-11-07 19:10',
+    departmentId: 'dept-4',
+    departmentName: 'Power & Energy Distribution (BESCOM / HESCOM)'
+  },
+  {
+    id: 'FB-2026-004',
+    complaintId: 'RTK-2026-000033',
+    legacyToken: null,
+    citizenName: 'Ananya Deshmukh',
+    citizenPhone: '+91 97412 88901',
+    overallRating: 3,
+    qualityRating: 3,
+    responsivenessRating: 4,
+    timelinessRating: 3,
+    category: 'Needs Improvement',
+    comments: 'Public urinal was unclogged, but daily waste collection in the area remains irregular. Need permanent sanitation patrol.',
+    isAnonymous: false,
+    createdAt: '2026-11-06 11:30',
+    departmentId: 'dept-3',
+    departmentName: 'Urban Development & Municipal Corp (BBMP)'
+  }
+];
+

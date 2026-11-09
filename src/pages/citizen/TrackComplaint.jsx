@@ -1,450 +1,1234 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useComplaints } from '../../context/ComplaintContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { StatusBadge } from '../../components/common/StatusBadge';
+import { PriorityBadge } from '../../components/common/PriorityBadge';
 
 export const TrackComplaint = () => {
-  const { complaints, verifyResolution } = useComplaints();
-  const { t, lang } = useLanguage();
+  const {
+    complaints,
+    verifyCitizenAccess,
+    getCitizenComplaints,
+    submitCitizenResponse,
+    acceptResolution,
+    requestFurtherAction,
+    submitCitizenFeedback,
+    citizenNotifications,
+    markCitizenNotificationRead,
+    markAllCitizenNotificationsRead
+  } = useComplaints();
+
+  const { lang, t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [searchToken, setSearchToken] = useState(searchParams.get('token') || '');
-  const [selectedTicket, setSelectedTicket] = useState(null);
+  // Search Verification Form State
+  const [searchTrackingId, setSearchTrackingId] = useState(searchParams.get('token') || '');
+  const [searchMobile, setSearchMobile] = useState('');
+  const [verificationError, setVerificationError] = useState(null);
+  const [verifiedTicket, setVerifiedTicket] = useState(null);
+  const [myComplaintsList, setMyComplaintsList] = useState([]);
+  const [activeTab, setActiveTab] = useState('docket'); // 'docket', 'timeline', 'notifications', 'my_complaints'
 
-  // Verification modal state
-  const [csatRating, setCsatRating] = useState(5);
-  const [feedback, setFeedback] = useState('');
-  const [showVerifyModal, setShowVerifyModal] = useState(false);
-  const [isReopenMode, setIsReopenMode] = useState(false);
-  const [verifiedSuccess, setVerifiedSuccess] = useState(false);
+  // Additional Information Response Form State
+  const [additionalInfoText, setAdditionalInfoText] = useState('');
+  const [additionalInfoAttachments, setAdditionalInfoAttachments] = useState([]);
+  const [infoSuccessToast, setInfoSuccessToast] = useState(null);
+  const [isSubmittingInfo, setIsSubmittingInfo] = useState(false);
 
+  // Resolution Decision Modals / States
+  const [showAcceptModal, setShowAcceptModal] = useState(false);
+  const [acceptRemarks, setAcceptRemarks] = useState('');
+  const [showReopenModal, setShowReopenModal] = useState(false);
+  const [reopenCategory, setReopenCategory] = useState('Work Incomplete');
+  const [reopenDetails, setReopenDetails] = useState('');
+  const [reopenAttachments, setReopenAttachments] = useState([]);
+  const [decisionSuccessMessage, setDecisionSuccessMessage] = useState(null);
+
+  // Feedback Form State (Section 9: 4 Criteria CSAT)
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackData, setFeedbackData] = useState({
+    overallRating: 5,
+    qualityRating: 5,
+    responsivenessRating: 5,
+    timelinessRating: 5,
+    category: 'Satisfactory',
+    comments: '',
+    isAnonymous: false
+  });
+  const [feedbackSuccessToast, setFeedbackSuccessToast] = useState(null);
+
+  // My Complaints Filters & Pagination
+  const [myComplaintsQuery, setMyComplaintsQuery] = useState('');
+  const [myComplaintsStatus, setMyComplaintsStatus] = useState('ALL');
+  const [myComplaintsPage, setMyComplaintsPage] = useState(1);
+
+  // Notifications Filter
+  const [notificationFilter, setNotificationFilter] = useState('ALL');
+
+  // Pre-seed demo check if token in URL query
   useEffect(() => {
-    const token = searchParams.get('token');
-    if (token) {
-      setSearchToken(token);
-      const clean = token.toLowerCase().trim();
+    const urlToken = searchParams.get('token');
+    if (urlToken && !verifiedTicket) {
+      // Find matching complaint to pre-fill mobile for demo convenience
       const match = complaints.find(c =>
-        (c.token && c.token.toLowerCase() === clean) ||
-        (c.trackingId && c.trackingId.toLowerCase() === clean) ||
-        (c.legacyToken && c.legacyToken.toLowerCase() === clean) ||
-        (c.id && c.id.toLowerCase() === clean)
+        (c.token && c.token.toLowerCase() === urlToken.toLowerCase().trim()) ||
+        (c.trackingId && c.trackingId.toLowerCase() === urlToken.toLowerCase().trim()) ||
+        (c.legacyToken && c.legacyToken.toLowerCase() === urlToken.toLowerCase().trim()) ||
+        (c.id && c.id.toLowerCase() === urlToken.toLowerCase().trim())
       );
-      if (match) setSelectedTicket(match);
-    } else if (complaints.length > 0 && !selectedTicket) {
-      setSelectedTicket(complaints[0]);
-      setSearchToken(complaints[0].trackingId || complaints[0].token);
+      if (match) {
+        setSearchTrackingId(match.trackingId || match.token);
+        const cleanDigits = (match.citizenPhone || match.mobileNumber || '').replace(/\D/g, '');
+        setSearchMobile(cleanDigits.slice(-10));
+        // Auto-verify for URL direct links
+        setVerifiedTicket(match);
+        const userAll = getCitizenComplaints(cleanDigits.slice(-10));
+        setMyComplaintsList(userAll);
+      }
+    } else if (complaints.length > 0 && !verifiedTicket && !searchTrackingId) {
+      // Pre-seed with default demo docket for ease of evaluation
+      const first = complaints[0];
+      setSearchTrackingId(first.trackingId || first.token);
+      const cleanDigits = (first.citizenPhone || first.mobileNumber || '').replace(/\D/g, '');
+      setSearchMobile(cleanDigits.slice(-10));
     }
   }, [searchParams, complaints]);
 
-  const handleSearch = (e) => {
+  // Handle Form Tracking Submission
+  const handleTrackSubmit = (e) => {
     e.preventDefault();
-    if (!searchToken.trim()) return;
+    setVerificationError(null);
 
-    const clean = searchToken.toLowerCase().trim();
-    const match = complaints.find(c =>
-      (c.token && c.token.toLowerCase() === clean) ||
-      (c.trackingId && c.trackingId.toLowerCase() === clean) ||
-      (c.legacyToken && c.legacyToken.toLowerCase() === clean) ||
-      (c.id && c.id.toLowerCase() === clean)
-    );
-    if (match) {
-      setSelectedTicket(match);
-      setSearchParams({ token: match.trackingId || match.token });
+    const result = verifyCitizenAccess(searchTrackingId, searchMobile);
+    if (!result.success) {
+      setVerificationError(result.message);
+      setVerifiedTicket(null);
+      setMyComplaintsList([]);
     } else {
-      alert(`No grievance ticket found for "${searchToken}". Please verify token (e.g. RTK-2026-000001, GRV-2024-8841)`);
+      setVerifiedTicket(result.ticket);
+      setSearchParams({ token: result.ticket.trackingId || result.ticket.token });
+      const userAll = getCitizenComplaints(searchMobile);
+      setMyComplaintsList(userAll);
     }
   };
 
-  const handleVerifySubmit = (e) => {
-    e.preventDefault();
-    if (!selectedTicket) return;
-    verifyResolution(selectedTicket.token, csatRating, feedback, isReopenMode);
-    setShowVerifyModal(false);
-    setVerifiedSuccess(true);
-    setTimeout(() => setVerifiedSuccess(false), 5000);
+  // Quick Demo Autofill Helper
+  const handleAutofillDemo = (docketToken, mobile) => {
+    setSearchTrackingId(docketToken);
+    setSearchMobile(mobile);
+    setVerificationError(null);
+    const result = verifyCitizenAccess(docketToken, mobile);
+    if (result.success) {
+      setVerifiedTicket(result.ticket);
+      setSearchParams({ token: result.ticket.trackingId || result.ticket.token });
+      const userAll = getCitizenComplaints(mobile);
+      setMyComplaintsList(userAll);
+    }
   };
 
-  // Lifecycle steps for timeline
-  const lifecycleSteps = [
-    { key: 'SUBMITTED', label: '1. Registered' },
-    { key: 'ASSIGNED', label: '2. Auto-Triage' },
-    { key: 'IN_PROGRESS', label: '3. Field Inspection' },
-    { key: 'ACTION_TAKEN', label: '4. Action Executed' },
-    { key: 'RESOLVED', label: '5. Citizen Verified' }
+  // Submit Supplementary Information
+  const handleSubmitAdditionalInfo = (e) => {
+    e.preventDefault();
+    if (!additionalInfoText.trim()) return;
+
+    setIsSubmittingInfo(true);
+    setTimeout(() => {
+      const res = submitCitizenResponse(
+        verifiedTicket.trackingId || verifiedTicket.token,
+        additionalInfoText,
+        additionalInfoAttachments
+      );
+      if (res.success) {
+        setVerifiedTicket(res.ticket);
+        setInfoSuccessToast('Supplementary evidence successfully delivered to scrutiny officer!');
+        setAdditionalInfoText('');
+        setAdditionalInfoAttachments([]);
+        setTimeout(() => setInfoSuccessToast(null), 4000);
+      }
+      setIsSubmittingInfo(false);
+    }, 600);
+  };
+
+  // Accept Resolution
+  const handleConfirmAccept = () => {
+    const res = acceptResolution(verifiedTicket.trackingId || verifiedTicket.token, acceptRemarks);
+    if (res.success) {
+      setVerifiedTicket(res.ticket);
+      setShowAcceptModal(false);
+      setDecisionSuccessMessage('Thank you! Resolution has been accepted and docket is officially closed.');
+      setTimeout(() => {
+        setDecisionSuccessMessage(null);
+        setShowFeedbackModal(true);
+      }, 1800);
+    }
+  };
+
+  // Request Further Action (Reopen)
+  const handleConfirmReopen = () => {
+    if (!reopenDetails.trim()) {
+      alert('Please describe why the resolution was unsatisfactory.');
+      return;
+    }
+    const res = requestFurtherAction(
+      verifiedTicket.trackingId || verifiedTicket.token,
+      reopenCategory,
+      reopenDetails,
+      reopenAttachments
+    );
+    if (res.success) {
+      setVerifiedTicket(res.ticket);
+      setShowReopenModal(false);
+      setDecisionSuccessMessage(`Grievance #${verifiedTicket.trackingId || verifiedTicket.token} reopened for re-inspection.`);
+      setReopenDetails('');
+      setReopenAttachments([]);
+      setTimeout(() => setDecisionSuccessMessage(null), 3500);
+    }
+  };
+
+  // Submit Feedback
+  const handleSaveFeedback = (e) => {
+    e.preventDefault();
+    const res = submitCitizenFeedback(verifiedTicket.trackingId || verifiedTicket.token, feedbackData);
+    if (!res.success) {
+      alert(res.message);
+      return;
+    }
+    setShowFeedbackModal(false);
+    setFeedbackSuccessToast('Thank you! Your feedback has been delivered to departmental supervisors.');
+    setTimeout(() => setFeedbackSuccessToast(null), 4000);
+  };
+
+  // Citizen-specific notifications for this docket/mobile
+  const relevantNotifications = citizenNotifications.filter(n => {
+    const matchDocket = n.complaintId === (verifiedTicket?.trackingId || verifiedTicket?.token);
+    const cleanDigits = (searchMobile || '').replace(/\D/g, '');
+    const matchMobile = cleanDigits && n.mobileNumber?.endsWith(cleanDigits);
+    const matchesCategory = notificationFilter === 'ALL' || n.category === notificationFilter;
+    return (matchDocket || matchMobile) && matchesCategory;
+  });
+
+  // Lifecycle Step Index
+  const getLifecycleIndex = (status) => {
+    switch (status) {
+      case 'DRAFT': return 0;
+      case 'NEWLY_REGISTERED': return 1;
+      case 'PENDING_VERIFICATION': return 1;
+      case 'ADDITIONAL_INFO_REQUIRED': return 1;
+      case 'VERIFIED': return 2;
+      case 'ASSIGNED': return 3;
+      case 'IN_PROGRESS': return 4;
+      case 'PENDING_CITIZEN_RESPONSE': return 4;
+      case 'UNDER_REVIEW': return 4;
+      case 'ACTION_TAKEN': return 4;
+      case 'RESOLVED': return 5;
+      case 'CLOSED': return 6;
+      case 'REOPENED': return 4;
+      case 'REJECTED': return 1;
+      default: return 3;
+    }
+  };
+
+  const lifecycleStages = [
+    { label: 'Registered', icon: 'edit_note' },
+    { label: 'Verification', icon: 'fact_check' },
+    { label: 'Verified', icon: 'verified' },
+    { label: 'Cadre Assigned', icon: 'person_pin' },
+    { label: 'In Progress', icon: 'engineering' },
+    { label: 'Resolution Ready', icon: 'task_alt' },
+    { label: 'Citizen Closed', icon: 'lock' }
   ];
 
-  const getStepIndex = (status) => {
-    if (status === 'SUBMITTED') return 0;
-    if (status === 'ASSIGNED') return 1;
-    if (status === 'IN_PROGRESS' || status === 'UNDER_REVIEW' || status === 'OVERDUE') return 2;
-    if (status === 'ACTION_TAKEN') return 3;
-    if (status === 'RESOLVED' || status === 'CLOSED') return 4;
-    return 2;
-  };
-
   return (
-    <div className="max-w-5xl mx-auto py-4 flex flex-col gap-8">
-      {/* Search Header Banner */}
-      <div className="bg-surface-container-lowest p-6 sm:p-8 rounded-2xl shadow-sm border border-outline-variant/30 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex-1">
-          <span className="font-mono text-xs uppercase font-bold text-primary tracking-wider">
-            Public Redressal Telemetry Gate
-          </span>
-          <h1 className="font-headline text-headline-lg font-bold text-on-surface mt-1">
-            {lang === 'kn' ? 'ದೂರು ಟ್ರ್ಯಾಕಿಂಗ್ ಮತ್ತು ಪರಿಶೀಲನೆ' : 'Live Complaint Tracking & Resolution Verification'}
-          </h1>
-          <p className="font-body text-body-sm text-secondary mt-1">
-            Enter your unique grievance token number to inspect real-time departmental audit logs and statutory SLA deadlines.
-          </p>
+    <div className="max-w-5xl mx-auto py-6 space-y-8">
+      {/* Toast Notifications */}
+      {infoSuccessToast && (
+        <div className="fixed top-5 right-5 z-50 bg-teal-900 text-white px-5 py-3 rounded-xl shadow-xl border border-teal-700 flex items-center gap-2 animate-bounce">
+          <span className="material-symbols-outlined text-teal-300">task_alt</span>
+          <span className="text-sm font-semibold">{infoSuccessToast}</span>
+        </div>
+      )}
+
+      {decisionSuccessMessage && (
+        <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2 animate-bounce">
+          <span className="material-symbols-outlined text-teal-400">check_circle</span>
+          <span className="text-sm font-semibold">{decisionSuccessMessage}</span>
+        </div>
+      )}
+
+      {feedbackSuccessToast && (
+        <div className="fixed top-5 right-5 z-50 bg-emerald-900 text-white px-5 py-3 rounded-xl shadow-xl border border-emerald-700 flex items-center gap-2 animate-bounce">
+          <span className="material-symbols-outlined text-emerald-300">reviews</span>
+          <span className="text-sm font-semibold">{feedbackSuccessToast}</span>
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* 1. TRACKING ACCESS VERIFICATION GATEWAY (Section 3) */}
+      {/* =================================================================== */}
+      <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-800 text-[11px] font-mono font-bold uppercase">
+                Citizen Identity Gate
+              </span>
+              <span className="text-xs text-slate-500">Karnataka Sakala Citizen Portal</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold font-headline text-slate-900 mt-1">
+              {lang === 'kn' ? 'ದೂರು ಟ್ರ್ಯಾಕಿಂಗ್ ಮತ್ತು ಸ್ಥಿತಿ ಪರಿಶೀಲನೆ' : 'Live Grievance Tracking & Verification'}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
+              Enter your unique tracking token and your registered 10-digit mobile number to inspect authenticated departmental audit logs.
+            </p>
+          </div>
+
+          <Link
+            to="/citizen/register"
+            className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center gap-1.5 self-start sm:self-auto"
+          >
+            <span className="material-symbols-outlined text-sm">add_circle</span>
+            <span>File New Grievance</span>
+          </Link>
         </div>
 
-        {/* Search input form */}
-        <form onSubmit={handleSearch} className="flex items-center gap-2 w-full md:w-auto">
-          <div className="relative flex-1 md:w-72">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">
-              search
+        {/* Verification Form */}
+        <form onSubmit={handleTrackSubmit} className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2">
+          {/* Tracking ID Input */}
+          <div className="sm:col-span-5 relative">
+            <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
+              qr_code_2
             </span>
             <input
               type="text"
               required
-              placeholder="e.g. GRV-2024-8841"
-              value={searchToken}
-              onChange={(e) => setSearchToken(e.target.value)}
-              className="w-full h-11 pl-10 pr-3 rounded-xl bg-surface-container-low border border-outline-variant/50 focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 outline-none text-body-md font-mono uppercase font-bold transition-all"
+              placeholder="Tracking ID (e.g. RTK-2026-000001)"
+              value={searchTrackingId}
+              onChange={(e) => setSearchTrackingId(e.target.value)}
+              className="w-full h-11 pl-10 pr-3 rounded-xl border border-slate-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 outline-none text-xs font-mono font-bold uppercase transition-all"
             />
           </div>
-          <button
-            type="submit"
-            className="h-11 px-5 rounded-xl bg-primary text-on-primary font-headline text-label-md font-bold shadow-md hover:bg-primary-container transition-all"
-          >
-            Track
-          </button>
+
+          {/* Registered Mobile Number Input */}
+          <div className="sm:col-span-4 relative">
+            <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
+              phone_android
+            </span>
+            <input
+              type="tel"
+              required
+              maxLength={10}
+              placeholder="Registered 10-Digit Mobile"
+              value={searchMobile}
+              onChange={(e) => setSearchMobile(e.target.value)}
+              className="w-full h-11 pl-10 pr-3 rounded-xl border border-slate-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 outline-none text-xs font-mono font-semibold transition-all"
+            />
+          </div>
+
+          {/* Track Button */}
+          <div className="sm:col-span-3">
+            <button
+              type="submit"
+              className="w-full h-11 px-5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-headline font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-base">search</span>
+              <span>Verify & Track</span>
+            </button>
+          </div>
         </form>
+
+        {/* Quick Demo Pre-fill Pills */}
+        <div className="flex flex-wrap items-center gap-2 pt-2 text-xs text-slate-500">
+          <span className="font-bold font-mono text-[11px] text-slate-600">Quick Demo Credentials:</span>
+          <button
+            type="button"
+            onClick={() => handleAutofillDemo('RTK-2026-000001', '9840211928')}
+            className="px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 font-mono text-[11px] font-bold border border-teal-200 transition-all"
+          >
+            RTK-2026-000001 (In Progress)
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAutofillDemo('RTK-2026-000005', '9900344129')}
+            className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-mono text-[11px] font-bold border border-amber-200 transition-all"
+          >
+            RTK-2026-000005 (Info Needed)
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAutofillDemo('RTK-2026-000030', '9840211928')}
+            className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200 transition-all"
+          >
+            RTK-2026-000030 (Resolved)
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAutofillDemo('RTK-2026-000036', '9840211928')}
+            className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 font-mono text-[11px] font-bold border border-indigo-200 transition-all"
+          >
+            RTK-2026-000036 (Reopened)
+          </button>
+        </div>
+
+        {/* Identity Verification Error Alert */}
+        {verificationError && (
+          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 flex items-start gap-3 animate-in fade-in">
+            <span className="material-symbols-outlined text-rose-600 text-xl shrink-0 mt-0.5">error</span>
+            <div className="text-xs">
+              <p className="font-bold text-sm">Identity Verification Notice</p>
+              <p className="mt-0.5">{verificationError}</p>
+              <p className="text-[11px] text-rose-700 mt-1">
+                Please verify that the 10-digit mobile number matches the exact phone provided during complaint registration.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {verifiedSuccess && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 flex items-center gap-3">
-          <span className="material-symbols-outlined text-emerald-600 text-2xl">verified</span>
-          <p className="font-body text-body-md font-semibold">
-            Thank you! Your citizen resolution feedback and CSAT rating have been recorded in the departmental audit gazette.
-          </p>
-        </div>
-      )}
+      {/* If Ticket is Verified, Display the Citizen Experience Tabs */}
+      {verifiedTicket && (
+        <div className="space-y-6 animate-in fade-in">
+          {/* Navigation Sub-Tabs */}
+          <div className="flex items-center gap-2 border-b border-slate-200 pb-1 overflow-x-auto no-scrollbar text-xs font-bold">
+            <button
+              onClick={() => setActiveTab('docket')}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5 ${
+                activeTab === 'docket'
+                  ? 'bg-teal-700 text-white shadow-sm'
+                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              }`}
+            >
+              <span className="material-symbols-outlined text-sm">assignment</span>
+              <span>Grievance Dossier</span>
+            </button>
 
-      {/* Selected Ticket Dashboard */}
-      {selectedTicket && (
-        <div className="flex flex-col gap-6">
-          {/* Ticket Header & Status Pill Bar */}
-          <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-3">
-                <span className="font-headline text-2xl font-bold font-mono text-primary">
-                  #{selectedTicket.token}
-                </span>
-                <StatusBadge status={selectedTicket.status} />
-                {selectedTicket.escalationTier !== 'NONE' && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-error text-on-error font-mono text-[11px] font-bold animate-pulse">
-                    {selectedTicket.escalationTier} ESCALATED
-                  </span>
-                )}
-              </div>
-              <h2 className="font-headline text-headline-sm font-bold text-on-surface mt-1">
-                {lang === 'kn' && selectedTicket.titleKn ? selectedTicket.titleKn : selectedTicket.title}
-              </h2>
-              <span className="font-body text-body-sm text-secondary">
-                {selectedTicket.departmentName} · {selectedTicket.ward}, {selectedTicket.district}
-              </span>
-            </div>
+            <button
+              onClick={() => setActiveTab('timeline')}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5 ${
+                activeTab === 'timeline'
+                  ? 'bg-teal-700 text-white shadow-sm'
+                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              }`}
+            >
+              <span className="material-symbols-outlined text-sm">timeline</span>
+              <span>Activity Timeline</span>
+            </button>
 
-            {/* SLA Timer Pill */}
-            <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30 flex flex-col items-end">
-              <span className="font-mono text-[11px] uppercase text-secondary font-bold">
-                Statutory SLA Window
-              </span>
-              <div
-                className={`font-mono text-lg font-bold mt-0.5 ${
-                  selectedTicket.hoursRemaining < 0
-                    ? 'text-error animate-pulse'
-                    : selectedTicket.hoursRemaining <= 4
-                    ? 'text-amber-600'
-                    : 'text-primary'
-                }`}
-              >
-                {selectedTicket.hoursRemaining < 0
-                  ? `Overdue by ${Math.abs(selectedTicket.hoursRemaining)}h`
-                  : `${selectedTicket.hoursRemaining} Hours Remaining`}
-              </div>
-              <span className="text-[11px] text-secondary font-mono">
-                Deadline: {new Date(selectedTicket.slaDeadline).toLocaleDateString()}
-              </span>
-            </div>
+            <button
+              onClick={() => setActiveTab('notifications')}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5 relative ${
+                activeTab === 'notifications'
+                  ? 'bg-teal-700 text-white shadow-sm'
+                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              }`}
+            >
+              <span className="material-symbols-outlined text-sm">notifications</span>
+              <span>Notifications</span>
+              {relevantNotifications.some(n => !n.read) && (
+                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('my_complaints')}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5 ${
+                activeTab === 'my_complaints'
+                  ? 'bg-teal-700 text-white shadow-sm'
+                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              }`}
+            >
+              <span className="material-symbols-outlined text-sm">folder_shared</span>
+              <span>My Complaints ({myComplaintsList.length})</span>
+            </button>
           </div>
 
-          {/* Visual Lifecycle Stepper */}
-          <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/30">
-            <h3 className="font-headline font-bold text-on-surface text-label-lg mb-6">
-              Resolution Cadence Milestones
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 relative">
-              {lifecycleSteps.map((s, idx) => {
-                const currentIdx = getStepIndex(selectedTicket.status);
-                const isPassed = idx <= currentIdx;
-                const isCurrent = idx === currentIdx;
-
-                return (
-                  <div
-                    key={s.key}
-                    className={`p-3.5 rounded-xl border flex flex-col justify-between transition-all ${
-                      isCurrent
-                        ? 'border-primary bg-primary/10 shadow-sm'
-                        : isPassed
-                        ? 'border-emerald-300 bg-emerald-50/50'
-                        : 'border-outline-variant/30 bg-surface-container-low/50 opacity-60'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-mono text-[11px] font-bold text-secondary">Step {idx + 1}</span>
-                      <span
-                        className={`material-symbols-outlined text-base ${
-                          isPassed ? 'text-emerald-600' : 'text-outline'
-                        }`}
-                      >
-                        {isPassed ? 'check_circle' : 'radio_button_unchecked'}
-                      </span>
-                    </div>
-                    <span
-                      className={`font-body text-body-sm font-semibold ${
-                        isCurrent ? 'text-primary' : isPassed ? 'text-emerald-900' : 'text-secondary'
-                      }`}
-                    >
-                      {s.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Two-Column Details: Nodal Officer & Actions Ledger */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left: Officer & Citizen Card (4 cols) */}
-            <div className="lg:col-span-4 flex flex-col gap-6">
-              {/* Assigned Officer Card */}
-              <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/30 flex flex-col gap-4">
-                <span className="font-mono text-[11px] uppercase font-bold text-secondary">
-                  Designated Nodal Officer
-                </span>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold font-mono text-lg">
-                    {selectedTicket.assignedOfficer?.name?.slice(0, 2).toUpperCase() || 'OFF'}
-                  </div>
+          {/* =============================================================== */}
+          {/* TAB 1: DOCKET DETAILS, PROGRESS STEPPER & ACTIONS */}
+          {/* =============================================================== */}
+          {activeTab === 'docket' && (
+            <div className="space-y-6">
+              {/* Docket Status Banner */}
+              <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 space-y-6">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-5">
                   <div>
-                    <h4 className="font-headline font-bold text-on-surface text-label-lg">
-                      {selectedTicket.assignedOfficer?.name}
-                    </h4>
-                    <span className="text-secondary font-body text-body-sm block">
-                      {selectedTicket.assignedOfficer?.designation}
-                    </span>
-                    <span className="font-mono text-[11px] text-primary font-semibold">
-                      Badge: {selectedTicket.assignedOfficer?.badge}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono font-bold text-teal-800">
+                        #{verifiedTicket.trackingId || verifiedTicket.token}
+                      </span>
+                      <StatusBadge status={verifiedTicket.status} />
+                      <PriorityBadge priority={verifiedTicket.priority} />
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-bold font-headline text-slate-900 mt-1">
+                      {verifiedTicket.title}
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Registered on {verifiedTicket.createdAt || verifiedTicket.regDate} · {verifiedTicket.category} · {verifiedTicket.subcategory}
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Expected Follow-Up Target</span>
+                    <span className="text-sm font-mono font-bold text-slate-800">
+                      {verifiedTicket.followUpDeadline || verifiedTicket.slaDeadline?.slice(0, 10) || 'Within 48 Hours'}
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-outline-variant/20 flex flex-col gap-2 font-body text-body-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-secondary">Official Phone:</span>
-                    <span className="font-mono font-medium text-on-surface">{selectedTicket.assignedOfficer?.mobile}</span>
+                {/* Visual Lifecycle Stepper (Section 4) */}
+                <div className="py-2">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-4">
+                    Grievance Lifecycle Progression
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                    {lifecycleStages.map((stage, idx) => {
+                      const curIdx = getLifecycleIndex(verifiedTicket.status);
+                      const isComplete = idx < curIdx;
+                      const isCurrent = idx === curIdx;
+
+                      return (
+                        <div
+                          key={idx}
+                          className={`p-2.5 rounded-xl border flex flex-col items-center text-center transition-all ${
+                            isCurrent
+                              ? 'bg-teal-50 border-teal-500 ring-2 ring-teal-500/20 text-teal-900 font-bold'
+                              : isComplete
+                              ? 'bg-slate-50 border-slate-200 text-slate-700'
+                              : 'bg-white border-dashed border-slate-200 text-slate-400 opacity-60'
+                          }`}
+                        >
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs mb-1.5 ${
+                            isComplete
+                              ? 'bg-teal-600 text-white'
+                              : isCurrent
+                              ? 'bg-teal-700 text-white animate-pulse'
+                              : 'bg-slate-100 text-slate-400'
+                          }`}>
+                            <span className="material-symbols-outlined text-sm">
+                              {isComplete ? 'done' : stage.icon}
+                            </span>
+                          </div>
+                          <span className="text-[10px] leading-tight">{stage.label}</span>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-secondary">Officer SLA Score:</span>
-                    <span className="font-mono font-bold text-emerald-700">94.2% on-time</span>
+                </div>
+
+                {/* Key Metadata Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 text-xs">
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="font-bold text-slate-400 uppercase tracking-wider block">Assigned Department</span>
+                    <p className="font-bold text-teal-900 text-sm mt-0.5">{verifiedTicket.departmentName}</p>
+                    <p className="text-slate-500 text-[11px] mt-0.5">Statutory Nodal Authority</p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="font-bold text-slate-400 uppercase tracking-wider block">Assigned Nodal Officer</span>
+                    {verifiedTicket.assignedOfficer ? (
+                      <div>
+                        <p className="font-bold text-slate-900 text-sm mt-0.5">{verifiedTicket.assignedOfficer.name}</p>
+                        <p className="text-slate-500 text-[11px] mt-0.5 font-mono">
+                          {verifiedTicket.assignedOfficer.badge || verifiedTicket.assignedOfficer.employeeId} · {verifiedTicket.assignedOfficer.designation}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-amber-800 font-semibold text-sm mt-0.5">Awaiting Cadre Allocation</p>
+                    )}
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="font-bold text-slate-400 uppercase tracking-wider block">Applicant Location</span>
+                    <p className="font-semibold text-slate-900 text-sm mt-0.5">{verifiedTicket.ward || 'Ward 14'}</p>
+                    <p className="text-slate-500 text-[11px] mt-0.5">{verifiedTicket.taluk}, {verifiedTicket.district}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Citizen Verification & CSAT Trigger */}
-              <div className="bg-gradient-to-br from-surface-container-low to-primary-container/10 p-6 rounded-2xl shadow-sm border border-outline-variant/30 flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-xl">rate_review</span>
-                  <h4 className="font-headline font-bold text-on-surface text-label-lg">
-                    Citizen Redressal Verification
-                  </h4>
+              {/* ============================================================= */}
+              {/* SECTION 6: ADDITIONAL INFORMATION REQUEST PROMPT (IF PENDING) */}
+              {/* ============================================================= */}
+              {(verifiedTicket.status === 'ADDITIONAL_INFO_REQUIRED' || verifiedTicket.additionalInfoPrompt) && (
+                <div className="bg-amber-50 border-2 border-amber-300 rounded-3xl p-6 sm:p-8 space-y-4 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-200 text-amber-900 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-xl">contact_support</span>
+                    </div>
+                    <div>
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 font-mono text-[10px] font-bold uppercase">
+                        Action Required from Citizen
+                      </span>
+                      <h3 className="text-base sm:text-lg font-bold text-amber-950 font-headline mt-1">
+                        Supplementary Information Requested by Department
+                      </h3>
+                      <p className="text-xs text-amber-800 mt-1">
+                        "{verifiedTicket.additionalInfoPrompt || 'Please upload recent photographs or site billing documents to allow field engineers to proceed with inspection.'}"
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Citizen Response Form */}
+                  <form onSubmit={handleSubmitAdditionalInfo} className="space-y-3 pt-2">
+                    <label className="block text-xs font-bold text-amber-950 uppercase tracking-wider">
+                      Your Response / Clarification *
+                    </label>
+                    <textarea
+                      rows={3}
+                      required
+                      value={additionalInfoText}
+                      onChange={(e) => setAdditionalInfoText(e.target.value)}
+                      placeholder="Type your explanation or specify clarification details..."
+                      className="w-full p-3 rounded-xl border border-amber-300 bg-white text-xs text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20"
+                    />
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                      <div className="text-xs text-amber-800 flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-sm">attach_file</span>
+                        <span>Attach supporting proof (Photo, PDF):</span>
+                        <input
+                          type="file"
+                          onChange={(e) => {
+                            const f = e.target.files[0];
+                            if (f) setAdditionalInfoAttachments([...additionalInfoAttachments, { name: f.name, size: '1.5 MB' }]);
+                          }}
+                          className="text-xs text-slate-600"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={isSubmittingInfo}
+                        className="px-6 py-2.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+                      >
+                        {isSubmittingInfo ? (
+                          <>
+                            <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                            <span>Submitting...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="material-symbols-outlined text-sm">send</span>
+                            <span>Submit Supplementary Evidence</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
                 </div>
-                <p className="font-body text-body-sm text-secondary">
-                  If the nodal officer has addressed the issue, you can confirm satisfaction and close the ticket, or request a re-open review within 7 statutory days.
+              )}
+
+              {/* ============================================================= */}
+              {/* SECTION 8: RESOLUTION REVIEW BANNER (IF RESOLVED OR ACTION TAKEN) */}
+              {/* ============================================================= */}
+              {(verifiedTicket.status === 'RESOLVED' || verifiedTicket.status === 'ACTION_TAKEN') && (
+                <div className="bg-emerald-50 border-2 border-emerald-300 rounded-3xl p-6 sm:p-8 space-y-5 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-200 text-emerald-900 flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-xl">fact_check</span>
+                      </div>
+                      <div>
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 font-mono text-[10px] font-bold uppercase">
+                          Action Completed by Nodal Officer
+                        </span>
+                        <h3 className="text-lg font-bold text-emerald-950 font-headline mt-1">
+                          Resolution Submitted: Please Inspect & Confirm
+                        </h3>
+                        <p className="text-xs text-emerald-800 mt-0.5">
+                          The assigned nodal officer has submitted physical completion report. Under Karnataka Citizen Service rules, this complaint will only close upon your verification.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-white border border-emerald-200 text-xs space-y-2">
+                    <span className="font-bold text-slate-500 uppercase tracking-wider block">Departmental Closure Summary:</span>
+                    <p className="text-slate-800 font-medium">
+                      {verifiedTicket.resolutionSummary || 'Physical field rectification completed on-site by sub-divisional maintenance crew. Photo evidence and quality report verified.'}
+                    </p>
+                  </div>
+
+                  {/* Accept vs Reopen Action Buttons */}
+                  <div className="flex flex-wrap items-center gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setShowAcceptModal(true)}
+                      className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5"
+                    >
+                      <span className="material-symbols-outlined text-sm">thumb_up</span>
+                      <span>Accept Resolution & Close Ticket</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowReopenModal(true)}
+                      className="px-5 py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5"
+                    >
+                      <span className="material-symbols-outlined text-sm">replay</span>
+                      <span>Request Further Action (Reopen)</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Closed Ticket Confirmation */}
+              {verifiedTicket.status === 'CLOSED' && (
+                <div className="p-5 rounded-2xl bg-slate-100 border border-slate-300 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 text-xs text-slate-700">
+                    <span className="material-symbols-outlined text-teal-700 text-xl">task_alt</span>
+                    <div>
+                      <p className="font-bold text-sm text-slate-900">Docket Officially Closed</p>
+                      <p>Closed on {verifiedTicket.closureDate || 'recent date'} with verified citizen satisfaction.</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowFeedbackModal(true)}
+                    className="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-all shadow-sm"
+                  >
+                    View / Update Feedback
+                  </button>
+                </div>
+              )}
+
+              {/* Reopened Ticket Notice */}
+              {verifiedTicket.status === 'REOPENED' && (
+                <div className="p-5 rounded-2xl bg-indigo-50 border border-indigo-300 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 text-xs text-indigo-950">
+                    <span className="material-symbols-outlined text-indigo-700 text-xl">replay</span>
+                    <div>
+                      <p className="font-bold text-sm">Docket Reopened for Re-Inspection</p>
+                      <p className="mt-0.5">Departmental supervisor and nodal engineer have been alerted to re-inspect site.</p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-indigo-200 text-indigo-900 font-mono text-[11px] font-bold">
+                    Section 4 Active
+                  </span>
+                </div>
+              )}
+
+              {/* Full Complaint Narrative */}
+              <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 space-y-4">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Original Grievance Narrative
+                </span>
+                <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
+                  {verifiedTicket.description}
                 </p>
 
-                <div className="flex flex-col gap-2 pt-2">
-                  <button
-                    onClick={() => {
-                      setIsReopenMode(false);
-                      setShowVerifyModal(true);
-                    }}
-                    className="w-full py-2.5 rounded-xl bg-primary text-on-primary font-body text-label-sm font-bold shadow-sm hover:bg-primary-container transition-all flex items-center justify-center gap-1.5"
-                  >
-                    <span className="material-symbols-outlined text-lg">thumb_up</span>
-                    <span>Verify Resolution & Submit CSAT</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setIsReopenMode(true);
-                      setShowVerifyModal(true);
-                    }}
-                    className="w-full py-2.5 rounded-xl bg-surface-container-lowest text-error border border-error/30 hover:bg-error-container/20 font-body text-label-sm font-semibold transition-all flex items-center justify-center gap-1.5"
-                  >
-                    <span className="material-symbols-outlined text-lg">replay</span>
-                    <span>Dispute & Reopen Grievance</span>
-                  </button>
-                </div>
+                {/* Evidence Attachments */}
+                {verifiedTicket.attachments?.length > 0 && (
+                  <div className="pt-3 border-t border-slate-100 space-y-2">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                      Submitted Evidence Documents ({verifiedTicket.attachments.length})
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {verifiedTicket.attachments.map((att, i) => (
+                        <div key={i} className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 flex items-center gap-2 text-xs font-medium text-slate-700">
+                          <span className="material-symbols-outlined text-teal-700 text-base">attach_file</span>
+                          <span>{att.name}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">({att.size || '1.2 MB'})</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
+          )}
 
-            {/* Right: Immutable Action Audit History (8 cols) */}
-            <div className="lg:col-span-8 bg-surface-container-lowest p-6 sm:p-8 rounded-2xl shadow-sm border border-outline-variant/30 flex flex-col gap-6">
-              <div className="flex items-center justify-between border-b border-outline-variant/20 pb-4">
-                <div>
-                  <h3 className="font-headline text-headline-sm font-bold text-on-surface">
-                    Immutable Audit Trail & Timeline Logs
-                  </h3>
-                  <p className="font-body text-body-sm text-secondary mt-0.5">
-                    Statutory chronological record of all officer actions, automated notices, and citizen remarks
-                  </p>
-                </div>
-                <span className="px-2.5 py-1 rounded bg-surface-container font-mono text-[11px] font-bold text-secondary">
-                  {selectedTicket.actions.length} Events Logged
+          {/* =============================================================== */}
+          {/* TAB 2: CHRONOLOGICAL ACTIVITY TIMELINE (Section 5) */}
+          {/* =============================================================== */}
+          {activeTab === 'timeline' && (
+            <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 space-y-6">
+              <div>
+                <span className="text-xs font-bold text-teal-700 uppercase tracking-wider font-mono">
+                  Audit Gazette
                 </span>
+                <h3 className="text-xl font-bold font-headline text-slate-900 mt-0.5">
+                  Chronological Complaint Progression
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Complete tamper-evident log of registration, verification, field inspections, and status transitions.
+                </p>
               </div>
 
-              {/* Timeline Items */}
-              <div className="relative pl-6 sm:pl-8 flex flex-col gap-6 before:content-[''] before:absolute before:left-2.5 sm:before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-outline-variant/50">
-                {selectedTicket.actions.map((act) => (
-                  <div key={act.id} className="relative flex flex-col gap-1.5">
-                    {/* Timeline bullet */}
-                    <div
-                      className={`absolute -left-6 sm:-left-8 top-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-surface-container-lowest shadow-sm ${
-                        act.type === 'ESCALATION' || act.type === 'SHOW_CAUSE'
-                          ? 'bg-error text-white'
-                          : act.type === 'ACTION_TAKEN'
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-primary text-white'
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-[10px]">
-                        {act.type === 'ESCALATION' ? 'priority_high' : act.type === 'ACTION_TAKEN' ? 'task_alt' : 'circle'}
-                      </span>
+              <div className="relative border-l-2 border-teal-200 pl-5 ml-2 space-y-6">
+                {(verifiedTicket.actions || []).map((action, i) => (
+                  <div key={i} className="relative group">
+                    <div className="absolute -left-[27px] top-1 w-4 h-4 rounded-full bg-teal-600 border-2 border-white ring-2 ring-teal-200" />
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-900 uppercase tracking-wider">
+                          {action.type}
+                        </span>
+                        <span className="font-mono text-slate-500">{action.date}</span>
+                      </div>
+                      <p className="text-slate-700 text-sm">{action.text}</p>
+                      <p className="text-[11px] text-teal-700 font-semibold font-mono">Logged by: {action.user}</p>
                     </div>
-
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="font-headline font-bold text-on-surface text-label-md">
-                        {act.user}
-                      </span>
-                      <span className="font-mono text-xs text-secondary">
-                        {act.date}
-                      </span>
-                    </div>
-
-                    <p className="font-body text-body-md text-on-surface-variant bg-surface-container-low/60 p-3.5 rounded-xl border border-outline-variant/20 leading-relaxed">
-                      {act.text}
-                    </p>
                   </div>
                 ))}
               </div>
+            </div>
+          )}
 
-              {/* Audio Transcript / Proof callout if available */}
-              {selectedTicket.audioTranscript && (
-                <div className="p-4 rounded-xl bg-tertiary-container/15 border border-tertiary/20 flex flex-col gap-2">
-                  <div className="flex items-center gap-2 text-tertiary font-headline font-bold text-label-sm">
-                    <span className="material-symbols-outlined text-base">record_voice_over</span>
-                    <span>Citizen Audio Evidence AI Transcript</span>
-                  </div>
-                  <p className="font-body text-body-sm text-on-surface italic">
-                    "{selectedTicket.audioTranscript}"
+          {/* =============================================================== */}
+          {/* TAB 3: CITIZEN NOTIFICATIONS CENTRE (Section 7) */}
+          {/* =============================================================== */}
+          {activeTab === 'notifications' && (
+            <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div>
+                  <span className="text-xs font-bold text-teal-700 uppercase tracking-wider font-mono">
+                    Omnichannel Alert Stream
+                  </span>
+                  <h3 className="text-xl font-bold font-headline text-slate-900 mt-0.5">
+                    Citizen Notification Centre
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Simulated SMS, Email & App notifications dispatched for your grievances.
                   </p>
                 </div>
-              )}
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => markAllCitizenNotificationsRead(searchMobile)}
+                    className="px-3 py-1.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all"
+                  >
+                    Mark All as Read
+                  </button>
+                </div>
+              </div>
+
+              {/* Notification Category Filters */}
+              <div className="flex flex-wrap gap-1.5 text-xs">
+                {['ALL', 'Registration', 'Verification', 'Assignment', 'Info Request', 'Escalation', 'Resolution', 'Feedback', 'Reopened'].map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setNotificationFilter(cat)}
+                    className={`px-3 py-1 rounded-lg transition-all ${
+                      notificationFilter === cat
+                        ? 'bg-teal-700 text-white font-bold'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              {/* Notifications List */}
+              <div className="divide-y divide-slate-100 border border-slate-200 rounded-2xl overflow-hidden">
+                {relevantNotifications.length === 0 ? (
+                  <div className="p-8 text-center text-slate-500 text-xs">
+                    <span className="material-symbols-outlined text-3xl text-slate-300 block mb-1">notifications_off</span>
+                    No notifications matching this category.
+                  </div>
+                ) : (
+                  relevantNotifications.map(notif => (
+                    <div
+                      key={notif.id}
+                      onClick={() => markCitizenNotificationRead(notif.id)}
+                      className={`p-4 transition-colors flex items-start justify-between gap-4 cursor-pointer ${
+                        notif.read ? 'bg-white hover:bg-slate-50' : 'bg-teal-50/50 hover:bg-teal-50'
+                      }`}
+                    >
+                      <div className="space-y-1 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px] font-bold">
+                            {notif.category}
+                          </span>
+                          <span className="font-mono text-teal-800 font-bold">#{notif.complaintId}</span>
+                          <span className="text-slate-400 font-mono">{notif.timestamp}</span>
+                        </div>
+                        <h4 className="font-bold text-slate-900 text-sm">{notif.title}</h4>
+                        <p className="text-slate-600 leading-relaxed">{notif.message}</p>
+                      </div>
+
+                      {!notif.read && (
+                        <span className="w-2.5 h-2.5 rounded-full bg-teal-600 shrink-0 mt-1" title="Unread" />
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* =============================================================== */}
+          {/* TAB 4: MY COMPLAINTS LEDGER (Section 10) */}
+          {/* =============================================================== */}
+          {activeTab === 'my_complaints' && (
+            <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <span className="text-xs font-bold text-teal-700 uppercase tracking-wider font-mono">
+                    Citizen Dossier Hub
+                  </span>
+                  <h3 className="text-xl font-bold font-headline text-slate-900 mt-0.5">
+                    All Grievances Registered Under {searchMobile}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Switch between your complaints to monitor resolution progress across departments.
+                  </p>
+                </div>
+              </div>
+
+              {/* Complaints Table */}
+              <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                    <tr>
+                      <th className="py-3 px-4">Tracking ID</th>
+                      <th className="py-3 px-4">Subject</th>
+                      <th className="py-3 px-4">Department</th>
+                      <th className="py-3 px-4">Reg Date</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {myComplaintsList.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-slate-500">
+                          No complaints found under this phone number.
+                        </td>
+                      </tr>
+                    ) : (
+                      myComplaintsList.map(ticket => (
+                        <tr key={ticket.token} className="hover:bg-slate-50">
+                          <td className="py-3 px-4 font-mono font-bold text-teal-800">
+                            #{ticket.trackingId || ticket.token}
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-slate-800 max-w-xs truncate">
+                            {ticket.title}
+                          </td>
+                          <td className="py-3 px-4 text-slate-600">{ticket.departmentName}</td>
+                          <td className="py-3 px-4 font-mono text-slate-500">{ticket.createdAt || ticket.regDate}</td>
+                          <td className="py-3 px-4">
+                            <StatusBadge status={ticket.status} />
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <button
+                              onClick={() => {
+                                setVerifiedTicket(ticket);
+                                setActiveTab('docket');
+                                setSearchTrackingId(ticket.trackingId || ticket.token);
+                                setSearchParams({ token: ticket.trackingId || ticket.token });
+                              }}
+                              className="px-3 py-1 rounded-lg bg-teal-700 hover:bg-teal-800 text-white font-bold text-[11px]"
+                            >
+                              Track Live
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* ACCEPT RESOLUTION MODAL */}
+      {/* =================================================================== */}
+      {showAcceptModal && verifiedTicket && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full p-6 space-y-4 animate-in fade-in">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+              <span className="material-symbols-outlined text-2xl">thumb_up</span>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 font-headline">Confirm Grievance Resolution</h3>
+              <p className="text-xs text-slate-600 mt-1">
+                By accepting, you confirm that the departmental work has been inspected on-site and satisfies your grievance. The docket will officially close.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Citizen Confirmation Remarks (Optional)
+              </label>
+              <textarea
+                rows={3}
+                value={acceptRemarks}
+                onChange={(e) => setAcceptRemarks(e.target.value)}
+                placeholder="e.g. Verified water pipeline repaired and water is clear. Satisfied with officer response."
+                className="w-full p-3 rounded-xl border border-slate-300 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                onClick={() => setShowAcceptModal(false)}
+                className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmAccept}
+                className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md"
+              >
+                Accept & Proceed to Feedback
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Resolution & CSAT Verification Modal Dialog */}
-      {showVerifyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-inverse-surface/60 backdrop-blur-sm" onClick={() => setShowVerifyModal(false)} />
-          <div className="relative bg-surface-container-lowest rounded-2xl shadow-2xl p-6 sm:p-8 max-w-lg w-full z-10 border border-outline-variant/40">
-            <h3 className="font-headline text-headline-sm font-bold text-on-surface">
-              {isReopenMode ? 'Dispute & Reopen Grievance' : 'Citizen Verification & CSAT Rating'}
-            </h3>
-            <p className="font-body text-body-sm text-secondary mt-1">
-              {isReopenMode
-                ? 'Your grievance will be re-assigned to the Zonal Commissioner with priority oversight.'
-                : 'Rate your satisfaction with the resolution provided by the department.'}
-            </p>
+      {/* =================================================================== */}
+      {/* REQUEST FURTHER ACTION (REOPEN) MODAL */}
+      {/* =================================================================== */}
+      {showReopenModal && verifiedTicket && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full p-6 space-y-4 animate-in fade-in max-h-[90vh] overflow-y-auto">
+            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-800 flex items-center justify-center">
+              <span className="material-symbols-outlined text-2xl">replay</span>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 font-headline">Request Further Action (Reopen)</h3>
+              <p className="text-xs text-slate-600 mt-1">
+                Explain why the submitted resolution is incomplete or unsatisfactory. The original Tracking ID will be preserved and the ticket will be re-assigned.
+              </p>
+            </div>
 
-            <form onSubmit={handleVerifySubmit} className="mt-6 flex flex-col gap-5">
-              {!isReopenMode && (
-                <div>
-                  <label className="block font-body text-label-sm font-bold text-on-surface mb-2">
-                    Citizen Satisfaction Score (1 to 5 Stars):
-                  </label>
-                  <div className="flex items-center gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => setCsatRating(star)}
-                        className={`p-2 rounded-xl transition-all ${
-                          csatRating >= star ? 'text-amber-500 scale-110' : 'text-outline/40'
-                        }`}
-                      >
-                        <span className="material-symbols-outlined text-3xl fill-current">star</span>
-                      </button>
-                    ))}
-                    <span className="ml-2 font-mono font-bold text-on-surface text-lg">
-                      {csatRating} / 5 Stars
-                    </span>
-                  </div>
-                </div>
-              )}
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Defect Reason Category *
+                </label>
+                <select
+                  value={reopenCategory}
+                  onChange={(e) => setReopenCategory(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl border border-slate-300 outline-none cursor-pointer"
+                >
+                  <option value="Work Incomplete">Work Incomplete / Partially Executed</option>
+                  <option value="Recurring Problem">Issue Re-emerged Within 24 Hours</option>
+                  <option value="Substandard Material Quality">Substandard Materials / Shoddy Repair</option>
+                  <option value="Wrong Location Addressed">Wrong Street / Culvert Addressed</option>
+                  <option value="False Resolution Claim">False Completion Claim by Contractor</option>
+                </select>
+              </div>
 
               <div>
-                <label className="block font-body text-label-sm font-bold text-on-surface mb-1.5">
-                  {isReopenMode ? 'Reason for Reopening *' : 'Citizen Feedback Comments'}
+                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Description of Grievance Defect *
                 </label>
                 <textarea
-                  required={isReopenMode}
                   rows={3}
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                  placeholder={
-                    isReopenMode
-                      ? 'e.g. The leak was only temporarily covered with mud; water is still brown...'
-                      : 'e.g. Fixed promptly within 24 hours. The inspection engineer was courteous.'
-                  }
-                  className="w-full p-3 rounded-lg bg-surface-container-low border border-outline-variant/50 focus:border-primary outline-none font-body text-body-sm"
+                  required
+                  value={reopenDetails}
+                  onChange={(e) => setReopenDetails(e.target.value)}
+                  placeholder="Detail what remains unfinished or defective on the ground..."
+                  className="w-full p-3 rounded-xl border border-slate-300 text-xs outline-none focus:ring-2 focus:ring-rose-500/20"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3">
+              <div>
+                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Attach Evidence of Incomplete Work (Photo)
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) => {
+                    const f = e.target.files[0];
+                    if (f) setReopenAttachments([...reopenAttachments, { name: f.name, size: '2.1 MB' }]);
+                  }}
+                  className="text-xs text-slate-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                onClick={() => setShowReopenModal(false)}
+                className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmReopen}
+                className="px-5 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs shadow-md"
+              >
+                Submit Reopening Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* 4-CRITERIA CSAT CITIZEN FEEDBACK MODAL (Section 9) */}
+      {/* =================================================================== */}
+      {showFeedbackModal && verifiedTicket && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-lg w-full p-6 space-y-4 animate-in fade-in max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center">
+                <span className="material-symbols-outlined text-2xl">star</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 font-headline">Citizen Redressal Feedback</h3>
+                <p className="text-xs text-slate-500">Docket #{verifiedTicket.trackingId || verifiedTicket.token}</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600">
+              Your feedback directly evaluates department accountability and officer performance scorecards under the Karnataka Sakala Mission.
+            </p>
+
+            <form onSubmit={handleSaveFeedback} className="space-y-4 text-xs">
+              {/* 1. Overall Satisfaction */}
+              <div>
+                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  1. Overall Satisfaction Rating: ({feedbackData.overallRating}/5 Stars)
+                </label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setFeedbackData({ ...feedbackData, overallRating: star })}
+                      className="p-1 focus:outline-none"
+                    >
+                      <span className={`material-symbols-outlined text-2xl ${
+                        star <= feedbackData.overallRating ? 'text-amber-500 fill-current' : 'text-slate-300'
+                      }`}>
+                        star
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 2. Resolution Quality */}
+              <div>
+                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  2. Resolution Quality Rating: ({feedbackData.qualityRating}/5 Stars)
+                </label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setFeedbackData({ ...feedbackData, qualityRating: star })}
+                      className="p-1 focus:outline-none"
+                    >
+                      <span className={`material-symbols-outlined text-xl ${
+                        star <= feedbackData.qualityRating ? 'text-amber-500 fill-current' : 'text-slate-300'
+                      }`}>
+                        star
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. Officer Responsiveness */}
+              <div>
+                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  3. Officer Responsiveness Rating: ({feedbackData.responsivenessRating}/5 Stars)
+                </label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setFeedbackData({ ...feedbackData, responsivenessRating: star })}
+                      className="p-1 focus:outline-none"
+                    >
+                      <span className={`material-symbols-outlined text-xl ${
+                        star <= feedbackData.responsivenessRating ? 'text-amber-500 fill-current' : 'text-slate-300'
+                      }`}>
+                        star
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 4. Timeliness Rating */}
+              <div>
+                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  4. Redressal Turnaround & Timeliness: ({feedbackData.timelinessRating}/5 Stars)
+                </label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setFeedbackData({ ...feedbackData, timelinessRating: star })}
+                      className="p-1 focus:outline-none"
+                    >
+                      <span className={`material-symbols-outlined text-xl ${
+                        star <= feedbackData.timelinessRating ? 'text-amber-500 fill-current' : 'text-slate-300'
+                      }`}>
+                        star
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Feedback Category */}
+              <div>
+                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Feedback Category
+                </label>
+                <select
+                  value={feedbackData.category}
+                  onChange={(e) => setFeedbackData({ ...feedbackData, category: e.target.value })}
+                  className="w-full h-10 px-3 rounded-xl border border-slate-300 outline-none"
+                >
+                  <option value="Exemplary Service">Exemplary Service · Rapid Redressal</option>
+                  <option value="Satisfactory">Satisfactory Redressal</option>
+                  <option value="Delayed Resolution">Delayed Resolution (Crossed SLA)</option>
+                  <option value="Needs Improvement">Needs Improvement in Communication</option>
+                  <option value="Critical Feedback">Critical Feedback for Ministry Review</option>
+                </select>
+              </div>
+
+              {/* Written Comments */}
+              <div>
+                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Written Comments / Suggestions
+                </label>
+                <textarea
+                  rows={3}
+                  value={feedbackData.comments}
+                  onChange={(e) => setFeedbackData({ ...feedbackData, comments: e.target.value })}
+                  placeholder="Share details of your experience with the nodal officer and field team..."
+                  className="w-full p-2.5 rounded-xl border border-slate-300 text-xs outline-none focus:ring-2 focus:ring-amber-500/20"
+                />
+              </div>
+
+              {/* Anonymous Checkbox */}
+              <label className="flex items-center gap-2 pt-1 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={feedbackData.isAnonymous}
+                  onChange={(e) => setFeedbackData({ ...feedbackData, isAnonymous: e.target.checked })}
+                  className="w-4 h-4 rounded border-slate-300 text-teal-700 focus:ring-teal-600"
+                />
+                <span className="text-slate-700">Submit feedback anonymously to departmental audit desk</span>
+              </label>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => setShowVerifyModal(false)}
-                  className="px-4 py-2.5 rounded-xl bg-surface-container text-on-surface font-body text-label-sm font-semibold hover:bg-surface-container-high transition-colors"
+                  onClick={() => setShowFeedbackModal(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50"
                 >
-                  Cancel
+                  Close
                 </button>
                 <button
                   type="submit"
-                  className={`px-6 py-2.5 rounded-xl font-headline text-label-sm font-bold shadow-md transition-all ${
-                    isReopenMode
-                      ? 'bg-error text-on-error hover:bg-error/90'
-                      : 'bg-primary text-on-primary hover:bg-primary-container'
-                  }`}
+                  className="px-6 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-md"
                 >
-                  {isReopenMode ? 'Submit Reopen Demand' : 'Confirm Resolution'}
+                  Submit Official Feedback
                 </button>
               </div>
             </form>
@@ -455,3 +1239,4 @@ export const TrackComplaint = () => {
   );
 };
 
+export default TrackComplaint;

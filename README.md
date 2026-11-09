@@ -23,12 +23,12 @@ NammaSafe unites citizen participation with administrative accountability across
 │  - 4-Section Registration│  - Cadre Capacity Gauges     │  - SLA Breach Monitoring     │
 │  - Dynamic 11 Sectors    │  - Overload Warning Triggers │  - Level 1-3 Escalations     │
 │  - GPS & File Attachment │  - 4-Step Reassignment Modal │  - Statutory Penalty Ledger  │
-├──────────────────────────┴──────────────────────────────┴──────────────────────────────┤
-│  4. Intelligent Reminder Centre                         │  5. Citizen Tracking & CSAT  │
-│  - Omnichannel Auto-Dispatch (SMS, Email, WhatsApp)     │  - Mobile Identity Gate      │
-│  - Bilingual Templates (English & ಕನ್ನಡ)                 │  - 7-Stage Visual Lifecycle  │
-│  - Failure Fallback & Retry Queues                      │  - 4-Criteria CSAT & Reopen  │
-└────────────────────────────────────────────────────────────────────────────────────────┘
+├──────────────────────────┼──────────────────────────────┼──────────────────────────────┤
+│  4. Reminder Centre      │  5. Citizen Tracking & CSAT  │  6. Resolution Audit Dossier │
+│  - Omnichannel Dispatch  │  - Mobile Identity Gate      │  - 11-Tab Dossier Inspector  │
+│  - Bilingual Templates   │  - 7-Stage Visual Lifecycle  │  - Immutable Audit Gazette   │
+│  - Fallback Retry Queue  │  - 4-Criteria CSAT & Reopen  │  - Explainable Health Scores │
+└──────────────────────────┴──────────────────────────────┴──────────────────────────────┘
 ```
 
 ---
@@ -71,6 +71,23 @@ NammaSafe unites citizen participation with administrative accountability across
   - **Structured CSAT**: 4 independent 5-star criteria (*Overall Satisfaction, Resolution Quality, Officer Responsiveness, Redressal Timeliness*), category choice, written comments, anonymous submission toggle, and duplicate prevention.
 - **"My Complaints" Citizen Ledger**: Instant overview of all past grievances registered under the verified phone number with one-click status inspection.
 
+### 6. Complaint Details & Resolution Audit
+- **Prominent Intelligence Header**: Real-time display of Tracking ID, Title, Status, Priority, Registration & Last Updated timestamps, Assigned Department, and Assigned Nodal Officer with quick action bar (*Edit Complaint, Assign/Reassign Officer, Update Status, Add Officer Action, Issue Reminder, Submit Resolution, Citizen Review, Print Gazette*).
+- **Explainable Health Indicators**: Transparent rule-based indicators for *Deadline Health (Green/Amber/Red)*, *Follow-up Health (On Track/Due Today/Overdue)*, *Escalation Risk (Low/Moderate/High/Critical)*, *Citizen Satisfaction*, and *Resolution Progress (0–100%)* with granular justifications.
+- **11-Tab Comprehensive Information Sections**:
+  - `1. Overview`: Core metadata, district/ward jurisdiction, GIS coordinates, language preference, submission channel.
+  - `2. Citizen Info`: Protected complainant details with role-based Aadhaar / PII data masking toggle.
+  - `3. Dept & Cadre`: Department SLAs, assigned nodal officer, designation, active caseload meter, and rebalancing audit records.
+  - `4. Officer Actions`: Field inspections, contractor notices, material procurements, and laboratory sampling notes with documents.
+  - `5. Reminders`: Omnichannel notification history, delivery status, and retriggering actions.
+  - `6. Escalations`: Hierarchical Level 1–3 escalation triggers and accrued statutory liability under Section 8.
+  - `7. Communications`: Comprehensive SMS, Email, and WhatsApp audit trail with gateway delivery status.
+  - `8. Resolution & CSAT`: Remediation summary, category, completion date, technical documents, citizen acceptance status, 4-criteria CSAT ratings, and reopen history.
+  - `9. Complete Timeline`: Filterable 19-event lifecycle activity ledger sorted chronologically by date and actor.
+  - `10. Audit Gazette`: Strictly append-only, tamper-evident log distinguishing certified events from simulated dispatches.
+  - `11. Document Vault`: Centralized storage for photographic evidence, PDF inspection reports, and resolution certificates.
+- **Centralized Complaint Audit Search (`/admin/complaint-audit`)**: Multi-dimensional search across tracking tokens, citizen identities, departments, nodal officers, statuses, priorities, and filing date ranges with sorting and pagination.
+
 ---
 
 ## 🛠️ Technology Stack
@@ -103,6 +120,7 @@ NammaSafe/
 │   │   ├── ComplaintContext.jsx  # Unified platform state, lifecycle methods & citizen portal API
 │   │   └── LanguageContext.jsx   # English & Kannada bilingual localization
 │   ├── data/
+│   │   ├── auditLogsData.js      # Immutable audit gazette records (Sakala compliance)
 │   │   ├── citizenNotificationsData.js # Seed citizen multi-category notification records
 │   │   ├── complaintCategories.js# 11 Government categories, subcategories & Karnataka districts
 │   │   ├── complaintsData.js     # 61+ realistic mock grievance dockets with full audit trails
@@ -114,7 +132,7 @@ NammaSafe/
 │   │   └── reminderTemplates.js  # Bilingual English/Kannada reminder notification templates
 │   ├── layouts/                  # Role-based layouts (AdminLayout, CitizenLayout, SupervisorLayout, OfficerLayout)
 │   ├── pages/
-│   │   ├── admin/                # AllComplaintsView, PendingComplaintsView, OfficerWorkloadView
+│   │   ├── admin/                # AllComplaintsView, PendingComplaintsView, OfficerWorkloadView, ComplaintAuditSearchView
 │   │   ├── citizen/              # CitizenHome, RegisterComplaint, TrackComplaint, CitizenFeedbackPage
 │   │   ├── officer/              # OfficerDashboard, AssignedComplaintsView, ComplaintDetailView
 │   │   └── supervisor/           # ReminderCentre, OverdueEscalations, SupervisorDashboardView
@@ -176,7 +194,9 @@ Switch roles easily using the top-bar profile switcher or navigate directly:
 | `/citizen/track` | Citizen | Dual identity verification gate, 7-stage lifecycle stepper, timeline, alerts & CSAT |
 | `/citizen/feedback/:id` | Citizen | Dedicated CSAT verification (4 criteria) & dispute reopening workflow |
 | `/citizen/register` | Citizen | 4-section grievance registration form with token acknowledgement |
-| `/admin/all-complaints` | Administrator | Central management ledger with 8 summary KPI cards and 9-tab dossier inspector |
+| `/admin/all-complaints` | Administrator | Central management ledger with 8 summary KPI cards and 11-tab dossier inspector |
+| `/admin/complaints/:id` | Admin / Officer / Supervisor | Comprehensive 11-tab complaint audit dossier with explainable health scores |
+| `/admin/complaint-audit` | Administrator / Supervisor | Centralized multi-dimensional audit search with filters, sorting, and pagination |
 | `/admin/pending-complaints` | Administrator | Triage & verification desk to certify, request info, or reject dockets |
 | `/admin/officer-workload` | Administrator / Supervisor | Cadre workload distribution analytics & 4-step guided nodal reassignment |
 | `/supervisor/reminder-centre`| Supervisor | Intelligent reminder centre with omnichannel dispatch & retry queue |

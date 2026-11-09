@@ -27,6 +27,7 @@ import { OfficerWorkloadView } from './pages/admin/OfficerWorkloadView';
 import { CommunicationLogsView } from './pages/admin/CommunicationLogsView';
 import { ComplaintIntelligenceView } from './pages/admin/ComplaintIntelligenceView';
 import { ResolutionVerificationView } from './pages/admin/ResolutionVerificationView';
+import { ComplaintAuditSearchView } from './pages/admin/ComplaintAuditSearchView';
 import { AnalyticsDashboard } from './pages/admin/AnalyticsDashboard';
 import { GrievanceHeatmapView } from './pages/admin/GrievanceHeatmapView';
 import { SystemSettings } from './pages/admin/SystemSettings';
@@ -89,6 +90,8 @@ export function App() {
         <Route path="reminder-centre" element={<ReminderCentre />} />
         <Route path="communication-logs" element={<CommunicationLogsView />} />
         <Route path="complaint-intelligence" element={<ComplaintIntelligenceView />} />
+        <Route path="complaint-audit" element={<ComplaintAuditSearchView />} />
+        <Route path="audit-search" element={<ComplaintAuditSearchView />} />
         <Route path="resolution-verification" element={<ResolutionVerificationView />} />
         <Route path="analytics" element={<AnalyticsDashboard />} />
         <Route path="heatmap" element={<GrievanceHeatmapView />} />
@@ -100,6 +103,8 @@ export function App() {
         <Route index element={<Navigate to="/supervisor/dashboard" replace />} />
         <Route path="dashboard" element={<SupervisorDashboardView />} />
         <Route path="team-complaints" element={<TeamComplaintsView />} />
+        <Route path="complaints/:id" element={<ComplaintDetailView />} />
+        <Route path="complaint-audit" element={<ComplaintAuditSearchView />} />
         <Route path="overdue-monitoring" element={<OverdueEscalations />} />
         <Route path="escalations" element={<OverdueEscalations />} />
         <Route path="escalation-review" element={<OverdueEscalations />} />

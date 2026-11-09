@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useComplaints } from '../../context/ComplaintContext';
 import { StatusBadge } from '../common/StatusBadge';
 import { PriorityBadge } from '../common/PriorityBadge';
@@ -50,12 +51,22 @@ export const ComplaintDetailsModal = ({ isOpen, onClose, ticket, onAssignOfficer
               </h1>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all"
-          >
-            <span className="material-symbols-outlined text-lg">close</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to={`/admin/complaints/${token}`}
+              onClick={onClose}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors shadow-sm"
+            >
+              <span>Full Audit Dossier</span>
+              <span className="material-symbols-outlined text-sm">open_in_new</span>
+            </Link>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all"
+            >
+              <span className="material-symbols-outlined text-lg">close</span>
+            </button>
+          </div>
         </div>
 
         {/* Tab Navigation Ribbon */}

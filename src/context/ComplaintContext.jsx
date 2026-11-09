@@ -14,6 +14,7 @@ import { INITIAL_COMPLAINT_HISTORY } from '../data/complaintHistory';
 import { COMPLAINT_CATEGORIES } from '../data/complaintCategories';
 import { INITIAL_FEEDBACK_RECORDS } from '../data/feedbackData';
 import { INITIAL_CITIZEN_NOTIFICATIONS } from '../data/citizenNotificationsData';
+import { INITIAL_AUDIT_LOGS } from '../data/auditLogsData';
 import { PRIORITY_CONFIG, isValidStatusTransition } from '../utils/constants';
 import { generateNextTrackingId } from '../utils/trackingIdGenerator';
 
@@ -129,6 +130,7 @@ export const ComplaintProvider = ({ children }) => {
   const [complaintHistory, setComplaintHistory] = useState(INITIAL_COMPLAINT_HISTORY);
   const [feedbackRecords, setFeedbackRecords] = useState(INITIAL_FEEDBACK_RECORDS);
   const [citizenNotifications, setCitizenNotifications] = useState(INITIAL_CITIZEN_NOTIFICATIONS);
+  const [auditLogs, setAuditLogs] = useState(INITIAL_AUDIT_LOGS);
 
   // Generate Unique Canonical Token ID (RTK-2026-XXXXXX)
   const generateTrackingId = () => {
@@ -1319,6 +1321,579 @@ export const ComplaintProvider = ({ children }) => {
     }));
   };
 
+  // -------------------------------------------------------------------------
+  // COMPLAINT DETAILS & RESOLUTION AUDIT MODULE
+  // -------------------------------------------------------------------------
+
+  // 1. Add Immutable Audit Record (Append-Only)
+  const addAuditRecord = (auditData) => {
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const newRecord = {
+      id: auditData.id || `AUD-${Date.now().toString().slice(-5)}`,
+      complaintId: auditData.complaintId || auditData.complaintToken || 'UNKNOWN',
+      legacyToken: auditData.legacyToken || null,
+      action: auditData.action || 'System Action Recorded',
+      performedBy: auditData.performedBy || 'System Administrator',
+      userRole: auditData.userRole || 'SYSTEM',
+      previousValue: auditData.previousValue !== undefined ? String(auditData.previousValue) : 'N/A',
+      newValue: auditData.newValue !== undefined ? String(auditData.newValue) : 'N/A',
+      timestamp: auditData.timestamp || nowStr,
+      remarks: auditData.remarks || 'Audit entry recorded into immutable gazette.',
+      isSimulatedDelivery: Boolean(auditData.isSimulatedDelivery),
+      category: auditData.category || 'GOVERNANCE'
+    };
+    setAuditLogs(prev => [newRecord, ...prev]);
+    return newRecord;
+  };
+
+  // 2. Get Comprehensive Complaint Details
+  const getComplaintDetails = (complaintId) => {
+    if (!complaintId) return null;
+    const norm = String(complaintId).toUpperCase().trim();
+    const complaint = complaints.find(c =>
+      (c.token && c.token.toUpperCase() === norm) ||
+      (c.trackingId && c.trackingId.toUpperCase() === norm) ||
+      (c.id && c.id.toUpperCase() === norm) ||
+      (c.legacyToken && c.legacyToken.toUpperCase() === norm)
+    );
+    if (!complaint) return null;
+
+    const token = complaint.token || complaint.trackingId || complaint.id;
+
+    // Resolve matching records
+    const matchedOfficer = officers.find(o =>
+      o.id === complaint.assignedOfficer?.id ||
+      o.name === complaint.assignedOfficer?.name ||
+      o.employeeId === complaint.assignedOfficer?.badge
+    ) || complaint.assignedOfficer || null;
+
+    const matchedDepartment = departments.find(d =>
+      d.id === complaint.departmentId ||
+      d.name === complaint.departmentName
+    ) || null;
+
+    const matchedReminders = reminders.filter(r =>
+      r.token === token || r.complaintId === token || r.complaintToken === token ||
+      (complaint.legacyToken && (r.token === complaint.legacyToken || r.complaintToken === complaint.legacyToken))
+    );
+
+    const matchedEscalations = escalations.filter(e =>
+      e.complaintId === token || e.token === token ||
+      (complaint.legacyToken && e.complaintId === complaint.legacyToken)
+    );
+
+    const matchedCommunications = communications.filter(c =>
+      c.token === token || c.complaintId === token ||
+      (complaint.legacyToken && c.token === complaint.legacyToken)
+    );
+
+    const matchedReassignments = reassignments.filter(r =>
+      r.complaintId === token || (complaint.legacyToken && r.complaintId === complaint.legacyToken)
+    );
+
+    const matchedAuditLogs = auditLogs.filter(a =>
+      a.complaintId === token || a.complaintToken === token ||
+      (complaint.legacyToken && (a.complaintId === complaint.legacyToken || a.legacyToken === complaint.legacyToken))
+    );
+
+    const matchedFeedback = feedbackRecords.find(f =>
+      f.complaintId === token || (complaint.legacyToken && f.complaintId === complaint.legacyToken)
+    ) || null;
+
+    const cleanPhone = (complaint.citizenPhone || '').replace(/\D/g, '').slice(-10);
+    const matchedNotifications = citizenNotifications.filter(n =>
+      n.complaintId === token || (cleanPhone && n.mobileNumber?.endsWith(cleanPhone))
+    );
+
+    // Compute explainable health indicators
+    const hours = typeof complaint.hoursRemaining === 'number' ? complaint.hoursRemaining : 24;
+    const isOverdue = hours < 0 || complaint.status === 'OVERDUE' || (complaint.daysOverdue || 0) > 0;
+    const isApproaching = hours >= 0 && hours <= 24 && !['RESOLVED', 'CLOSED'].includes(complaint.status);
+
+    const deadlineHealth = {
+      status: isOverdue ? 'RED' : isApproaching ? 'AMBER' : 'GREEN',
+      label: isOverdue ? 'Overdue Breach' : isApproaching ? 'Approaching Deadline' : 'Within Statutory SLA',
+      hoursRemaining: hours,
+      daysOverdue: complaint.daysOverdue || (hours < 0 ? Math.ceil(Math.abs(hours) / 24) : 0),
+      deadline: complaint.slaDeadline || 'Standard 48-Hour SLA',
+      reason: isOverdue
+        ? `Statutory resolution deadline elapsed ${Math.abs(hours)}h ago. Accruing statutory non-compliance exposure under Section 8.`
+        : isApproaching
+          ? `Less than 24 hours remaining (${hours}h left). Urgent field remediation required before automated escalation.`
+          : `Grievance is well within statutory timeframe with ${hours}h remaining.`
+    };
+
+    const followUpHealth = {
+      status: !complaint.followUpDeadline ? 'SCHEDULED' : complaint.followUpDeadline === new Date().toISOString().substring(0, 10) ? 'DUE_TODAY' : isOverdue ? 'OVERDUE' : 'ON_TRACK',
+      label: !complaint.followUpDeadline ? 'Standard Cycle' : complaint.followUpDeadline === new Date().toISOString().substring(0, 10) ? 'Follow-up Due Today' : isOverdue ? 'Follow-up Overdue' : 'Follow-up On Track',
+      date: complaint.followUpDeadline || 'Next operational cycle',
+      reason: complaint.followUpDeadline === new Date().toISOString().substring(0, 10)
+        ? 'Scheduled nodal progress inspection is due today. Officer report required by 18:00.'
+        : isOverdue
+          ? 'Mandatory inspection checkpoint missed by assigned nodal officer.'
+          : 'Follow-up timeline is synchronized with department field schedule.'
+    };
+
+    const isEscalated = complaint.escalationTier && complaint.escalationTier !== 'NONE';
+    const escalationRisk = {
+      tier: complaint.escalationTier || 'NONE',
+      riskLevel: isEscalated ? 'CRITICAL' : (complaint.healthScore || 80) < 40 ? 'HIGH' : (complaint.healthScore || 80) < 70 ? 'MODERATE' : 'LOW',
+      label: isEscalated ? `${complaint.escalationTier} Escalated` : (complaint.healthScore || 80) < 40 ? 'High Escalation Risk' : (complaint.healthScore || 80) < 70 ? 'Moderate Alert' : 'Low Risk',
+      reason: isEscalated
+        ? `Complaint currently under active supervisory escalation (${complaint.escalationTier}). Direct attention of Division Chief mandated.`
+        : (complaint.healthScore || 80) < 40
+          ? 'Health score dropped below 40. High risk of breach and penalty if no action is taken today.'
+          : 'Normal workflow progression. Escalation probability remains below 15%.'
+    };
+
+    const citizenSatisfaction = {
+      status: matchedFeedback ? 'RATED' : complaint.status === 'REOPENED' ? 'DISPUTED' : ['RESOLVED', 'CLOSED'].includes(complaint.status) ? 'AWAITING_VERIFICATION' : 'PENDING_REDRESSAL',
+      label: matchedFeedback ? `${matchedFeedback.overallRating}/5 Stars CSAT` : complaint.status === 'REOPENED' ? 'Resolution Disputed' : ['RESOLVED', 'CLOSED'].includes(complaint.status) ? 'Awaiting Citizen CSAT' : 'In Service Pipeline',
+      rating: matchedFeedback?.overallRating || complaint.csatRating || null,
+      feedback: matchedFeedback || null,
+      reason: matchedFeedback
+        ? `Citizen verified resolution and recorded an overall satisfaction rating of ${matchedFeedback.overallRating}/5 stars.`
+        : complaint.status === 'REOPENED'
+          ? 'Citizen was dissatisfied with remediation work and requested statutory re-inspection.'
+          : ['RESOLVED', 'CLOSED'].includes(complaint.status)
+            ? 'Department has submitted work completion; awaiting citizen satisfaction review on public portal.'
+            : 'Grievance is currently in progress; citizen feedback loop opens upon resolution submission.'
+    };
+
+    const stageMap = {
+      'NEWLY_REGISTERED': { pct: 15, stage: 'Registered' },
+      'DRAFT': { pct: 5, stage: 'Draft' },
+      'PENDING_VERIFICATION': { pct: 25, stage: 'Under Verification' },
+      'ADDITIONAL_INFO_REQUIRED': { pct: 20, stage: 'Clarification Needed' },
+      'REJECTED': { pct: 100, stage: 'Rejected' },
+      'VERIFIED': { pct: 35, stage: 'Verified' },
+      'ASSIGNED': { pct: 50, stage: 'Cadre Assigned' },
+      'IN_PROGRESS': { pct: 75, stage: 'In Progress' },
+      'OVERDUE': { pct: 60, stage: 'Overdue / Escalated' },
+      'ACTION_TAKEN': { pct: 85, stage: 'Action Taken' },
+      'UNDER_REVIEW': { pct: 85, stage: 'Under Supervisory Review' },
+      'RESOLVED': { pct: 90, stage: 'Resolution Ready' },
+      'REOPENED': { pct: 45, stage: 'Reopened for Remediation' },
+      'CLOSED': { pct: 100, stage: 'Formally Closed' }
+    };
+
+    const progressInfo = stageMap[complaint.status] || { pct: 50, stage: 'In Progress' };
+    const resolutionProgress = {
+      percentage: progressInfo.pct,
+      stage: progressInfo.stage,
+      reason: `Current stage is "${progressInfo.stage}" with estimated lifecycle completion at ${progressInfo.pct}%.`
+    };
+
+    return {
+      complaint,
+      token,
+      assignedOfficer: matchedOfficer,
+      department: matchedDepartment,
+      reminders: matchedReminders,
+      escalations: matchedEscalations,
+      communications: matchedCommunications,
+      reassignments: matchedReassignments,
+      auditLogs: matchedAuditLogs,
+      feedback: matchedFeedback,
+      citizenNotifications: matchedNotifications,
+      healthIndicators: {
+        deadlineHealth,
+        followUpHealth,
+        escalationRisk,
+        citizenSatisfaction,
+        resolutionProgress
+      }
+    };
+  };
+
+  // 3. Get Complete Complaint Activities (Central Chronological Timeline)
+  const getComplaintActivities = (complaintId) => {
+    if (!complaintId) return [];
+    const norm = String(complaintId).toUpperCase().trim();
+    const complaint = complaints.find(c =>
+      (c.token && c.token.toUpperCase() === norm) ||
+      (c.trackingId && c.trackingId.toUpperCase() === norm) ||
+      (c.id && c.id.toUpperCase() === norm) ||
+      (c.legacyToken && c.legacyToken.toUpperCase() === norm)
+    );
+    if (!complaint) return [];
+
+    const token = complaint.token || complaint.trackingId || complaint.id;
+    const list = [];
+
+    // 1. Actions stored on the complaint itself
+    if (Array.isArray(complaint.actions)) {
+      complaint.actions.forEach((act, idx) => {
+        list.push({
+          id: `ACT-${act.id || idx}`,
+          eventType: act.type || 'Officer Action',
+          description: act.text || act.description || 'Action recorded.',
+          actor: act.user || act.actor || 'Nodal Cadre',
+          timestamp: act.date || act.timestamp || complaint.createdAt,
+          previousStatus: act.previousStatus || null,
+          newStatus: act.newStatus || complaint.status,
+          relatedRecordId: token,
+          isInternal: Boolean(act.isInternal)
+        });
+      });
+    }
+
+    // 2. Complaint History records
+    const histMatches = complaintHistory.filter(h =>
+      h.complaintId === token || h.complaintToken === token ||
+      (complaint.legacyToken && (h.complaintId === complaint.legacyToken || h.complaintToken === complaint.legacyToken))
+    );
+    histMatches.forEach(h => {
+      list.push({
+        id: h.id,
+        eventType: h.eventType,
+        description: h.description,
+        actor: h.responsibleUser,
+        timestamp: h.timestamp,
+        previousStatus: h.previousValue,
+        newStatus: h.newValue,
+        relatedRecordId: token,
+        isInternal: false
+      });
+    });
+
+    // 3. Reassignment history
+    const reassignMatches = reassignments.filter(r =>
+      r.complaintId === token || (complaint.legacyToken && r.complaintId === complaint.legacyToken)
+    );
+    reassignMatches.forEach(r => {
+      list.push({
+        id: r.id,
+        eventType: 'Officer Reassigned',
+        description: `Reassigned from ${r.previousOfficer} to ${r.newOfficer}. Reason: ${r.reason}`,
+        actor: r.initiatedBy || 'Administrator',
+        timestamp: r.timestamp,
+        previousStatus: r.previousOfficer,
+        newStatus: r.newOfficer,
+        relatedRecordId: r.id,
+        isInternal: false
+      });
+    });
+
+    // Deduplicate entries by unique signature (eventType + timestamp + description snippet)
+    const seen = new Set();
+    const deduped = [];
+    for (const item of list) {
+      const key = `${item.eventType}__${(item.timestamp || '').slice(0, 16)}__${(item.description || '').slice(0, 30)}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduped.push(item);
+      }
+    }
+
+    // Sort newest first
+    return deduped.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  };
+
+  // 4. Add Complaint Activity
+  const addComplaintActivity = (complaintId, activityData) => {
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const newAct = {
+      id: activityData.id || `ACT-${Date.now().toString().slice(-5)}`,
+      type: activityData.eventType || 'OFFICER_ACTION',
+      date: activityData.timestamp || nowStr,
+      user: activityData.actor || 'Nodal Officer',
+      text: activityData.description || 'Activity recorded.',
+      isInternal: Boolean(activityData.isInternal)
+    };
+
+    setComplaints(prev => prev.map(c => {
+      if (c.token === complaintId || c.trackingId === complaintId || c.id === complaintId || c.legacyToken === complaintId) {
+        const curActions = Array.isArray(c.actions) ? c.actions : [];
+        return {
+          ...c,
+          actions: [newAct, ...curActions],
+          updatedAt: nowStr
+        };
+      }
+      return c;
+    }));
+
+    setComplaintHistory(prev => [
+      {
+        id: `HIST-${Date.now().toString().slice(-5)}`,
+        complaintId: complaintId,
+        eventType: activityData.eventType || 'Officer Action Recorded',
+        description: activityData.description,
+        responsibleUser: activityData.actor || 'Nodal Officer',
+        timestamp: nowStr,
+        previousValue: activityData.previousStatus || 'IN_PROGRESS',
+        newValue: activityData.newStatus || 'IN_PROGRESS'
+      },
+      ...prev
+    ]);
+
+    addAuditRecord({
+      complaintId,
+      action: activityData.eventType || 'Officer Action Recorded',
+      performedBy: activityData.actor || 'Nodal Officer',
+      userRole: activityData.userRole || 'OFFICER',
+      previousValue: activityData.previousStatus || 'N/A',
+      newValue: activityData.newStatus || 'N/A',
+      remarks: activityData.description,
+      category: 'CADRE_ACTION'
+    });
+  };
+
+  // 5. Submit Structured Officer Action (Field Inspection, Material Dispatch, etc.)
+  const submitOfficerAction = (complaintId, actionData) => {
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const officerName = actionData.officerName || 'Nodal Officer';
+    const actionDesc = actionData.description || 'Field remediation action recorded.';
+    const actionType = actionData.actionType || 'FIELD_INSPECTION';
+
+    let updatedTicket = null;
+
+    setComplaints(prev => prev.map(c => {
+      if (c.token === complaintId || c.trackingId === complaintId || c.id === complaintId || c.legacyToken === complaintId) {
+        const curActions = Array.isArray(c.actions) ? c.actions : [];
+        const nextStatus = actionData.statusUpdate || (c.status === 'ASSIGNED' ? 'IN_PROGRESS' : c.status);
+        const docs = Array.isArray(actionData.supportingDocuments) ? actionData.supportingDocuments : [];
+        const curAttachments = Array.isArray(c.attachments) ? c.attachments : [];
+
+        updatedTicket = {
+          ...c,
+          status: nextStatus,
+          updatedAt: nowStr,
+          nextBestAction: actionData.nextStep || c.nextBestAction,
+          attachments: [...curAttachments, ...docs],
+          actions: [
+            {
+              id: curActions.length + 1,
+              type: actionType,
+              date: nowStr,
+              user: officerName,
+              text: `[${actionType}] ${actionDesc}`,
+              documents: docs
+            },
+            ...curActions
+          ]
+        };
+        return updatedTicket;
+      }
+      return c;
+    }));
+
+    if (updatedTicket) {
+      setComplaintHistory(prev => [
+        {
+          id: `HIST-${Date.now().toString().slice(-5)}`,
+          complaintId: updatedTicket.token,
+          eventType: `Officer Action: ${actionType}`,
+          description: actionDesc,
+          responsibleUser: officerName,
+          timestamp: nowStr,
+          previousValue: updatedTicket.status,
+          newValue: updatedTicket.status
+        },
+        ...prev
+      ]);
+
+      addAuditRecord({
+        complaintId: updatedTicket.token,
+        action: `Officer Action: ${actionType}`,
+        performedBy: officerName,
+        userRole: 'OFFICER',
+        previousValue: 'IN_PROGRESS',
+        newValue: updatedTicket.status,
+        remarks: actionDesc,
+        category: 'CADRE_ACTION'
+      });
+    }
+
+    return { success: true, ticket: updatedTicket };
+  };
+
+  // 6. Submit Structured Resolution (Section 5)
+  const submitResolution = (complaintId, resolutionData) => {
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const officerName = resolutionData.submittedBy || 'Senior Nodal Engineer';
+    const resTitle = resolutionData.resolutionTitle || 'Grievance Remediation Completed';
+    const resDesc = resolutionData.resolutionDescription || 'On-site corrective works completed.';
+    const actionTaken = resolutionData.actionTaken || 'Remediation completed per technical specifications.';
+    const category = resolutionData.resolutionCategory || 'Physical Repair';
+
+    let updatedTicket = null;
+
+    setComplaints(prev => prev.map(c => {
+      if (c.token === complaintId || c.trackingId === complaintId || c.id === complaintId || c.legacyToken === complaintId) {
+        const curActions = Array.isArray(c.actions) ? c.actions : [];
+        const docs = Array.isArray(resolutionData.supportingDocuments) ? resolutionData.supportingDocuments : [];
+        const curAttachments = Array.isArray(c.attachments) ? c.attachments : [];
+
+        updatedTicket = {
+          ...c,
+          status: 'RESOLVED', // Strictly NOT CLOSED! Citizen verification determines closure.
+          updatedAt: nowStr,
+          resolvedAt: nowStr,
+          resolutionSummary: resDesc,
+          resolutionDetails: {
+            title: resTitle,
+            description: resDesc,
+            actionTaken: actionTaken,
+            category: category,
+            completionDate: resolutionData.completionDate || nowStr.substring(0, 10),
+            supportingDocuments: docs,
+            officerRemarks: resolutionData.officerRemarks || 'Works verified in accordance with municipal standards.',
+            submittedBy: officerName,
+            resolvedAt: nowStr
+          },
+          nextBestAction: 'Awaiting citizen verification and CSAT feedback on citizen portal',
+          attachments: [...curAttachments, ...docs],
+          actions: [
+            {
+              id: curActions.length + 1,
+              type: 'RESOLUTION_SUBMITTED',
+              date: nowStr,
+              user: officerName,
+              text: `Resolution Submitted: "${resTitle}". Action Taken: ${actionTaken}. Work completion proofs attached. Awaiting citizen confirmation.`
+            },
+            ...curActions
+          ]
+        };
+        return updatedTicket;
+      }
+      return c;
+    }));
+
+    if (updatedTicket) {
+      setComplaintHistory(prev => [
+        {
+          id: `HIST-${Date.now().toString().slice(-5)}`,
+          complaintId: updatedTicket.token,
+          eventType: 'Resolution Submitted',
+          description: `${resTitle} - ${actionTaken}`,
+          responsibleUser: officerName,
+          timestamp: nowStr,
+          previousValue: 'IN_PROGRESS',
+          newValue: 'RESOLVED'
+        },
+        ...prev
+      ]);
+
+      const cleanPhone = (updatedTicket.citizenPhone || '').replace(/\D/g, '');
+      setCitizenNotifications(prev => [
+        {
+          id: `CNOTIF-${Date.now().toString().slice(-4)}`,
+          complaintId: updatedTicket.token,
+          mobileNumber: cleanPhone,
+          type: 'RESOLUTION_AVAILABLE',
+          category: 'Resolution',
+          title: 'Resolution Submitted for Verification',
+          message: `The department has resolved grievance #${updatedTicket.token} ("${resTitle}"). Please inspect and confirm satisfaction.`,
+          timestamp: nowStr,
+          read: false,
+          severity: 'success'
+        },
+        ...prev
+      ]);
+
+      addAuditRecord({
+        complaintId: updatedTicket.token,
+        action: 'Resolution Submitted',
+        performedBy: officerName,
+        userRole: 'OFFICER',
+        previousValue: 'IN_PROGRESS',
+        newValue: 'RESOLVED',
+        remarks: `Resolution submitted: ${resTitle}. Category: ${category}. Completion proofs logged.`,
+        category: 'RESOLUTION'
+      });
+    }
+
+    return { success: true, ticket: updatedTicket };
+  };
+
+  // 7. Record Citizen Acceptance (Section 6)
+  const recordCitizenAcceptance = (complaintId, notes = '') => {
+    const res = acceptResolution(complaintId, notes);
+    if (res.success && res.ticket) {
+      addAuditRecord({
+        complaintId: res.ticket.token,
+        action: 'Citizen Resolution Acceptance & Formal Closure',
+        performedBy: res.ticket.citizenName || 'Citizen',
+        userRole: 'CITIZEN',
+        previousValue: 'RESOLVED',
+        newValue: 'CLOSED',
+        remarks: `Citizen accepted resolution. Notes: "${notes || 'Confirmed satisfactory on site.'}"`,
+        category: 'RESOLUTION'
+      });
+    }
+    return res;
+  };
+
+  // 8. Record Reopening (Section 6)
+  const recordReopening = (complaintId, reasonCategory, reasonDetails, attachments = []) => {
+    const res = requestFurtherAction(complaintId, reasonCategory, reasonDetails, attachments);
+    if (res.success && res.ticket) {
+      addAuditRecord({
+        complaintId: res.ticket.token,
+        action: 'Grievance Reopened by Citizen',
+        performedBy: res.ticket.citizenName || 'Citizen',
+        userRole: 'CITIZEN',
+        previousValue: 'RESOLVED',
+        newValue: 'REOPENED',
+        remarks: `Disputed resolution: [${reasonCategory}] "${reasonDetails}". Preserved previous resolution in history.`,
+        category: 'RESOLUTION'
+      });
+    }
+    return res;
+  };
+
+  // 9. Record Final Administrative Closure
+  const recordFinalClosure = (complaintId, remarks = '', officerUser = 'Zonal Vigilance Supervisor') => {
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    let updatedTicket = null;
+
+    setComplaints(prev => prev.map(c => {
+      if (c.token === complaintId || c.trackingId === complaintId || c.id === complaintId || c.legacyToken === complaintId) {
+        const curActions = Array.isArray(c.actions) ? c.actions : [];
+        updatedTicket = {
+          ...c,
+          status: 'CLOSED',
+          closureDate: nowStr,
+          updatedAt: nowStr,
+          closureCertificate: {
+            issuedBy: officerUser,
+            issuedAt: nowStr,
+            remarks: remarks || 'Officially verified and closed by vigilance audit authority.'
+          },
+          actions: [
+            {
+              id: curActions.length + 1,
+              type: 'FINAL_CLOSURE',
+              date: nowStr,
+              user: officerUser,
+              text: `Final administrative closure certified. Remarks: "${remarks || 'Approved and archived.'}"`
+            },
+            ...curActions
+          ]
+        };
+        return updatedTicket;
+      }
+      return c;
+    }));
+
+    if (updatedTicket) {
+      addAuditRecord({
+        complaintId: updatedTicket.token,
+        action: 'Final Administrative Closure',
+        performedBy: officerUser,
+        userRole: 'SUPERVISOR',
+        previousValue: updatedTicket.status,
+        newValue: 'CLOSED',
+        remarks: remarks || 'Official closure certified in municipal audit records.',
+        category: 'GOVERNANCE'
+      });
+    }
+
+    return { success: true, ticket: updatedTicket };
+  };
+
   // Send Demonstration Reminder with Idempotency Safeguard
   const sendComplaintReminder = ({ complaintToken, channel = 'IN_APP', recipientName, recipientRole = 'Department Officer', subject, notes = '' }) => {
     const now = new Date();
@@ -1993,6 +2568,8 @@ export const ComplaintProvider = ({ children }) => {
         complaintHistory,
         feedbackRecords,
         citizenNotifications,
+        auditLogs,
+        setAuditLogs,
         notices: reminders,
         metrics,
         generateTrackingId,
@@ -2028,7 +2605,17 @@ export const ComplaintProvider = ({ children }) => {
         markCitizenNotificationRead,
         markAllCitizenNotificationsRead,
         markNotificationRead,
-        markAllNotificationsRead
+        markAllNotificationsRead,
+        // Complaint Details & Resolution Audit Module
+        addAuditRecord,
+        getComplaintDetails,
+        getComplaintActivities,
+        addComplaintActivity,
+        submitOfficerAction,
+        submitResolution,
+        recordCitizenAcceptance,
+        recordReopening,
+        recordFinalClosure
       }}
     >
       {children}

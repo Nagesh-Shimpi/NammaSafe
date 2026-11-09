@@ -59,6 +59,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
             { to: '/supervisor/escalation-review', icon: 'crisis_alert', label: 'Escalation Review', isAlert: true, badge: `${escalations.length} Active` },
             { to: '/supervisor/officer-performance', icon: 'badge', label: 'Officer Performance' },
             { to: '/supervisor/resolution-approval', icon: 'fact_check', label: 'Resolution Approval', badge: 'Gate' },
+            { to: '/supervisor/complaint-audit', icon: 'manage_search', label: 'Resolution Audit & Search' },
             { to: '/supervisor/reminder-centre', icon: 'notification_important', label: 'Reminder Centre', badge: `${reminders.length}` },
           ],
         },
@@ -89,6 +90,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
         title: lang === 'kn' ? 'ಸಂವಹನ & ಬುದ್ಧಿಮತ್ತೆ' : 'Intelligence & Communications',
         links: [
           { to: '/admin/reminder-centre', icon: 'notification_important', label: 'Reminder Centre', badge: `${reminders.length}` },
+          { to: '/admin/complaint-audit', icon: 'manage_search', label: 'Resolution Audit & Search', badge: 'Audit' },
           { to: '/admin/communication-logs', icon: 'forum', label: 'Communication Logs' },
           { to: '/admin/complaint-intelligence', icon: 'psychology', label: 'Complaint Intelligence', badge: 'AI' },
           { to: '/admin/resolution-verification', icon: 'verified', label: 'Resolution Verification' },

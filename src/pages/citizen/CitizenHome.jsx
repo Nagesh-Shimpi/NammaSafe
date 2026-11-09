@@ -7,7 +7,6 @@ import { COMPLAINT_CATEGORIES } from '../../data/complaintCategories';
 export const CitizenHome = () => {
   const { lang, setLanguage, t } = useLanguage();
   const { metrics, complaints } = useComplaints();
-
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
   const faqs = [
@@ -367,3 +366,5 @@ export const CitizenHome = () => {
 };
 
 export default CitizenHome;
+
+

@@ -28,7 +28,13 @@ NammaSafe unites citizen participation with administrative accountability across
 │  - Omnichannel Dispatch  │  - Mobile Identity Gate      │  - 11-Tab Dossier Inspector  │
 │  - Bilingual Templates   │  - 7-Stage Visual Lifecycle  │  - Immutable Audit Gazette   │
 │  - Fallback Retry Queue  │  - 4-Criteria CSAT & Reopen  │  - Explainable Health Scores │
-└──────────────────────────┴──────────────────────────────┴──────────────────────────────┘
+├──────────────────────────┴──────────────────────────────┴──────────────────────────────┤
+│  7. Department Performance & Ministry Scorecards                                       │
+│  - Weighted Composite Ranking (35% Res + 30% SLA + 20% CSAT + 15% Inverted Overdue)    │
+│  - Side-by-Side Multi-Department Comparison Matrix & Comparative Recharts Bar Charts   │
+│  - Nodal Cadre Caseload Adherence & Turnaround Speed Analytics                         │
+│  - Automated CSV Exporters & Official Gazette Ministry Scorecard Printer               │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -88,6 +94,16 @@ NammaSafe unites citizen participation with administrative accountability across
   - `11. Document Vault`: Centralized storage for photographic evidence, PDF inspection reports, and resolution certificates.
 - **Centralized Complaint Audit Search (`/admin/complaint-audit`)**: Multi-dimensional search across tracking tokens, citizen identities, departments, nodal officers, statuses, priorities, and filing date ranges with sorting and pagination.
 
+### 7. Department Performance & Ministry Scorecards
+- **Ministry Executive Telemetry**: 8 interactive KPI cards (*Total Intake, Resolved Redressals, Active Field Load, Overdue Violations, Resolution Rate %, Average Turnaround Days, Active Escalations, Verified CSAT Rating*) with safe mathematical calculations and clear denominators.
+- **Official Performance Roster & Composite Score**: Ranking table with weighted formula: `Composite = (Resolution Rate × 35%) + (SLA Compliance × 30%) + (CSAT / 5.0 × 100 × 20%) + ((100 - Overdue Rate) × 15%)`. Categorizes departments into *Excellent (≥85)*, *Good (70–84.9)*, *Needs Improvement (50–69.9)*, and *Critical (<50)* tiers.
+- **Side-by-Side Department Comparison**: Interactive comparison tool allowing administrators to select 2 to 5 departments to benchmark side-by-side using comparative Recharts bar charts and tabular metrics.
+- **Nodal Cadre Caseload & Turnaround Analytics**: Comprehensive officer performance monitoring tracking assigned caseloads, resolution rates, follow-up checkpoint compliance, and workload balance status (*Balanced*, *High Workload*, *Overloaded*).
+- **Statutory SLA & Escalation Dashboard**: Detailed breakdown of tickets within deadline, approaching SLA (<24h), and overdue breaches, including accrued Section 8 statutory penalty calculations.
+- **Verified CSAT & Public Trust Index**: Star rating distribution breakdown (1 to 5 Stars), positive/negative sentiment percentages, and department-wise satisfaction scores excluding missing feedback.
+- **Longitudinal Trend Analysis**: Time-series visualization grouping live complaint timestamps into monthly trajectories for intake, resolution, and overdue backlog.
+- **Enterprise CSV Exporters & Printable Gazette**: One-click demonstration export to CSV for department scorecards, officer caseloads, overdue audit logs, and citizen CSAT surveys, plus official printable gazette layouts.
+
 ---
 
 ## 🛠️ Technology Stack
@@ -137,6 +153,7 @@ NammaSafe/
 │   │   ├── officer/              # OfficerDashboard, AssignedComplaintsView, ComplaintDetailView
 │   │   └── supervisor/           # ReminderCentre, OverdueEscalations, SupervisorDashboardView
 │   ├── utils/
+│   │   ├── analyticsCalculations.js # Statistical, composite scoring, CSAT & CSV export engines
 │   │   ├── constants.js          # Status matrix, valid transitions, priority configs
 │   │   └── trackingIdGenerator.js# RTK-2026-XXXXXX sequential generator
 │   ├── App.jsx                   # Central declarative router

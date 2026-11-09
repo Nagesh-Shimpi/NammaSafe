@@ -357,7 +357,7 @@ export const CitizenHome = () => {
                 <p className="text-xs text-slate-400 mt-0.5">{h.hours}</p>
               </div>
               <p className="text-lg font-mono font-extrabold text-teal-300 mt-3">{h.number}</p>
-            </div>
+              ``           </div>
           ))}
         </div>
       </div>

@@ -58,6 +58,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
             { to: '/supervisor/overdue-monitoring', icon: 'alarm_on', label: 'Overdue Monitoring', isAlert: true, count: metrics.overdue.toString() },
             { to: '/supervisor/escalation-review', icon: 'crisis_alert', label: 'Escalation Review', isAlert: true, badge: `${escalations.length} Active` },
             { to: '/supervisor/officer-performance', icon: 'badge', label: 'Officer Performance' },
+            { to: '/supervisor/department-performance', icon: 'account_balance', label: 'Ministry Scorecards', badge: 'Q3' },
             { to: '/supervisor/resolution-approval', icon: 'fact_check', label: 'Resolution Approval', badge: 'Gate' },
             { to: '/supervisor/complaint-audit', icon: 'manage_search', label: 'Resolution Audit & Search' },
             { to: '/supervisor/reminder-centre', icon: 'notification_important', label: 'Reminder Centre', badge: `${reminders.length}` },

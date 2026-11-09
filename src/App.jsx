@@ -84,6 +84,7 @@ export function App() {
         <Route path="department-management" element={<DepartmentManagementView />} />
         <Route path="departments" element={<DepartmentScorecards />} />
         <Route path="department-performance" element={<DepartmentScorecards />} />
+        <Route path="ministry-scorecards" element={<DepartmentScorecards />} />
         <Route path="officers-directory" element={<OfficerRoster />} />
         <Route path="officer-workload" element={<OfficerWorkloadView />} />
         <Route path="reminders" element={<ReminderCentre />} />
@@ -110,6 +111,8 @@ export function App() {
         <Route path="escalation-review" element={<OverdueEscalations />} />
         <Route path="officers" element={<OfficerRoster />} />
         <Route path="officer-performance" element={<OfficerRoster />} />
+        <Route path="department-performance" element={<DepartmentScorecards />} />
+        <Route path="scorecards" element={<DepartmentScorecards />} />
         <Route path="resolution-approval" element={<ResolutionApprovalView />} />
         <Route path="reminders" element={<ReminderCentre />} />
         <Route path="reminder-centre" element={<ReminderCentre />} />

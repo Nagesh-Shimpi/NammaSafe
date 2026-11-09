@@ -2128,6 +2128,11 @@ export const ComplaintProvider = ({ children }) => {
     return { success: true };
   };
 
+  // Direct Resolution Utility
+  const resolveComplaintDirect = (token, remarks = 'Complaint marked as resolved directly by nodal authority.') => {
+    return updateComplaintStatus(token, 'RESOLVED', remarks);
+  };
+
   // Update Follow-up Deadline & Compute Days Overdue/Remaining
   const updateFollowUpDeadline = ({ complaintToken, nextFollowUpDate, dueDate, status }) => {
     const matched = complaints.find(c => c.token === complaintToken || c.id === complaintToken);

@@ -3,15 +3,15 @@ import { STATUS_CONFIG } from '../../utils/constants';
 import { useLanguage } from '../../context/LanguageContext';
 
 export const StatusBadge = ({ status, className = '' }) => {
-  const { lang } = useLanguage();
+  const { lang, tStatus } = useLanguage();
   const config = STATUS_CONFIG[status] || {
-    label: status,
-    labelKn: status,
+    label: tStatus(status),
+    labelKn: tStatus(status),
     color: 'bg-surface-container text-on-surface-variant',
     dot: 'bg-outline'
   };
 
-  const label = lang === 'kn' ? config.labelKn : config.label;
+  const label = lang === 'kn' ? (config.labelKn || tStatus(status)) : (config.label || tStatus(status));
 
   return (
     <span

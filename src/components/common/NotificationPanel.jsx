@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useComplaints } from '../../context/ComplaintContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 
 export const NotificationPanel = ({ isOpen, onClose }) => {
@@ -9,10 +10,24 @@ export const NotificationPanel = ({ isOpen, onClose }) => {
     markNotificationRead,
     markAllNotificationsRead
   } = useComplaints();
+  const { lang, t, tChannel } = useLanguage();
   const navigate = useNavigate();
   const [filterType, setFilterType] = useState('ALL'); // 'ALL' | 'REMINDERS' | 'BREACHES'
 
   if (!isOpen) return null;
+
+  const getAlertTitle = (titleStr, typeStr) => {
+    if (lang !== 'kn') return titleStr || typeStr || 'Statutory Alert';
+    const raw = (titleStr || typeStr || '').toLowerCase();
+    if (raw.includes('registered')) return t('notifComplaintRegistered');
+    if (raw.includes('assigned')) return t('notifOfficerAssigned');
+    if (raw.includes('resolution')) return t('notifResolutionSubmitted');
+    if (raw.includes('info')) return t('notifInfoRequested');
+    if (raw.includes('reopened')) return t('notifComplaintReopened');
+    if (raw.includes('escalation') || raw.includes('breach')) return t('notifEscalationTriggered');
+    if (raw.includes('reminder') || raw.includes('follow-up') || raw.includes('due')) return t('notifReminderDispatched');
+    return titleStr || 'ಸರ್ಕಾರಿ ಎಚ್ಚರಿಕೆ';
+  };
 
   // Synthesize integrated alerts from notifications & reminders
   const reminderAlerts = reminders.slice(0, 8).map(r => ({
@@ -20,8 +35,8 @@ export const NotificationPanel = ({ isOpen, onClose }) => {
     token: r.complaintToken || r.complaintId,
     type: r.type,
     title: r.typeLabel || r.type || 'Follow-up Reminder',
-    message: r.subject || r.message,
-    time: r.createdDate?.split(' ')[1] || 'Today',
+    message: lang === 'kn' && r.messageKn ? r.messageKn : (r.subject || r.message),
+    time: r.createdDate?.split(' ')[1] || (lang === 'kn' ? 'ಇಂದು' : 'Today'),
     unread: r.status === 'SCHEDULED' || r.status === 'QUEUED',
     severity: r.priority === 'CRITICAL' ? 'error' : r.priority === 'HIGH' ? 'warning' : 'info',
     actionRoute: `/supervisor/reminder-centre`,
@@ -47,7 +62,7 @@ export const NotificationPanel = ({ isOpen, onClose }) => {
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-teal-600 text-xl">notifications_active</span>
             <span className="font-headline font-bold text-slate-900 text-xs sm:text-sm">
-              Statutory Alerts & Reminders
+              {lang === 'kn' ? 'ಕಾನೂನುಬದ್ಧ ಎಚ್ಚರಿಕೆಗಳು & ಜ್ಞಾಪನೆಗಳು' : 'Statutory Alerts & Reminders'}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -56,11 +71,11 @@ export const NotificationPanel = ({ isOpen, onClose }) => {
                 onClick={() => markAllNotificationsRead && markAllNotificationsRead()}
                 className="text-[10px] text-teal-700 hover:underline font-semibold"
               >
-                Mark all read
+                {lang === 'kn' ? 'ಎಲ್ಲಾ ಓದಿದೆ' : 'Mark all read'}
               </button>
             )}
             <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-mono text-[10px] font-bold">
-              {unreadCount} New
+              {unreadCount} {lang === 'kn' ? 'ಹೊಸದು' : 'New'}
             </span>
           </div>
         </div>
@@ -73,7 +88,7 @@ export const NotificationPanel = ({ isOpen, onClose }) => {
               filterType === 'ALL' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-200'
             }`}
           >
-            All Alerts ({allAlerts.length})
+            {lang === 'kn' ? `ಎಲ್ಲಾ (${allAlerts.length})` : `All Alerts (${allAlerts.length})`}
           </button>
           <button
             onClick={() => setFilterType('REMINDERS')}
@@ -81,7 +96,7 @@ export const NotificationPanel = ({ isOpen, onClose }) => {
               filterType === 'REMINDERS' ? 'bg-teal-600 text-white' : 'text-slate-600 hover:bg-slate-200'
             }`}
           >
-            Reminders ({reminders.length})
+            {lang === 'kn' ? `ಜ್ಞಾಪನೆಗಳು (${reminders.length})` : `Reminders (${reminders.length})`}
           </button>
           <button
             onClick={() => setFilterType('BREACHES')}
@@ -89,7 +104,7 @@ export const NotificationPanel = ({ isOpen, onClose }) => {
               filterType === 'BREACHES' ? 'bg-rose-600 text-white' : 'text-slate-600 hover:bg-slate-200'
             }`}
           >
-            Breaches
+            {lang === 'kn' ? 'ಉಲ್ಲಂಘನೆಗಳು' : 'Breaches'}
           </button>
         </div>
 
@@ -97,7 +112,7 @@ export const NotificationPanel = ({ isOpen, onClose }) => {
         <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
           {filteredAlerts.length === 0 ? (
             <div className="py-8 text-center text-slate-400 text-xs">
-              No alerts in this category.
+              {lang === 'kn' ? 'ಈ ವಿಭಾಗದಲ್ಲಿ ಯಾವುದೇ ಎಚ್ಚರಿಕೆಗಳಿಲ್ಲ.' : 'No alerts in this category.'}
             </div>
           ) : (
             filteredAlerts.map((n) => (
@@ -124,11 +139,11 @@ export const NotificationPanel = ({ isOpen, onClose }) => {
                           : 'text-teal-700'
                       }`}
                     >
-                      {n.title}
+                      {getAlertTitle(n.title, n.type)}
                     </span>
                   </div>
                   <span className="text-slate-400 font-mono text-[10px]">
-                    {n.time || 'Today'}
+                    {n.time || (lang === 'kn' ? 'ಇಂದು' : 'Today')}
                   </span>
                 </div>
                 <p className="font-body text-xs font-semibold text-slate-800 line-clamp-1">
@@ -136,9 +151,11 @@ export const NotificationPanel = ({ isOpen, onClose }) => {
                 </p>
                 <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono">
                   {n.channel ? (
-                    <span className="text-teal-800 font-medium">Channel: {n.channel}</span>
+                    <span className="text-teal-800 font-medium">
+                      {lang === 'kn' ? 'ಮಾಧ್ಯಮ' : 'Channel'}: {tChannel(n.channel)}
+                    </span>
                   ) : (
-                    <span>Auto-Telemetry</span>
+                    <span>{lang === 'kn' ? 'ಸ್ವಯಂ-ಟೆಲಿಮೆಟ್ರಿ' : 'Auto-Telemetry'}</span>
                   )}
                   {n.token && <span className="text-teal-700 font-bold">#{n.token}</span>}
                 </div>
@@ -156,7 +173,9 @@ export const NotificationPanel = ({ isOpen, onClose }) => {
             }}
             className="text-teal-700 text-xs font-bold hover:underline flex items-center justify-center gap-1 mx-auto"
           >
-            <span>Open Intelligent Reminder Centre</span>
+            <span>
+              {lang === 'kn' ? 'ಬುದ್ಧಿವಂತ ಜ್ಞಾಪನೆ ಕೇಂದ್ರ ತೆರೆಯಿರಿ' : 'Open Intelligent Reminder Centre'}
+            </span>
             <span className="material-symbols-outlined text-xs">arrow_forward</span>
           </button>
         </div>

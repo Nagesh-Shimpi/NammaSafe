@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useComplaints } from '../../context/ComplaintContext';
 import { COMPLAINT_CATEGORIES } from '../../data/complaintCategories';
+import { LanguageSwitcher } from '../../components/common/LanguageSwitcher';
 
 export const CitizenHome = () => {
   const { lang, setLanguage, t } = useLanguage();
@@ -101,22 +102,7 @@ export const CitizenHome = () => {
             </div>
 
             {/* In-banner Language Switcher */}
-            <div className="flex items-center gap-1 bg-slate-900/80 backdrop-blur-sm p-1 rounded-xl border border-slate-700 text-xs font-bold">
-              <button
-                onClick={() => setLanguage('en')}
-                className={`px-3 py-1 rounded-lg transition-all ${lang === 'en' ? 'bg-teal-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
-                  }`}
-              >
-                English
-              </button>
-              <button
-                onClick={() => setLanguage('kn')}
-                className={`px-3 py-1 rounded-lg transition-all ${lang === 'kn' ? 'bg-teal-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
-                  }`}
-              >
-                ಕನ್ನಡ
-              </button>
-            </div>
+            <LanguageSwitcher />
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-headline leading-tight tracking-tight text-white">
@@ -163,30 +149,48 @@ export const CitizenHome = () => {
       {/* =================================================================== */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Statutory SLA Compliance</span>
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            {lang === 'kn' ? 'ಎಸ್‌ಎಲ್‌ಎ ಅನುಸರಣಾ ದರ' : 'Statutory SLA Compliance'}
+          </span>
           <p className="text-2xl sm:text-3xl font-extrabold font-headline text-teal-700 mt-1">94.2%</p>
-          <span className="text-[11px] font-semibold text-emerald-700 mt-1 block">Karnataka Sakala Target Met</span>
+          <span className="text-[11px] font-semibold text-emerald-700 mt-1 block">
+            {lang === 'kn' ? 'ಕರ್ನಾಟಕ ಸಕಾಲ ಗುರಿ ಸಾಧಿಸಲಾಗಿದೆ' : 'Karnataka Sakala Target Met'}
+          </span>
         </div>
 
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Grievance Pool</span>
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            {lang === 'kn' ? 'ಸಕ್ರಿಯ ದೂರುಗಳ ಸಂಖ್ಯೆ' : 'Active Grievance Pool'}
+          </span>
           <p className="text-2xl sm:text-3xl font-extrabold font-headline text-slate-900 mt-1">{complaints.length}</p>
-          <span className="text-[11px] text-slate-500 mt-1 block">Live Digital Records</span>
+          <span className="text-[11px] text-slate-500 mt-1 block">
+            {lang === 'kn' ? 'ಲೈವ್ ಡಿಜಿಟಲ್ ದಾಖಲೆಗಳು' : 'Live Digital Records'}
+          </span>
         </div>
 
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avg Redressal Speed</span>
-          <p className="text-2xl sm:text-3xl font-extrabold font-headline text-teal-700 mt-1">2.4 Days</p>
-          <span className="text-[11px] font-semibold text-teal-700 mt-1 block">Field Turnaround Target: 48h</span>
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            {lang === 'kn' ? 'ಸರಾಸರಿ ಪರಿಹಾರ ವೇಗ' : 'Avg Redressal Speed'}
+          </span>
+          <p className="text-2xl sm:text-3xl font-extrabold font-headline text-teal-700 mt-1">
+            {lang === 'kn' ? '2.4 ದಿನಗಳು' : '2.4 Days'}
+          </p>
+          <span className="text-[11px] font-semibold text-teal-700 mt-1 block">
+            {lang === 'kn' ? 'ಸ್ಥಳೀಯ ಗುರಿ: 48 ಗಂಟೆಗಳು' : 'Field Turnaround Target: 48h'}
+          </span>
         </div>
 
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Citizen CSAT Rating</span>
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            {lang === 'kn' ? 'ನಾಗರಿಕ ತೃಪ್ತಿ ಅಂಕ (CSAT)' : 'Citizen CSAT Rating'}
+          </span>
           <p className="text-2xl sm:text-3xl font-extrabold font-headline text-amber-600 mt-1 flex items-center gap-1">
             <span>4.8</span>
             <span className="material-symbols-outlined text-2xl text-amber-500 fill-current">star</span>
           </p>
-          <span className="text-[11px] text-slate-500 mt-1 block">From Verified Citizen Audits</span>
+          <span className="text-[11px] text-slate-500 mt-1 block">
+            {lang === 'kn' ? 'ಪರಿಶೀಲಿಸಿದ ನಾಗರಿಕ ಪ್ರತಿಕ್ರಿಯೆಗಳಿಂದ' : 'From Verified Citizen Audits'}
+          </span>
         </div>
       </div>
 
@@ -196,13 +200,15 @@ export const CitizenHome = () => {
       <div className="bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-sm space-y-6">
         <div>
           <span className="text-xs font-bold text-teal-700 uppercase tracking-wider font-mono">
-            Citizen Guidance Matrix
+            {lang === 'kn' ? 'ನಾಗರಿಕ ಮಾರ್ಗದರ್ಶಿ ಸೂಚಿ' : 'Citizen Guidance Matrix'}
           </span>
           <h2 className="text-2xl sm:text-3xl font-bold font-headline text-slate-900 mt-1">
             {lang === 'kn' ? 'ದೂರು ಪರಿಹಾರ ಪ್ರಕ್ರಿಯೆ ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ?' : 'How Does Grievance Redressal Work?'}
           </h2>
           <p className="text-slate-600 text-sm mt-1 max-w-2xl">
-            From filing to final on-site verification, every step is transparently audited with binding departmental service levels.
+            {lang === 'kn'
+              ? 'ದೂರು ದಾಖಲಿಸುವುದರಿಂದ ಹಿಡಿದು ಅಂತಿಮ ಸ್ಥಳ ಪರಿಶೀಲನೆಯವರೆಗೆ, ಪ್ರತಿಯೊಂದು ಹಂತವನ್ನು ಕಾನೂನುಬದ್ಧ ಸೇವಾ ಮಟ್ಟಗಳೊಂದಿಗೆ ಪಾರದರ್ಶಕವಾಗಿ ಪರಿಶೋಧಿಸಲಾಗುತ್ತದೆ.'
+              : 'From filing to final on-site verification, every step is transparently audited with binding departmental service levels.'}
           </p>
         </div>
 
@@ -215,7 +221,7 @@ export const CitizenHome = () => {
                     <span className="material-symbols-outlined text-xl">{s.icon}</span>
                   </div>
                   <span className="font-mono text-xs font-extrabold text-teal-800 bg-teal-100 px-2.5 py-1 rounded-full">
-                    Step {s.step}
+                    {lang === 'kn' ? `ಹಂತ ${s.step}` : `Step ${s.step}`}
                   </span>
                 </div>
                 <h3 className="font-bold text-slate-900 text-base font-headline">
@@ -237,20 +243,22 @@ export const CitizenHome = () => {
         <div className="flex items-end justify-between">
           <div>
             <span className="text-xs font-bold text-teal-700 uppercase tracking-wider font-mono">
-              11 Civic Sectors
+              {lang === 'kn' ? `${COMPLAINT_CATEGORIES.length} ನಾಗರಿಕ ಸೇವಾ ವಿಭಾಗಗಳು` : `${COMPLAINT_CATEGORIES.length} Civic Sectors`}
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold font-headline text-slate-900 mt-1">
               {lang === 'kn' ? 'ಪ್ರಮುಖ ಸೇವಾ ವಿಭಾಗಗಳು' : 'Select Department Category to File'}
             </h2>
             <p className="text-slate-600 text-sm mt-1">
-              Select a sector to instantly launch the intake form pre-mapped to the designated department.
+              {lang === 'kn'
+                ? 'ಸಂಬಂಧಿತ ಇಲಾಖೆಗೆ ನೇರವಾಗಿ ದೂರು ದಾಖಲಿಸಲು ಒಂದು ವಿಭಾಗವನ್ನು ಆಯ್ಕೆಮಾಡಿ.'
+                : 'Select a sector to instantly launch the intake form pre-mapped to the designated department.'}
             </p>
           </div>
           <Link
             to="/citizen/register"
             className="text-teal-700 font-bold text-xs hover:underline hidden sm:flex items-center gap-1"
           >
-            <span>View All Departments</span>
+            <span>{lang === 'kn' ? 'ಎಲ್ಲಾ ಇಲಾಖೆಗಳನ್ನು ವೀಕ್ಷಿಸಿ' : 'View All Departments'}</span>
             <span className="material-symbols-outlined text-sm">arrow_forward</span>
           </Link>
         </div>
@@ -268,7 +276,7 @@ export const CitizenHome = () => {
                     <span className="material-symbols-outlined text-xl">{cat.icon}</span>
                   </div>
                   <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-mono text-[10px] font-bold">
-                    SLA: {cat.defaultSlaHours}h Target
+                    {lang === 'kn' ? `ಗಡುವು: ${cat.defaultSlaHours} ಗಂ` : `SLA: ${cat.defaultSlaHours}h Target`}
                   </span>
                 </div>
                 <h3 className="font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
@@ -280,7 +288,7 @@ export const CitizenHome = () => {
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-teal-700">
-                <span>File Grievance</span>
+                <span>{t('navRegister')}</span>
                 <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
               </div>
             </Link>
@@ -294,13 +302,15 @@ export const CitizenHome = () => {
       <div className="bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-sm space-y-6">
         <div>
           <span className="text-xs font-bold text-teal-700 uppercase tracking-wider font-mono">
-            Knowledge Base
+            {lang === 'kn' ? 'ಜ್ಞಾನ ಕೋಶ' : 'Knowledge Base'}
           </span>
           <h2 className="text-2xl sm:text-3xl font-bold font-headline text-slate-900 mt-1">
             {lang === 'kn' ? 'ಸಾಮಾನ್ಯವಾಗಿ ಕೇಳಲಾಗುವ ಪ್ರಶ್ನೆಗಳು (FAQ)' : 'Frequently Asked Questions'}
           </h2>
           <p className="text-slate-600 text-sm mt-1">
-            Answers to common queries regarding tracking, statutory deadlines, reopenings, and grievance rights.
+            {lang === 'kn'
+              ? 'ದೂರು ಟ್ರ್ಯಾಕಿಂಗ್, ಕಾನೂನುಬದ್ಧ ಗಡುವುಗಳು, ಮರುತೆರೆಯುವಿಕೆ ಮತ್ತು ನಾಗರಿಕ ಹಕ್ಕುಗಳ ಕುರಿತ ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಗಳು.'
+              : 'Answers to common queries regarding tracking, statutory deadlines, reopenings, and grievance rights.'}
           </p>
         </div>
 
@@ -336,13 +346,15 @@ export const CitizenHome = () => {
       <div className="bg-slate-900 text-white p-6 sm:p-10 rounded-3xl shadow-lg border border-slate-800 space-y-6">
         <div>
           <span className="text-xs font-bold text-teal-400 uppercase tracking-wider font-mono">
-            Emergency Contacts
+            {lang === 'kn' ? 'ತುರ್ತು ಸಂಪರ್ಕಗಳು' : 'Emergency Contacts'}
           </span>
           <h2 className="text-2xl font-bold font-headline text-white mt-1">
-            {lang === 'kn' ? 'ಸಂಪರ್ಕ ಮತ್ತು ಸಹಾಯವಾಣಿ ಸಂಖ್ಯೆಗಳು' : 'Contact Information & 24x7 Helplines'}
+            {lang === 'kn' ? 'ಸಂಪರ್ಕ ಮತ್ತು 24x7 ಸಹಾಯವಾಣಿ ಸಂಖ್ಯೆಗಳು' : 'Contact Information & 24x7 Helplines'}
           </h2>
           <p className="text-slate-400 text-sm mt-0.5">
-            If your civic issue represents an immediate physical hazard or health crisis, contact emergency helplines directly.
+            {lang === 'kn'
+              ? 'ನಿಮ್ಮ ಸಮಸ್ಯೆ ತಕ್ಷಣದ ಅಪಾಯ ಅಥವಾ ಆರೋಗ್ಯ ತುರ್ತುಸ್ಥಿತಿಯಾಗಿದ್ದರೆ, ನೇರವಾಗಿ ಸಹಾಯವಾಣಿ ಸಂಖ್ಯೆಗಳಿಗೆ ಕರೆ ಮಾಡಿ.'
+              : 'If your civic issue represents an immediate physical hazard or health crisis, contact emergency helplines directly.'}
           </p>
         </div>
 
@@ -357,7 +369,7 @@ export const CitizenHome = () => {
                 <p className="text-xs text-slate-400 mt-0.5">{h.hours}</p>
               </div>
               <p className="text-lg font-mono font-extrabold text-teal-300 mt-3">{h.number}</p>
-              ``           </div>
+            </div>
           ))}
         </div>
       </div>

@@ -4,6 +4,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useComplaints } from '../../context/ComplaintContext';
 import { SearchBar } from './SearchBar';
 import { NotificationPanel } from './NotificationPanel';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { useNavigate } from 'react-router-dom';
 
 export const Navbar = ({ showSidebarToggle = true, onToggleSidebar, isCitizenView = false }) => {
@@ -69,15 +70,8 @@ export const Navbar = ({ showSidebarToggle = true, onToggleSidebar, isCitizenVie
 
       {/* Right: Controls & Role Switcher */}
       <div className="flex items-center gap-2 sm:gap-4 ml-space-md">
-        {/* Bilingual Language Switcher Button */}
-        <button
-          onClick={toggleLanguage}
-          className="px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-body text-label-sm font-bold flex items-center gap-1.5 transition-colors border border-outline-variant/30"
-          title="Switch Language / ಭಾಷೆ ಬದಲಾಯಿಸಿ"
-        >
-          <span className="material-symbols-outlined text-sm text-primary">translate</span>
-          <span>{lang === 'en' ? 'ಕನ್ನಡ' : 'English'}</span>
-        </button>
+        {/* Global Language Switcher */}
+        <LanguageSwitcher />
 
         {/* Role Switcher Pill */}
         <div className="relative">

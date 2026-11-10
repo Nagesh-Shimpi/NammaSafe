@@ -11,7 +11,7 @@ import { Modal } from '../../components/common/Modal';
 export const ComplaintDetailView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { lang, t } = useLanguage();
+  const { lang, t, tDepartment, tCategory } = useLanguage();
   const { currentRole, USER_ROLES } = useAuth();
 
   const {
@@ -355,17 +355,17 @@ export const ComplaintDetailView = () => {
   };
 
   const tabs = [
-    { id: 'overview', label: '1. Overview', icon: 'dashboard' },
-    { id: 'citizen', label: '2. Citizen Info', icon: 'person' },
-    { id: 'assignment', label: '3. Dept & Cadre', icon: 'badge' },
-    { id: 'actions', label: `4. Officer Actions (${ticket.actions?.length || 0})`, icon: 'engineering' },
-    { id: 'reminders', label: `5. Reminders (${details.reminders?.length || 0})`, icon: 'notification_important' },
-    { id: 'escalations', label: `6. Escalations (${details.escalations?.length || 0})`, icon: 'crisis_alert' },
-    { id: 'communications', label: `7. Communications (${details.communications?.length || 0})`, icon: 'forum' },
-    { id: 'resolution', label: '8. Resolution & CSAT', icon: 'verified' },
-    { id: 'timeline', label: `9. Timeline (${activities.length})`, icon: 'history' },
-    { id: 'audit', label: `10. Audit Gazette (${details.auditLogs?.length || 0})`, icon: 'gavel' },
-    { id: 'documents', label: `11. Documents (${ticket.attachments?.length || 0})`, icon: 'attach_file' }
+    { id: 'overview', label: `1. ${t('complaintOverview')}`, icon: 'dashboard' },
+    { id: 'citizen', label: `2. ${t('citizenInformation')}`, icon: 'person' },
+    { id: 'assignment', label: `3. ${lang === 'kn' ? 'ಇಲಾಖೆ & ಅಧಿಕಾರಿ' : 'Dept & Cadre'}`, icon: 'badge' },
+    { id: 'actions', label: `4. ${t('officerActions')} (${ticket.actions?.length || 0})`, icon: 'engineering' },
+    { id: 'reminders', label: `5. ${t('reminderHistory')} (${details.reminders?.length || 0})`, icon: 'notification_important' },
+    { id: 'escalations', label: `6. ${t('escalationHistory')} (${details.escalations?.length || 0})`, icon: 'crisis_alert' },
+    { id: 'communications', label: `7. ${t('communicationHistory')} (${details.communications?.length || 0})`, icon: 'forum' },
+    { id: 'resolution', label: `8. ${t('resolutionDetails')}`, icon: 'verified' },
+    { id: 'timeline', label: `9. ${t('activityTimeline')} (${activities.length})`, icon: 'history' },
+    { id: 'audit', label: `10. ${t('auditHistory')} (${details.auditLogs?.length || 0})`, icon: 'gavel' },
+    { id: 'documents', label: `11. ${lang === 'kn' ? 'ದಾಖಲೆಗಳು' : 'Documents'} (${ticket.attachments?.length || 0})`, icon: 'attach_file' }
   ];
 
   return (
@@ -402,14 +402,14 @@ export const ComplaintDetailView = () => {
             className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1 transition-colors border border-slate-200"
           >
             <span className="material-symbols-outlined text-sm">manage_search</span>
-            <span>Audit Search</span>
+            <span>{lang === 'kn' ? 'ಪರಿಶೋಧನೆ ಹುಡುಕಾಟ' : 'Audit Search'}</span>
           </Link>
           <button
             onClick={() => window.print()}
             className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1 transition-colors border border-slate-200"
           >
             <span className="material-symbols-outlined text-sm">print</span>
-            <span>Print Gazette</span>
+            <span>{lang === 'kn' ? 'ಗೆಜೆಟ್ ಮುದ್ರಿಸಿ' : 'Print Gazette'}</span>
           </button>
         </div>
       </div>
@@ -433,29 +433,29 @@ export const ComplaintDetailView = () => {
               )}
               {ticket.escalationTier && ticket.escalationTier !== 'NONE' && (
                 <span className="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 font-mono text-[11px] font-bold border border-rose-200 animate-pulse">
-                  ⚡ {ticket.escalationTier} ESCALATION
+                  ⚡ {ticket.escalationTier} {t('glossary.escalation')}
                 </span>
               )}
             </div>
 
             <h1 className="text-xl sm:text-2xl font-bold font-headline text-slate-900 leading-snug">
-              {ticket.title}
+              {lang === 'kn' && ticket.titleKn ? ticket.titleKn : ticket.title}
             </h1>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-600">
               <span className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-sm text-slate-400">domain</span>
-                <strong className="text-slate-800">{ticket.departmentName || ticket.category}</strong>
+                <strong className="text-slate-800">{tDepartment(ticket.departmentName) || tCategory(ticket.category)}</strong>
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-sm text-slate-400">calendar_today</span>
-                <span>Registered: <strong className="font-mono text-slate-700">{ticket.createdAt || 'N/A'}</strong></span>
+                <span>{lang === 'kn' ? 'ದಾಖಲಾದ ದಿನಾಂಕ:' : 'Registered:'} <strong className="font-mono text-slate-700">{ticket.createdAt || 'N/A'}</strong></span>
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-sm text-slate-400">update</span>
-                <span>Last Updated: <strong className="font-mono text-slate-700">{ticket.updatedAt || 'Recent'}</strong></span>
+                <span>{lang === 'kn' ? 'ಕೊನೆಯ ನವೀಕರಣ:' : 'Last Updated:'} <strong className="font-mono text-slate-700">{ticket.updatedAt || 'Recent'}</strong></span>
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
@@ -473,12 +473,14 @@ export const ComplaintDetailView = () => {
                 {details.assignedOfficer?.name ? details.assignedOfficer.name.slice(0, 2).toUpperCase() : '??'}
               </div>
               <div className="text-xs">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Assigned Nodal Cadre</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                  {t('assignedNodalOfficer')}
+                </span>
                 <span className="font-bold text-slate-900 block">
-                  {details.assignedOfficer?.name || 'Unassigned Cadre'}
+                  {details.assignedOfficer?.name || (lang === 'kn' ? 'ನಿಯೋಜಿಸಲಾಗಿಲ್ಲ' : 'Unassigned Cadre')}
                 </span>
                 <span className="text-[11px] text-slate-500 block">
-                  {details.assignedOfficer?.badge || details.assignedOfficer?.designation || 'Pending allocation'}
+                  {details.assignedOfficer?.badge || details.assignedOfficer?.designation || (lang === 'kn' ? 'ಹಂಚಿಕೆ ಬಾಕಿ ಇದೆ' : 'Pending allocation')}
                 </span>
               </div>
             </div>
@@ -487,7 +489,9 @@ export const ComplaintDetailView = () => {
 
             {/* Health Score */}
             <div className="text-center">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Health Score</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                {t('avgHealthScore')}
+              </span>
               <div className={`font-mono text-2xl font-black mt-0.5 ${
                 (ticket.healthScore || 80) >= 70 ? 'text-emerald-600' : (ticket.healthScore || 80) >= 40 ? 'text-amber-600' : 'text-rose-600'
               }`}>
@@ -502,7 +506,9 @@ export const ComplaintDetailView = () => {
 
         {/* Quick Action Ribbon (Section 2) */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1">Quick Actions:</span>
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1">
+            {lang === 'kn' ? 'ತ್ವರಿತ ಕ್ರಮಗಳು:' : 'Quick Actions:'}
+          </span>
 
           {/* Edit Complaint */}
           {(currentRole === USER_ROLES.ADMIN || currentRole === USER_ROLES.SUPERVISOR) && (
@@ -511,7 +517,7 @@ export const ComplaintDetailView = () => {
               className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold flex items-center gap-1 transition-colors"
             >
               <span className="material-symbols-outlined text-sm">edit</span>
-              <span>Edit Details</span>
+              <span>{t('glossary.edit')}</span>
             </button>
           )}
 
@@ -522,7 +528,7 @@ export const ComplaintDetailView = () => {
               className="px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 font-semibold flex items-center gap-1 transition-colors border border-teal-200/60"
             >
               <span className="material-symbols-outlined text-sm">sync_alt</span>
-              <span>{details.assignedOfficer ? 'Reassign Officer' : 'Assign Officer'}</span>
+              <span>{details.assignedOfficer ? t('reassignOfficer') : (lang === 'kn' ? 'ಅಧಿಕಾರಿಯನ್ನು ನಿಯೋಜಿಸಿ' : 'Assign Officer')}</span>
             </button>
           )}
 
@@ -532,7 +538,7 @@ export const ComplaintDetailView = () => {
             className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold flex items-center gap-1 transition-colors"
           >
             <span className="material-symbols-outlined text-sm">published_with_changes</span>
-            <span>Update Status</span>
+            <span>{lang === 'kn' ? 'ಸ್ಥಿತಿ ನವೀಕರಿಸಿ' : 'Update Status'}</span>
           </button>
 
           {/* Record Officer Action */}
@@ -542,7 +548,7 @@ export const ComplaintDetailView = () => {
               className="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold flex items-center gap-1 shadow-sm transition-colors"
             >
               <span className="material-symbols-outlined text-sm">add_task</span>
-              <span>Record Action</span>
+              <span>{lang === 'kn' ? 'ಕ್ರಮ ದಾಖಲಿಸಿ' : 'Record Action'}</span>
             </button>
           )}
 
@@ -553,7 +559,7 @@ export const ComplaintDetailView = () => {
               className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1 shadow-sm transition-colors"
             >
               <span className="material-symbols-outlined text-sm">task_alt</span>
-              <span>Submit Resolution</span>
+              <span>{lang === 'kn' ? 'ಪರಿಹಾರ ಸಲ್ಲಿಸಿ' : 'Submit Resolution'}</span>
             </button>
           )}
 
@@ -564,7 +570,7 @@ export const ComplaintDetailView = () => {
               className="px-3 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 font-semibold flex items-center gap-1 transition-colors border border-purple-200"
             >
               <span className="material-symbols-outlined text-sm">rate_review</span>
-              <span>Citizen Review & Dispute</span>
+              <span>{lang === 'kn' ? 'ನಾಗರಿಕ ಪರಿಶೀಲನೆ & ವಿವಾದ' : 'Citizen Review & Dispute'}</span>
             </button>
           )}
 
@@ -575,7 +581,7 @@ export const ComplaintDetailView = () => {
               className="px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold flex items-center gap-1 transition-colors border border-amber-200"
             >
               <span className="material-symbols-outlined text-sm">notifications_active</span>
-              <span>Issue Reminder</span>
+              <span>{lang === 'kn' ? 'ಜ್ಞಾಪನೆ ಕಳುಹಿಸಿ' : 'Issue Reminder'}</span>
             </button>
           )}
 
@@ -589,7 +595,7 @@ export const ComplaintDetailView = () => {
               className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold flex items-center gap-1 shadow-sm transition-colors"
             >
               <span className="material-symbols-outlined text-sm">verified_user</span>
-              <span>Approve Final Closure</span>
+              <span>{lang === 'kn' ? 'ಅಂತಿಮ ಮುಕ್ತಾಯಕ್ಕೆ ಅನುಮೋದಿಸಿ' : 'Approve Final Closure'}</span>
             </button>
           )}
         </div>

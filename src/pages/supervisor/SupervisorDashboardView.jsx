@@ -8,7 +8,7 @@ import { StatusBadge } from '../../components/common/StatusBadge';
 
 export const SupervisorDashboardView = () => {
   const { complaints, officers, escalations, departments } = useComplaints();
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
 
   const overdueList = complaints.filter(c => c.status === 'OVERDUE' || c.hoursRemaining < 0);
   const pendingApprovals = complaints.filter(c => c.status === 'RESOLVED' || c.status === 'UNDER_REVIEW');
@@ -20,17 +20,19 @@ export const SupervisorDashboardView = () => {
       <div>
         <Breadcrumb
           items={[
-            { label: 'Supervisor Oversight', to: '/supervisor/dashboard' },
-            { label: 'Zonal Command Dashboard' },
+            { label: t('glossary.supervisor'), to: '/supervisor/dashboard' },
+            { label: lang === 'kn' ? 'ವಲಯ ನಿಯಂತ್ರಣ ಫಲಕ' : 'Zonal Command Dashboard' },
           ]}
         />
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-1">
           <div>
             <h1 className="font-headline text-headline-md font-bold text-on-surface tracking-tight">
-              {lang === 'kn' ? 'ಮೇಲ್ವಿಚಾರಕರ ನಿಯಂತ್ರಣ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್' : 'Supervisor Command & Team Oversight'}
+              {lang === 'kn' ? 'ಮೇಲ್ವಿಚಾರಕರ ನಿಯಂತ್ರಣ ಮತ್ತು ತಂಡದ ಮೇಲ್ವಿಚಾರಣೆ' : 'Supervisor Command & Team Oversight'}
             </h1>
             <p className="font-body text-body-sm text-secondary">
-              Zone 1 (Bengaluru Urban & Industrial Belt) · Real-time team capacity, breach mitigation & approval gates.
+              {lang === 'kn'
+                ? 'ವಲಯ 1 (ಬೆಂಗಳೂರು ನಗರ) · ನೈಜ-ಸಮಯದ ತಂಡದ ಸಾಮರ್ಥ್ಯ, ಗಡುವು ಉಲ್ಲಂಘನೆ ನಿಯಂತ್ರಣ ಮತ್ತು ಅನುಮೋದನೆ ದ್ವಾರಗಳು.'
+                : 'Zone 1 (Bengaluru Urban & Industrial Belt) · Real-time team capacity, breach mitigation & approval gates.'}
             </p>
           </div>
 
@@ -40,7 +42,7 @@ export const SupervisorDashboardView = () => {
               className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-body text-label-md font-bold flex items-center gap-1.5 transition-colors shadow-sm"
             >
               <span className="material-symbols-outlined text-lg">fact_check</span>
-              Review Approvals ({pendingApprovals.length})
+              {lang === 'kn' ? `ಅನುಮೋದನೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ (${pendingApprovals.length})` : `Review Approvals (${pendingApprovals.length})`}
             </Link>
           </div>
         </div>
@@ -50,52 +52,62 @@ export const SupervisorDashboardView = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/30 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="font-body text-label-sm font-semibold text-secondary">Team Active Caseload</span>
+            <span className="font-body text-label-sm font-semibold text-secondary">
+              {lang === 'kn' ? 'ತಂಡದ ಸಕ್ರಿಯ ಕಾರ್ಯಭಾರ' : 'Team Active Caseload'}
+            </span>
             <span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
               <span className="material-symbols-outlined text-lg">group</span>
             </span>
           </div>
           <div className="mt-2">
             <div className="font-headline text-headline-sm font-extrabold text-on-surface">
-              {complaints.length} Cases
+              {complaints.length} {lang === 'kn' ? 'ಪ್ರಕರಣಗಳು' : 'Cases'}
             </div>
-            <span className="font-mono text-[11px] text-secondary">Across {officers.length} Nodal Cadres</span>
+            <span className="font-mono text-[11px] text-secondary">
+              {lang === 'kn' ? `${officers.length} ನೋಡಲ್ ಅಧಿಕಾರಿಗಳಲ್ಲಿ` : `Across ${officers.length} Nodal Cadres`}
+            </span>
           </div>
         </div>
 
         <div className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/30 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="font-body text-label-sm font-semibold text-secondary">Pending Sign-off Approvals</span>
+            <span className="font-body text-label-sm font-semibold text-secondary">
+              {lang === 'kn' ? 'ಅನುಮೋದನೆ ಬಾಕಿ ಇರುವ ದೂರುಗಳು' : 'Pending Sign-off Approvals'}
+            </span>
             <span className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
               <span className="material-symbols-outlined text-lg">verified</span>
             </span>
           </div>
           <div className="mt-2">
             <div className="font-headline text-headline-sm font-extrabold text-emerald-700">
-              {pendingApprovals.length} Gateways
+              {pendingApprovals.length} {lang === 'kn' ? 'ದ್ವಾರಗಳು' : 'Gateways'}
             </div>
-            <span className="font-mono text-[11px] text-secondary">Awaiting supervisory sign-off</span>
+            <span className="font-mono text-[11px] text-secondary">
+              {lang === 'kn' ? 'ಮೇಲ್ವಿಚಾರಕರ ಸಹಿಗಾಗಿ ಕಾಯುತ್ತಿದೆ' : 'Awaiting supervisory sign-off'}
+            </span>
           </div>
         </div>
 
         <div className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/30 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="font-body text-label-sm font-semibold text-secondary">Overdue Complaints</span>
+            <span className="font-body text-label-sm font-semibold text-secondary">{t('overdueTickets')}</span>
             <span className="w-8 h-8 rounded-lg bg-error-container/30 text-error flex items-center justify-center">
               <span className="material-symbols-outlined text-lg animate-pulse">crisis_alert</span>
             </span>
           </div>
           <div className="mt-2">
             <div className="font-headline text-headline-sm font-extrabold text-error">
-              {overdueList.length} Breached
+              {overdueList.length} {lang === 'kn' ? 'ಉಲ್ಲಂಘನೆ' : 'Breached'}
             </div>
-            <span className="font-mono text-[11px] text-secondary">Mandatory show-cause issued</span>
+            <span className="font-mono text-[11px] text-secondary">
+              {lang === 'kn' ? 'ಕಾರಣ ಕೇಳಿ ನೋಟಿಸ್ ನೀಡಲಾಗಿದೆ' : 'Mandatory show-cause issued'}
+            </span>
           </div>
         </div>
 
         <div className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/30 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="font-body text-label-sm font-semibold text-secondary">Escalation Review Tier</span>
+            <span className="font-body text-label-sm font-semibold text-secondary">{t('escalationLevel')}</span>
             <span className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
               <span className="material-symbols-outlined text-lg">warning</span>
             </span>

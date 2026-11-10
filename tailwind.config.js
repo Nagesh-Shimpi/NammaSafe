@@ -95,9 +95,10 @@ export default {
         "margin-lg": "2.5rem",
       },
       fontFamily: {
-        "headline": ["'Plus Jakarta Sans'", "sans-serif"],
-        "body": ["'Inter'", "sans-serif"],
-        "mono": ["'Inter'", "monospace"],
+        "headline": ["'Plus Jakarta Sans'", "'Noto Sans Kannada'", "sans-serif"],
+        "body": ["'Inter'", "'Noto Sans Kannada'", "sans-serif"],
+        "mono": ["'Inter'", "'Noto Sans Kannada'", "monospace"],
+        "kannada": ["'Noto Sans Kannada'", "'Inter'", "sans-serif"],
       },
       fontSize: {
         "metric-display": ["32px", { lineHeight: "38px", fontWeight: "700" }],

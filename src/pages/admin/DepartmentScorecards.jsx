@@ -34,7 +34,7 @@ import {
 
 export const DepartmentScorecards = () => {
   const { complaints, departments, officers, escalations, reminders, feedbackRecords } = useComplaints();
-  const { lang, t } = useLanguage();
+  const { lang, t, tDepartment } = useLanguage();
   const { currentRole, USER_ROLES } = useAuth();
   const navigate = useNavigate();
 
@@ -293,31 +293,31 @@ export const DepartmentScorecards = () => {
       <div>
         <Breadcrumb
           items={[
-            { label: currentRole === USER_ROLES.SUPERVISOR ? 'Supervisor Command' : 'Admin Command', to: currentRole === USER_ROLES.SUPERVISOR ? '/supervisor/dashboard' : '/admin/overview' },
-            { label: 'Department Performance & Ministry Scorecards' }
+            { label: currentRole === USER_ROLES.SUPERVISOR ? (lang === 'kn' ? 'ಮೇಲ್ವಿಚಾರಣಾ ಕಮಾಂಡ್' : 'Supervisor Command') : t('navOverview'), to: currentRole === USER_ROLES.SUPERVISOR ? '/supervisor/dashboard' : '/admin/overview' },
+            { label: t('scorecardsTitle') }
           ]}
         />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-2">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold font-headline text-slate-900 tracking-tight flex items-center gap-2.5">
-              <span>{lang === 'kn' ? 'ಇಲಾಖಾ ಕಾರ್ಯಕ್ಷಮತೆ ಮತ್ತು ಸಚಿವಾಲಯದ ಸ್ಕೋರ್‌ಕಾರ್ಡ್‌ಗಳು' : 'Department Performance & Ministry Scorecards'}</span>
+            <h1 className="text-2xl sm:text-3xl font-extrabold font-headline text-slate-900 tracking-tight flex items-center gap-2.5 flex-wrap">
+              <span>{t('scorecardsTitle')}</span>
               <span className="px-3 py-0.5 rounded-full text-xs font-mono font-bold bg-teal-50 text-teal-800 border border-teal-200">
                 Sakala Q3 FY2026
               </span>
             </h1>
             <p className="text-slate-600 text-xs sm:text-sm mt-1">
-              Real-time audit scorecards, comparative ministry rankings, officer accountability metrics, and statutory SLA benchmarks.
+              {t('scorecardsSubtitle')}
             </p>
           </div>
 
           {/* Action Suite */}
-          <div className="flex items-center gap-2.5 relative">
+          <div className="flex items-center gap-2.5 relative flex-wrap">
             <button
               onClick={() => setIsMethodologyModalOpen(true)}
               className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-200"
             >
               <span className="material-symbols-outlined text-base">info</span>
-              <span>Methodology & Weightage</span>
+              <span>{t('methodologyModal')}</span>
             </button>
 
             {/* Export Dropdown */}
@@ -327,7 +327,7 @@ export const DepartmentScorecards = () => {
                 className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-200"
               >
                 <span className="material-symbols-outlined text-base">download</span>
-                <span>Export Reports</span>
+                <span>{t('export')}</span>
                 <span className="material-symbols-outlined text-sm">arrow_drop_down</span>
               </button>
 
@@ -338,28 +338,28 @@ export const DepartmentScorecards = () => {
                     className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700 flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined text-base text-teal-600">table_chart</span>
-                    <span>Export Department Scorecards (CSV)</span>
+                    <span>{lang === 'kn' ? 'ಇಲಾಖಾ ಸ್ಕೋರ್‌ಕಾರ್ಡ್ ರಫ್ತು (CSV)' : 'Export Department Scorecards (CSV)'}</span>
                   </button>
                   <button
                     onClick={handleExportOfficersCSV}
                     className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700 flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined text-base text-teal-600">badge</span>
-                    <span>Export Officer Performance (CSV)</span>
+                    <span>{lang === 'kn' ? 'ಅಧಿಕಾರಿಗಳ ಕಾರ್ಯಕ್ಷಮತೆ ರಫ್ತು (CSV)' : 'Export Officer Performance (CSV)'}</span>
                   </button>
                   <button
                     onClick={handleExportOverdueCSV}
                     className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700 flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined text-base text-rose-600">warning</span>
-                    <span>Export Overdue & Breach Log (CSV)</span>
+                    <span>{lang === 'kn' ? 'ಗಡುವು ಮೀರಿದ ಲಾಗ್ ರಫ್ತು (CSV)' : 'Export Overdue & Breach Log (CSV)'}</span>
                   </button>
                   <button
                     onClick={handleExportCSATCSV}
                     className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700 flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined text-base text-amber-500">star</span>
-                    <span>Export Citizen CSAT Surveys (CSV)</span>
+                    <span>{lang === 'kn' ? 'ನಾಗರಿಕ CSAT ಸಮೀಕ್ಷೆ ರಫ್ತು (CSV)' : 'Export Citizen CSAT Surveys (CSV)'}</span>
                   </button>
                 </div>
               )}
@@ -370,7 +370,7 @@ export const DepartmentScorecards = () => {
               className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow transition-colors"
             >
               <span className="material-symbols-outlined text-base">print</span>
-              <span>Print Official Gazette</span>
+              <span>{lang === 'kn' ? 'ಅಧಿಕೃತ ಗೆಜೆಟ್ ಮುದ್ರಿಸಿ' : 'Print Official Gazette'}</span>
             </button>
           </div>
         </div>
@@ -383,22 +383,24 @@ export const DepartmentScorecards = () => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-teal-700 text-lg">filter_alt</span>
-            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">Analytics Scope & Cohort Filters:</span>
+            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              {lang === 'kn' ? 'ವಿಶ್ಲೇಷಣಾ ವ್ಯಾಪ್ತಿ ಮತ್ತು ಫಿಲ್ಟರ್‌ಗಳು:' : 'Analytics Scope & Cohort Filters:'}
+            </span>
           </div>
 
           {/* Reporting Period Chips */}
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-mono">
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-mono overflow-x-auto">
             {[
-              { id: 'ALL', label: 'All Records' },
-              { id: '7D', label: 'Last 7 Days' },
-              { id: '30D', label: 'Last 30 Days' },
+              { id: 'ALL', label: lang === 'kn' ? 'ಎಲ್ಲಾ ದಾಖಲೆಗಳು' : 'All Records' },
+              { id: '7D', label: lang === 'kn' ? 'ಕಳೆದ 7 ದಿನ' : 'Last 7 Days' },
+              { id: '30D', label: lang === 'kn' ? 'ಕಳೆದ 30 ದಿನ' : 'Last 30 Days' },
               { id: 'Q3', label: 'Q3 FY2026' },
-              { id: 'YTD', label: 'This Year (YTD)' }
+              { id: 'YTD', label: lang === 'kn' ? 'ಈ ವರ್ಷ (YTD)' : 'This Year (YTD)' }
             ].map(period => (
               <button
                 key={period.id}
                 onClick={() => setReportingPeriod(period.id)}
-                className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                className={`px-3 py-1 rounded-lg font-bold transition-all whitespace-nowrap ${
                   reportingPeriod === period.id
                     ? 'bg-white text-teal-800 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
@@ -414,28 +416,28 @@ export const DepartmentScorecards = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2.5 text-xs">
           {/* Department Filter */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Department</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('department')}</label>
             <select
               value={selectedDept}
               onChange={(e) => setSelectedDept(e.target.value)}
               className="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-300 text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500"
             >
-              <option value="ALL">All Departments ({departments.length})</option>
+              <option value="ALL">{lang === 'kn' ? `ಎಲ್ಲಾ ಇಲಾಖೆಗಳು (${departments.length})` : `All Departments (${departments.length})`}</option>
               {departments.map(d => (
-                <option key={d.id} value={d.id}>{d.name}</option>
+                <option key={d.id} value={d.id}>{tDepartment(d.name)}</option>
               ))}
             </select>
           </div>
 
           {/* District Filter */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">District</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('district')}</label>
             <select
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
               className="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-300 text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500"
             >
-              <option value="ALL">All Districts ({distinctDistricts.length})</option>
+              <option value="ALL">{lang === 'kn' ? `ಎಲ್ಲಾ ಜಿಲ್ಲೆಗಳು (${distinctDistricts.length})` : `All Districts (${distinctDistricts.length})`}</option>
               {distinctDistricts.map(dist => (
                 <option key={dist} value={dist}>{dist}</option>
               ))}
@@ -444,28 +446,28 @@ export const DepartmentScorecards = () => {
 
           {/* Priority Filter */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Priority</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('priority')}</label>
             <select
               value={selectedPriority}
               onChange={(e) => setSelectedPriority(e.target.value)}
               className="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-300 text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500"
             >
-              <option value="ALL">All Priorities</option>
-              <option value="CRITICAL">Critical</option>
-              <option value="HIGH">High</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="LOW">Low</option>
+              <option value="ALL">{lang === 'kn' ? 'ಎಲ್ಲಾ ಆದ್ಯತೆಗಳು' : 'All Priorities'}</option>
+              <option value="CRITICAL">{t('priorityCritical')}</option>
+              <option value="HIGH">{t('priorityHigh')}</option>
+              <option value="MEDIUM">{t('priorityMedium')}</option>
+              <option value="LOW">{t('priorityLow')}</option>
             </select>
           </div>
 
           {/* Search Term */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Search Keywords</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('search')}</label>
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="e.g. Water, NH-48..."
+              placeholder={lang === 'kn' ? 'ಉದಾ: ನೀರು, NH-48...' : 'e.g. Water, NH-48...'}
               className="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-300 text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500"
             />
           </div>
@@ -477,7 +479,7 @@ export const DepartmentScorecards = () => {
               className="w-full py-1.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors flex items-center justify-center gap-1"
             >
               <span className="material-symbols-outlined text-sm">filter_alt_off</span>
-              <span>Reset Filters</span>
+              <span>{t('reset')}</span>
             </button>
           </div>
         </div>
@@ -491,15 +493,14 @@ export const DepartmentScorecards = () => {
         <div
           onClick={() => navigate('/admin/all-complaints')}
           className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-teal-500 transition-all cursor-pointer flex flex-col justify-between"
-          title="Click to view all registered grievances"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">1. Total Intake</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">1. {t('totalComplaints')}</span>
             <span className="material-symbols-outlined text-teal-600 text-base">inbox</span>
           </div>
           <div className="mt-2">
             <span className="text-xl sm:text-2xl font-black font-mono text-slate-900 block">{totalRegistered}</span>
-            <span className="text-[10px] text-slate-500">Complaints Filed</span>
+            <span className="text-[10px] text-slate-500">{lang === 'kn' ? 'ದಾಖಲಾದ ದೂರುಗಳು' : 'Complaints Filed'}</span>
           </div>
         </div>
 
@@ -507,15 +508,14 @@ export const DepartmentScorecards = () => {
         <div
           onClick={() => navigate('/admin/all-complaints')}
           className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-emerald-500 transition-all cursor-pointer flex flex-col justify-between"
-          title="Click to view resolved grievances"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">2. Resolved</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">2. {t('glossary.resolved')}</span>
             <span className="material-symbols-outlined text-emerald-600 text-base">check_circle</span>
           </div>
           <div className="mt-2">
             <span className="text-xl sm:text-2xl font-black font-mono text-emerald-600 block">{totalResolved}</span>
-            <span className="text-[10px] text-emerald-800 font-semibold">{resolutionRate}% of Intake</span>
+            <span className="text-[10px] text-emerald-800 font-semibold">{resolutionRate}% {lang === 'kn' ? 'ಪ್ರಮಾಣ' : 'of Intake'}</span>
           </div>
         </div>
 
@@ -523,15 +523,14 @@ export const DepartmentScorecards = () => {
         <div
           onClick={() => navigate('/admin/pending-complaints')}
           className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-teal-500 transition-all cursor-pointer flex flex-col justify-between"
-          title="Click to view pending grievances"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">3. Pending</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">3. {t('glossary.pending')}</span>
             <span className="material-symbols-outlined text-teal-600 text-base">pending_actions</span>
           </div>
           <div className="mt-2">
             <span className="text-xl sm:text-2xl font-black font-mono text-slate-900 block">{totalPending}</span>
-            <span className="text-[10px] text-slate-500">Active Field Load</span>
+            <span className="text-[10px] text-slate-500">{lang === 'kn' ? 'ಸಕ್ರಿಯ ಹೊರೆ' : 'Active Field Load'}</span>
           </div>
         </div>
 
@@ -539,15 +538,14 @@ export const DepartmentScorecards = () => {
         <div
           onClick={() => navigate('/supervisor/overdue-monitoring')}
           className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-rose-500 transition-all cursor-pointer flex flex-col justify-between"
-          title="Click to inspect overdue dockets"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">4. Overdue</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">4. {t('glossary.overdue')}</span>
             <span className="material-symbols-outlined text-rose-600 text-base">warning</span>
           </div>
           <div className="mt-2">
             <span className="text-xl sm:text-2xl font-black font-mono text-rose-600 block">{totalOverdue}</span>
-            <span className="text-[10px] text-rose-800 font-semibold">{overduePercentage}% Breaches</span>
+            <span className="text-[10px] text-rose-800 font-semibold">{overduePercentage}% {lang === 'kn' ? 'ಉಲ್ಲಂಘನೆ' : 'Breaches'}</span>
           </div>
         </div>
 
@@ -555,15 +553,14 @@ export const DepartmentScorecards = () => {
         <div
           onClick={() => setActiveTab('scorecards')}
           className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-teal-500 transition-all cursor-pointer flex flex-col justify-between"
-          title="Target: >= 85%"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">5. Res. Rate</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">5. {t('resolutionRate')}</span>
             <span className="material-symbols-outlined text-teal-600 text-base">percent</span>
           </div>
           <div className="mt-2">
             <span className="text-xl sm:text-2xl font-black font-mono text-teal-700 block">{resolutionRate}%</span>
-            <span className="text-[10px] text-slate-500">Denominator: {totalRegistered}</span>
+            <span className="text-[10px] text-slate-500">{lang === 'kn' ? 'ಒಟ್ಟು:' : 'Denominator:'} {totalRegistered}</span>
           </div>
         </div>
 
@@ -571,15 +568,14 @@ export const DepartmentScorecards = () => {
         <div
           onClick={() => setActiveTab('sla')}
           className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-teal-500 transition-all cursor-pointer flex flex-col justify-between"
-          title="Target: <= 3.0 Days"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">6. Avg Speed</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">6. {t('avgResolutionTime')}</span>
             <span className="material-symbols-outlined text-teal-600 text-base">speed</span>
           </div>
           <div className="mt-2">
             <span className="text-xl sm:text-2xl font-black font-mono text-slate-900 block">{avgResolutionTime}d</span>
-            <span className="text-[10px] text-emerald-700 font-semibold">Under 3d Target</span>
+            <span className="text-[10px] text-emerald-700 font-semibold">{lang === 'kn' ? '3 ದಿನ ಗುರಿ' : 'Under 3d Target'}</span>
           </div>
         </div>
 
@@ -587,15 +583,14 @@ export const DepartmentScorecards = () => {
         <div
           onClick={() => navigate('/supervisor/overdue-monitoring')}
           className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-amber-500 transition-all cursor-pointer flex flex-col justify-between"
-          title="Hierarchical Level 1-3 Escalations"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">7. Escalated</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">7. {t('activeEscalations')}</span>
             <span className="material-symbols-outlined text-amber-600 text-base">crisis_alert</span>
           </div>
           <div className="mt-2">
             <span className="text-xl sm:text-2xl font-black font-mono text-amber-600 block">{activeEscalationsCount}</span>
-            <span className="text-[10px] text-amber-800 font-semibold">Section 8 Audits</span>
+            <span className="text-[10px] text-amber-800 font-semibold">{lang === 'kn' ? 'ಕಲಂ 8 ಪರಿಶೋಧನೆ' : 'Section 8 Audits'}</span>
           </div>
         </div>
 
@@ -603,17 +598,16 @@ export const DepartmentScorecards = () => {
         <div
           onClick={() => setActiveTab('csat')}
           className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-amber-500 transition-all cursor-pointer flex flex-col justify-between"
-          title="Karnataka Sakala CSAT Benchmark"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">8. CSAT</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">8. {t('citizenSatisfaction')}</span>
             <span className="material-symbols-outlined text-amber-500 text-base">star</span>
           </div>
           <div className="mt-2">
             <span className="text-xl sm:text-2xl font-black font-mono text-amber-600 block">
               {csatSummary.averageRating || '4.50'}<span className="text-xs text-slate-400">/5</span>
             </span>
-            <span className="text-[10px] text-slate-500 font-mono">{csatSummary.totalFeedback} Surveys</span>
+            <span className="text-[10px] text-slate-500 font-mono">{csatSummary.totalFeedback} {lang === 'kn' ? 'ಸಮೀಕ್ಷೆಗಳು' : 'Surveys'}</span>
           </div>
         </div>
       </div>
@@ -631,18 +625,18 @@ export const DepartmentScorecards = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal-800">Apex Ranked Department</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal-800">{t('topPerformer')}</span>
                   <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-teal-200 text-teal-900">
-                    Rank #1
+                    {lang === 'kn' ? 'ಶ್ರೇಣಿ #1' : 'Rank #1'}
                   </span>
                 </div>
                 <h3 className="font-headline font-bold text-slate-900 text-base mt-0.5">
-                  {topDepartment.name}
+                  {tDepartment(topDepartment.name)}
                 </h3>
                 <p className="text-xs text-slate-600 mt-1">
-                  Composite Score: <strong className="font-mono text-teal-900">{topDepartment.compositeScore}/100</strong> ·
-                  Resolution: <strong className="font-mono text-teal-900">{topDepartment.resolutionRate}%</strong> ·
-                  SLA Compliance: <strong className="font-mono text-teal-900">{topDepartment.slaCompliance}%</strong>
+                  {t('compositeScore')}: <strong className="font-mono text-teal-900">{topDepartment.compositeScore}/100</strong> ·
+                  {t('resolutionRate')}: <strong className="font-mono text-teal-900">{topDepartment.resolutionRate}%</strong> ·
+                  {t('slaCompliance')}: <strong className="font-mono text-teal-900">{topDepartment.slaCompliance}%</strong>
                 </p>
               </div>
             </div>
@@ -658,17 +652,17 @@ export const DepartmentScorecards = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-rose-800">Special Scrutiny & Intervention Cadre</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-rose-800">{t('lowestPerformer')}</span>
                   <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-200 text-rose-900">
-                    Rank #{criticalDepartment.rank}
+                    {lang === 'kn' ? `ಶ್ರೇಣಿ #${criticalDepartment.rank}` : `Rank #${criticalDepartment.rank}`}
                   </span>
                 </div>
                 <h3 className="font-headline font-bold text-slate-900 text-base mt-0.5">
-                  {criticalDepartment.name}
+                  {tDepartment(criticalDepartment.name)}
                 </h3>
                 <p className="text-xs text-slate-600 mt-1">
-                  Overdue Load: <strong className="font-mono text-rose-900">{criticalDepartment.overdue} Violations</strong> ·
-                  Escalations: <strong className="font-mono text-rose-900">{criticalDepartment.escalations} Active</strong>
+                  {t('overdueTickets')}: <strong className="font-mono text-rose-900">{criticalDepartment.overdue}</strong> ·
+                  {t('activeEscalations')}: <strong className="font-mono text-rose-900">{criticalDepartment.escalations}</strong>
                 </p>
               </div>
             </div>
@@ -691,12 +685,12 @@ export const DepartmentScorecards = () => {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
         <div className="bg-slate-50 border-b border-slate-200 px-4 sm:px-6 flex items-center gap-1 overflow-x-auto no-scrollbar">
           {[
-            { id: 'scorecards', label: `1. Ministry Scorecards (${departmentScores.length})`, icon: 'scoreboard' },
-            { id: 'comparison', label: `2. Department Comparison (${comparisonDepartments.length})`, icon: 'compare_arrows' },
-            { id: 'officers', label: `3. Officer Performance (${officerMetrics.length})`, icon: 'badge' },
-            { id: 'sla', label: '4. SLA & Escalation Analytics', icon: 'timelapse' },
-            { id: 'csat', label: '5. Citizen Satisfaction (CSAT)', icon: 'star' },
-            { id: 'trends', label: '6. Time-Series Trends', icon: 'trending_up' }
+            { id: 'scorecards', label: `1. ${t('ministryScorecard')} (${departmentScores.length})`, icon: 'scoreboard' },
+            { id: 'comparison', label: `2. ${t('departmentPerformance')} (${comparisonDepartments.length})`, icon: 'compare_arrows' },
+            { id: 'officers', label: `3. ${t('officerTurnaround')} (${officerMetrics.length})`, icon: 'badge' },
+            { id: 'sla', label: `4. ${t('slaCompliance')} & ${t('glossary.escalation')}`, icon: 'timelapse' },
+            { id: 'csat', label: `5. ${t('citizenSatisfaction')}`, icon: 'star' },
+            { id: 'trends', label: `6. ${t('performanceAnalytics')}`, icon: 'trending_up' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -724,18 +718,18 @@ export const DepartmentScorecards = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                 <div>
                   <h3 className="text-sm font-bold font-headline text-slate-800">
-                    Official Department Performance Scorecard Table
+                    {lang === 'kn' ? 'ಅಧಿಕೃತ ಇಲಾಖಾ ಕಾರ್ಯಕ್ಷಮತೆಯ ಸ್ಕೋರ್‌ಕಾರ್ಡ್ ಪಟ್ಟಿ' : 'Official Department Performance Scorecard Table'}
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Ranked by weighted composite accountability score (35% Resolution + 30% SLA + 20% CSAT + 15% Overdue Inverted).
+                    {t('scoringFormula')}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-500">Tier Legend:</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Excellent (≥85)</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">Good (70-84)</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Needs Impr. (50-69)</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">Critical (&lt;50)</span>
+                <div className="flex items-center gap-2 text-xs flex-wrap">
+                  <span className="text-slate-500">{lang === 'kn' ? 'ಶ್ರೇಣಿ ಮಟ್ಟ:' : 'Tier Legend:'}</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">{lang === 'kn' ? 'ಅತ್ಯುತ್ತಮ (≥85)' : 'Excellent (≥85)'}</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">{lang === 'kn' ? 'ಉತ್ತಮ (70-84)' : 'Good (70-84)'}</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">{lang === 'kn' ? 'ಸುಧಾರಣೆ ಅಗತ್ಯ (50-69)' : 'Needs Impr. (50-69)'}</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">{lang === 'kn' ? 'ಗಂಭೀರ (<50)' : 'Critical (<50)'}</span>
                 </div>
               </div>
 
@@ -744,19 +738,19 @@ export const DepartmentScorecards = () => {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
                     <tr>
-                      <th className="py-3 px-3.5 text-center">Rank</th>
-                      <th className="py-3 px-4">Ministry / Department</th>
-                      <th className="py-3 px-3.5 text-center">Composite</th>
-                      <th className="py-3 px-3.5 text-center">Tier</th>
-                      <th className="py-3 px-3.5 text-center">Total Intake</th>
-                      <th className="py-3 px-3.5 text-center">Resolved</th>
-                      <th className="py-3 px-3.5 text-center">Pending</th>
-                      <th className="py-3 px-3.5 text-center">Overdue</th>
-                      <th className="py-3 px-3.5 text-center">Res. Rate</th>
-                      <th className="py-3 px-3.5 text-center">SLA Compliance</th>
-                      <th className="py-3 px-3.5 text-center">Avg Time</th>
+                      <th className="py-3 px-3.5 text-center">{t('departmentRanking')}</th>
+                      <th className="py-3 px-4">{t('department')}</th>
+                      <th className="py-3 px-3.5 text-center">{t('compositeScore')}</th>
+                      <th className="py-3 px-3.5 text-center">{lang === 'kn' ? 'ಮಟ್ಟ' : 'Tier'}</th>
+                      <th className="py-3 px-3.5 text-center">{t('totalComplaints')}</th>
+                      <th className="py-3 px-3.5 text-center">{t('glossary.resolved')}</th>
+                      <th className="py-3 px-3.5 text-center">{t('glossary.pending')}</th>
+                      <th className="py-3 px-3.5 text-center">{t('glossary.overdue')}</th>
+                      <th className="py-3 px-3.5 text-center">{t('resolutionRate')}</th>
+                      <th className="py-3 px-3.5 text-center">{t('slaCompliance')}</th>
+                      <th className="py-3 px-3.5 text-center">{t('avgResolutionTime')}</th>
                       <th className="py-3 px-3.5 text-center">CSAT</th>
-                      <th className="py-3 px-4 text-right">Action</th>
+                      <th className="py-3 px-4 text-right">{t('glossary.view')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-body">

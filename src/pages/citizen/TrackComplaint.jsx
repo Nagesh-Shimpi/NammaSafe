@@ -19,7 +19,7 @@ export const TrackComplaint = () => {
     markAllCitizenNotificationsRead
   } = useComplaints();
 
-  const { lang, t } = useLanguage();
+  const { lang, t, tDepartment, tCategory, tPriority, tStatus } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Search Verification Form State
@@ -230,13 +230,13 @@ export const TrackComplaint = () => {
   };
 
   const lifecycleStages = [
-    { label: 'Registered', icon: 'edit_note' },
-    { label: 'Verification', icon: 'fact_check' },
-    { label: 'Verified', icon: 'verified' },
-    { label: 'Cadre Assigned', icon: 'person_pin' },
-    { label: 'In Progress', icon: 'engineering' },
-    { label: 'Resolution Ready', icon: 'task_alt' },
-    { label: 'Citizen Closed', icon: 'lock' }
+    { label: lang === 'kn' ? 'ದಾಖಲಾಗಿದೆ' : 'Registered', icon: 'edit_note' },
+    { label: lang === 'kn' ? 'ಪರಿಶೀಲನೆ' : 'Verification', icon: 'fact_check' },
+    { label: lang === 'kn' ? 'ಅಂಗೀಕೃತ' : 'Verified', icon: 'verified' },
+    { label: lang === 'kn' ? 'ಅಧಿಕಾರಿ ನಿಯೋಜನೆ' : 'Cadre Assigned', icon: 'person_pin' },
+    { label: lang === 'kn' ? 'ಪ್ರಗತಿಯಲ್ಲಿದೆ' : 'In Progress', icon: 'engineering' },
+    { label: lang === 'kn' ? 'ಪರಿಹಾರ ಸಿದ್ಧ' : 'Resolution Ready', icon: 'task_alt' },
+    { label: lang === 'kn' ? 'ಮುಕ್ತಾಯಗೊಂಡಿದೆ' : 'Citizen Closed', icon: 'lock' }
   ];
 
   return (
@@ -279,7 +279,9 @@ export const TrackComplaint = () => {
               {lang === 'kn' ? 'ದೂರು ಟ್ರ್ಯಾಕಿಂಗ್ ಮತ್ತು ಸ್ಥಿತಿ ಪರಿಶೀಲನೆ' : 'Live Grievance Tracking & Verification'}
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
-              Enter your unique tracking token and your registered 10-digit mobile number to inspect authenticated departmental audit logs.
+              {lang === 'kn'
+                ? 'ಕರ್ನಾಟಕ ಸರ್ಕಾರದ ಅಧಿಕೃತ ಆಡಳಿತ ಲಾಗ್‌ಗಳು ಮತ್ತು ಪರಿಹಾರ ಪ್ರಗತಿಯನ್ನು ವೀಕ್ಷಿಸಲು ನಿಮ್ಮ ಟ್ರ್ಯಾಕಿಂಗ್ ಐಡಿ ಮತ್ತು ನೋಂದಾಯಿತ 10-ಅಂಕಿಯ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ.'
+                : 'Enter your unique tracking token and your registered 10-digit mobile number to inspect authenticated departmental audit logs.'}
             </p>
           </div>
 
@@ -288,7 +290,7 @@ export const TrackComplaint = () => {
             className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center gap-1.5 self-start sm:self-auto"
           >
             <span className="material-symbols-outlined text-sm">add_circle</span>
-            <span>File New Grievance</span>
+            <span>{lang === 'kn' ? 'ಹೊಸ ದೂರು ದಾಖಲಿಸಿ' : 'File New Grievance'}</span>
           </Link>
         </div>
 
@@ -302,7 +304,7 @@ export const TrackComplaint = () => {
             <input
               type="text"
               required
-              placeholder="Tracking ID (e.g. RTK-2026-000001)"
+              placeholder={lang === 'kn' ? 'ಟ್ರ್ಯಾಕಿಂಗ್ ಐಡಿ (ಉದಾ: RTK-2026-000001)' : 'Tracking ID (e.g. RTK-2026-000001)'}
               value={searchTrackingId}
               onChange={(e) => setSearchTrackingId(e.target.value)}
               className="w-full h-11 pl-10 pr-3 rounded-xl border border-slate-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 outline-none text-xs font-mono font-bold uppercase transition-all"
@@ -318,7 +320,7 @@ export const TrackComplaint = () => {
               type="tel"
               required
               maxLength={10}
-              placeholder="Registered 10-Digit Mobile"
+              placeholder={lang === 'kn' ? 'ನೋಂದಾಯಿತ 10-ಅಂಕಿಯ ಮೊಬೈಲ್' : 'Registered 10-Digit Mobile'}
               value={searchMobile}
               onChange={(e) => setSearchMobile(e.target.value)}
               className="w-full h-11 pl-10 pr-3 rounded-xl border border-slate-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 outline-none text-xs font-mono font-semibold transition-all"
@@ -332,7 +334,7 @@ export const TrackComplaint = () => {
               className="w-full h-11 px-5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-headline font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
             >
               <span className="material-symbols-outlined text-base">search</span>
-              <span>Verify & Track</span>
+              <span>{lang === 'kn' ? 'ಪರಿಶೀಲಿಸಿ & ಟ್ರ್ಯಾಕ್ ಮಾಡಿ' : 'Verify & Track'}</span>
             </button>
           </div>
         </form>
@@ -399,7 +401,7 @@ export const TrackComplaint = () => {
               }`}
             >
               <span className="material-symbols-outlined text-sm">assignment</span>
-              <span>Grievance Dossier</span>
+              <span>{lang === 'kn' ? 'ದೂರಿನ ವಿವರಗಳು' : 'Grievance Dossier'}</span>
             </button>
 
             <button
@@ -411,7 +413,7 @@ export const TrackComplaint = () => {
               }`}
             >
               <span className="material-symbols-outlined text-sm">timeline</span>
-              <span>Activity Timeline</span>
+              <span>{lang === 'kn' ? 'ಪ್ರಗತಿಯ ಕಾಲಾವಧಿ' : 'Activity Timeline'}</span>
             </button>
 
             <button
@@ -423,7 +425,11 @@ export const TrackComplaint = () => {
               }`}
             >
               <span className="material-symbols-outlined text-sm">notifications</span>
-              <span>Notifications</span>
+              <span>
+                {lang === 'kn'
+                  ? `ಅಧಿಸೂಚನೆಗಳು (${relevantNotifications.length})`
+                  : `Notifications (${relevantNotifications.length})`}
+              </span>
               {relevantNotifications.some(n => !n.read) && (
                 <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
               )}
@@ -437,8 +443,12 @@ export const TrackComplaint = () => {
                   : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
               }`}
             >
-              <span className="material-symbols-outlined text-sm">folder_shared</span>
-              <span>My Complaints ({myComplaintsList.length})</span>
+              <span className="material-symbols-outlined text-sm">history_edu</span>
+              <span>
+                {lang === 'kn'
+                  ? `ನನ್ನ ಎಲ್ಲಾ ದೂರುಗಳು (${myComplaintsList.length})`
+                  : `My Registered Grievances (${myComplaintsList.length})`}
+              </span>
             </button>
           </div>
 

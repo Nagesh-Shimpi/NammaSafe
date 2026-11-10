@@ -10,7 +10,7 @@ import { DEPARTMENTS } from '../../utils/constants';
 
 export const NationalCommandCenter = () => {
   const { complaints, metrics, escalateComplaint } = useComplaints();
-  const { t, lang } = useLanguage();
+  const { t, lang, tDepartment, tPriority } = useLanguage();
   const navigate = useNavigate();
 
   const [tableFilter, setTableFilter] = useState('ALL');
@@ -28,7 +28,7 @@ export const NationalCommandCenter = () => {
 
   const columns = [
     {
-      header: 'Token ID',
+      header: lang === 'kn' ? 'ಟೋಕನ್ ಐಡಿ' : 'Token ID',
       accessor: 'token',
       render: (row) => (
         <div className="flex flex-col">
@@ -42,7 +42,7 @@ export const NationalCommandCenter = () => {
       )
     },
     {
-      header: 'Citizen & District',
+      header: lang === 'kn' ? 'ನಾಗರಿಕ ಮತ್ತು ಜಿಲ್ಲೆ' : 'Citizen & District',
       accessor: 'citizenName',
       render: (row) => (
         <div className="flex flex-col">
@@ -52,7 +52,7 @@ export const NationalCommandCenter = () => {
       )
     },
     {
-      header: 'Grievance Subject & Department',
+      header: lang === 'kn' ? 'ದೂರಿನ ವಿಷಯ ಮತ್ತು ಇಲಾಖೆ' : 'Grievance Subject & Department',
       accessor: 'title',
       render: (row) => (
         <div className="flex flex-col max-w-xs">
@@ -60,13 +60,13 @@ export const NationalCommandCenter = () => {
             {lang === 'kn' && row.titleKn ? row.titleKn : row.title}
           </span>
           <span className="text-primary text-[11px] font-semibold">
-            {row.departmentName}
+            {tDepartment(row.departmentName)}
           </span>
         </div>
       )
     },
     {
-      header: 'Priority / SLA',
+      header: lang === 'kn' ? 'ಆದ್ಯತೆ / ಗಡುವು' : 'Priority / SLA',
       accessor: 'priority',
       render: (row) => (
         <span
@@ -83,17 +83,19 @@ export const NationalCommandCenter = () => {
               row.hoursRemaining < 0 ? 'bg-error animate-ping' : 'bg-primary'
             }`}
           />
-          {row.priority} · {row.hoursRemaining < 0 ? `Breached ${Math.abs(row.hoursRemaining)}h` : `${row.hoursRemaining}h left`}
+          {tPriority(row.priority)} · {row.hoursRemaining < 0
+            ? (lang === 'kn' ? `ಮೀರಿದೆ ${Math.abs(row.hoursRemaining)}ಗಂ` : `Breached ${Math.abs(row.hoursRemaining)}h`)
+            : (lang === 'kn' ? `${row.hoursRemaining}ಗಂ ಬಾಕಿ` : `${row.hoursRemaining}h left`)}
         </span>
       )
     },
     {
-      header: 'Status',
+      header: t('glossary.status'),
       accessor: 'status',
       render: (row) => <StatusBadge status={row.status} />
     },
     {
-      header: 'Actions',
+      header: lang === 'kn' ? 'ಕ್ರಮಗಳು' : 'Actions',
       align: 'right',
       render: (row) => (
         <div className="flex items-center justify-end gap-1.5">
@@ -102,11 +104,15 @@ export const NationalCommandCenter = () => {
               onClick={(e) => {
                 e.stopPropagation();
                 escalateComplaint(row.token, 'TIER_3', 'Apex Escalation Triggered from Command Desk');
-                alert(`Complaint ${row.token} escalated to Tier 3 District Magistrate desk with statutory notice.`);
+                alert(
+                  lang === 'kn'
+                    ? `ದೂರು ${row.token} ಅನ್ನು ಜಿಲ್ಲಾಧಿಕಾರಿಗಳ ಹಂತ 3 ರ ಪರಿಶೀಲನೆಗೆ ವರ್ಗಾಯಿಸಲಾಗಿದೆ.`
+                    : `Complaint ${row.token} escalated to Tier 3 District Magistrate desk with statutory notice.`
+                );
               }}
               className="px-2.5 py-1 rounded bg-error text-on-error font-body text-label-sm font-semibold hover:opacity-90 transition-opacity"
             >
-              Escalate
+              {t('glossary.escalate')}
             </button>
           ) : (
             <button
@@ -116,7 +122,7 @@ export const NationalCommandCenter = () => {
               }}
               className="px-2.5 py-1 rounded bg-surface-container-low hover:bg-primary hover:text-on-primary text-on-surface font-body text-label-sm font-medium transition-colors"
             >
-              Details
+              {t('glossary.view')}
             </button>
           )}
         </div>
@@ -130,17 +136,17 @@ export const NationalCommandCenter = () => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
         <div className="flex flex-col gap-space-xs">
           <div className="flex items-center gap-space-xs text-secondary font-mono text-[11px] uppercase tracking-wider">
-            <span>Dashboard</span>
+            <span>{t('glossary.dashboard')}</span>
             <span className="material-symbols-outlined text-xs">chevron_right</span>
-            <span className="text-primary font-semibold">National Overview</span>
+            <span className="text-primary font-semibold">{t('navOverview')}</span>
             <span className="mx-1 text-outline-variant">·</span>
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              Sync active · Telemetry Live
+              {t('liveSync')}
             </span>
           </div>
           <h1 className="font-headline text-headline-xl text-on-surface tracking-tight font-bold">
-            National Grievance Command & Redressal Center
+            {t('dashboardTitle')}
           </h1>
         </div>
 
@@ -177,13 +183,13 @@ export const NationalCommandCenter = () => {
             <div className="flex flex-col gap-1.5 max-w-4xl">
               <div className="flex items-center gap-space-sm flex-wrap">
                 <span className="font-headline text-headline-sm text-on-surface font-bold">
-                  AI Intelligence Digest
+                  {lang === 'kn' ? 'ಎಐ ದೈನಂದಿನ ಬುದ್ಧಿಮತ್ತೆ ಸಾರಾಂಶ' : 'AI Intelligence Digest'}
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-tertiary text-on-tertiary font-mono text-[10px] uppercase tracking-wide font-bold">
                   Telemetry v2.4
                 </span>
                 <span className="text-secondary font-body text-label-sm">
-                  Processed across 24 Ministries
+                  {lang === 'kn' ? '24 ಇಲಾಖೆಗಳಿಂದ ವಿಶ್ಲೇಷಿಸಲಾಗಿದೆ' : 'Processed across 24 Ministries'}
                 </span>
               </div>
 
@@ -192,21 +198,33 @@ export const NationalCommandCenter = () => {
                 <div className="flex items-start gap-2 bg-surface-container-lowest/90 p-2.5 rounded-lg shadow-sm border border-outline-variant/30">
                   <span className="w-2 h-2 rounded-full bg-error shrink-0 mt-1.5" />
                   <p className="font-body text-body-sm text-on-surface-variant leading-snug">
-                    <strong className="text-on-surface font-semibold">38 complaints</strong> escalated in Sanitation due to monsoon pipeline breach in Sector-4.
+                    {lang === 'kn' ? (
+                      <>ಸೆಕ್ಟರ್-4 ರಲ್ಲಿ ಪೈಪ್‌ಲೈನ್ ಒಡೆದ ಕಾರಣ ನೈರ್ಮಲ್ಯ ವಿಭಾಗದಲ್ಲಿ <strong className="text-on-surface font-semibold">38 ದೂರುಗಳು</strong> ಮೇಲ್ಮಟ್ಟಕ್ಕೆ ಏರಿಕೆಯಾಗಿವೆ.</>
+                    ) : (
+                      <><strong className="text-on-surface font-semibold">38 complaints</strong> escalated in Sanitation due to monsoon pipeline breach in Sector-4.</>
+                    )}
                   </p>
                 </div>
 
                 <div className="flex items-start gap-2 bg-surface-container-lowest/90 p-2.5 rounded-lg shadow-sm border border-outline-variant/30">
                   <span className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1.5" />
                   <p className="font-body text-body-sm text-on-surface-variant leading-snug">
-                    <strong className="text-on-surface font-semibold">+14.2% faster turnaround</strong> logged across Public Works highway redressal nodes.
+                    {lang === 'kn' ? (
+                      <>ಲೋಕೋಪಯೋಗಿ ಹೆದ್ದಾರಿ ಪರಿಹಾರ ಕೇಂದ್ರಗಳಲ್ಲಿ <strong className="text-on-surface font-semibold">+14.2% ವೇಗದ ಪರಿಹಾರ</strong> ದಾಖಲಾಗಿದೆ.</>
+                    ) : (
+                      <><strong className="text-on-surface font-semibold">+14.2% faster turnaround</strong> logged across Public Works highway redressal nodes.</>
+                    )}
                   </p>
                 </div>
 
                 <div className="flex items-start gap-2 bg-surface-container-lowest/90 p-2.5 rounded-lg shadow-sm border border-outline-variant/30">
                   <span className="w-2 h-2 rounded-full bg-tertiary shrink-0 mt-1.5" />
                   <p className="font-body text-body-sm text-on-surface-variant leading-snug">
-                    <strong className="text-on-surface font-semibold">2 high-risk repeat</strong> grievances flagged in Power & Energy regional grid substation.
+                    {lang === 'kn' ? (
+                      <>ಇಂಧನ ಇಲಾಖೆಯ ಪ್ರಾದೇಶಿಕ ಸಬ್‌ಸ್ಟೇಷನ್‌ನಲ್ಲಿ <strong className="text-on-surface font-semibold">2 ಅತಿ-ಅಪಾಯಕಾರಿ ಪುನರಾವರ್ತಿತ</strong> ದೂರುಗಳು ಪತ್ತೆಯಾಗಿವೆ.</>
+                    ) : (
+                      <><strong className="text-on-surface font-semibold">2 high-risk repeat</strong> grievances flagged in Power & Energy regional grid substation.</>
+                    )}
                   </p>
                 </div>
               </div>
@@ -219,14 +237,14 @@ export const NationalCommandCenter = () => {
               className="px-3.5 py-2 rounded-lg bg-surface-container-lowest text-on-surface font-body text-label-md font-semibold shadow-sm hover:bg-surface-container transition-all flex items-center gap-1.5 border border-outline-variant/40"
             >
               <span className="material-symbols-outlined text-base text-primary">rule</span>
-              <span>Review 14 Auto-Assigned</span>
+              <span>{t('reviewAutoAssigned')}</span>
             </button>
             <button
               onClick={() => navigate('/supervisor/reminders')}
               className="px-3.5 py-2 rounded-lg bg-tertiary text-on-tertiary font-body text-label-md font-semibold shadow-sm hover:opacity-90 transition-all flex items-center gap-1.5"
             >
               <span className="material-symbols-outlined text-base">send_time_extension</span>
-              <span>Trigger Bulk Reminders</span>
+              <span>{t('triggerReminders')}</span>
             </button>
           </div>
         </div>
@@ -294,10 +312,10 @@ export const NationalCommandCenter = () => {
             <span className="material-symbols-outlined text-xl">verified_user</span>
           </div>
           <div>
-            <span className="font-body text-label-sm text-secondary block truncate">National SLA Compliance</span>
+            <span className="font-body text-label-sm text-secondary block truncate">{t('slaCompliance')}</span>
             <div className="flex items-baseline gap-2">
               <span className="font-headline font-bold text-on-surface font-mono text-lg">{metrics.slaCompliance}</span>
-              <span className="text-secondary text-[11px]">Target 90%</span>
+              <span className="text-secondary text-[11px]">{lang === 'kn' ? 'ಗುರಿ 90%' : 'Target 90%'}</span>
             </div>
           </div>
         </div>
@@ -307,7 +325,7 @@ export const NationalCommandCenter = () => {
             <span className="material-symbols-outlined text-xl">speed</span>
           </div>
           <div>
-            <span className="font-body text-label-sm text-secondary block truncate">First Contact Resolution</span>
+            <span className="font-body text-label-sm text-secondary block truncate">{t('firstContactResolution')}</span>
             <div className="flex items-baseline gap-2">
               <span className="font-headline font-bold text-on-surface font-mono text-lg">{metrics.firstContactResolution}</span>
               <span className="text-primary font-mono text-xs">+3.1%</span>
@@ -320,10 +338,12 @@ export const NationalCommandCenter = () => {
             <span className="material-symbols-outlined text-xl">sync_problem</span>
           </div>
           <div>
-            <span className="font-body text-label-sm text-secondary block truncate">Escalation Rate</span>
+            <span className="font-body text-label-sm text-secondary block truncate">{t('escalationRate')}</span>
             <div className="flex items-baseline gap-2">
               <span className="font-headline font-bold text-on-surface font-mono text-lg">2.1%</span>
-              <span className="px-1.5 py-0.2 rounded bg-surface-container-highest text-secondary text-[10px] font-mono">Low Risk</span>
+              <span className="px-1.5 py-0.2 rounded bg-surface-container-highest text-secondary text-[10px] font-mono">
+                {lang === 'kn' ? 'ಕಡಿಮೆ ಅಪಾಯ' : 'Low Risk'}
+              </span>
             </div>
           </div>
         </div>
@@ -333,10 +353,12 @@ export const NationalCommandCenter = () => {
             <span className="material-symbols-outlined text-xl">published_with_changes</span>
           </div>
           <div>
-            <span className="font-body text-label-sm text-secondary block truncate">Citizen Re-open Rate</span>
+            <span className="font-body text-label-sm text-secondary block truncate">{t('reopenRate')}</span>
             <div className="flex items-baseline gap-2">
               <span className="font-headline font-bold text-on-surface font-mono text-lg">3.4%</span>
-              <span className="text-emerald-700 font-mono text-xs">-0.8% drop</span>
+              <span className="text-emerald-700 font-mono text-xs">
+                {lang === 'kn' ? '-0.8% ಇಳಿಕೆ' : '-0.8% drop'}
+              </span>
             </div>
           </div>
         </div>
@@ -350,15 +372,15 @@ export const NationalCommandCenter = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3">
               <div>
                 <h2 className="font-headline text-headline-sm font-bold text-on-surface">
-                  Complaint Inflow & Resolution Velocity
+                  {lang === 'kn' ? 'ದೂರು ಸ್ವೀಕೃತಿ ಮತ್ತು ಪರಿಹಾರ ವೇಗ' : 'Complaint Inflow & Resolution Velocity'}
                 </h2>
                 <p className="font-body text-body-sm text-secondary">
-                  30-day telemetry monitoring with real-time intake tracking
+                  {lang === 'kn' ? '30-ದಿನಗಳ ನೈಜ-ಸಮಯದ ಟೆಲಿಮೆಟ್ರಿ ಮೇಲ್ವಿಚಾರಣೆ' : '30-day telemetry monitoring with real-time intake tracking'}
                 </p>
               </div>
               <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg text-xs font-mono">
                 <span className="px-2.5 py-1 rounded bg-surface-container-lowest text-primary font-bold shadow-sm">
-                  Live Intake
+                  {lang === 'kn' ? 'ಲೈವ್ ದಾಖಲಾತಿ' : 'Live Intake'}
                 </span>
               </div>
             </div>
@@ -367,12 +389,14 @@ export const NationalCommandCenter = () => {
           </div>
 
           <div className="pt-3 flex items-center justify-between bg-surface-container-low px-4 py-2.5 rounded-lg mt-2 text-body-sm">
-            <span className="text-secondary text-xs">Continuous telemetry stream powered by Citizen AI Core</span>
+            <span className="text-secondary text-xs">
+              {lang === 'kn' ? 'ನಾಗರಿಕ ಎಐ ಕೋರ್‌ನಿಂದ ನಿರಂತರ ಟೆಲಿಮೆಟ್ರಿ' : 'Continuous telemetry stream powered by Citizen AI Core'}
+            </span>
             <button
               onClick={() => navigate('/admin/all-complaints')}
               className="text-primary font-bold text-xs flex items-center gap-1 hover:underline"
             >
-              <span>Detailed Inflow Metrics</span>
+              <span>{lang === 'kn' ? 'ವಿವರವಾದ ಅಂಕಿಅಂಶಗಳು' : 'Detailed Inflow Metrics'}</span>
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </button>
           </div>
@@ -384,14 +408,14 @@ export const NationalCommandCenter = () => {
             <div className="flex items-center justify-between pb-3">
               <div>
                 <h2 className="font-headline text-headline-sm font-bold text-on-surface">
-                  Department Performance
+                  {t('departmentPerformance')}
                 </h2>
                 <p className="font-body text-body-sm text-secondary">
-                  Redressal quota vs statutory SLA resolution rate
+                  {lang === 'kn' ? 'ಪರಿಹಾರ ಕೋಟಾ vs ಕಾನೂನುಬದ್ಧ ಎಸ್‌ಎಲ್‌ಎ ದರ' : 'Redressal quota vs statutory SLA resolution rate'}
                 </p>
               </div>
               <span className="px-2 py-1 rounded bg-surface-container text-secondary font-mono text-[11px] font-bold">
-                Active 24
+                {lang === 'kn' ? 'ಸಕ್ರಿಯ 24' : 'Active 24'}
               </span>
             </div>
 
@@ -419,7 +443,7 @@ export const NationalCommandCenter = () => {
                     />
                   </div>
                   <div className="flex items-center justify-between text-secondary font-mono text-[11px]">
-                    <span>{dept.active.toLocaleString()} Complaints</span>
+                    <span>{dept.active.toLocaleString()} {lang === 'kn' ? 'ದೂರುಗಳು' : 'Complaints'}</span>
                     <span className={dept.score >= 90 ? 'text-primary font-bold' : dept.score < 80 ? 'text-error font-bold' : ''}>
                       {dept.tier}
                     </span>
@@ -449,10 +473,10 @@ export const NationalCommandCenter = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md pb-space-md">
               <div>
                 <h2 className="font-headline text-headline-sm font-bold text-on-surface">
-                  Recent Complaints Register
+                  {t('recentActivities')}
                 </h2>
                 <p className="font-body text-body-sm text-secondary">
-                  National redressed intake with real-time countdown SLA triggers
+                  {lang === 'kn' ? 'ನೈಜ-ಸಮಯದ ಕೌಂಟ್‌ಡೌನ್ ಎಸ್‌ಎಲ್‌ಎ ಟ್ರಿಗ್ಗರ್‌ಗಳೊಂದಿಗೆ ದೂರುಗಳ ಪಟ್ಟಿ' : 'National redressed intake with real-time countdown SLA triggers'}
                 </p>
               </div>
 
@@ -460,7 +484,7 @@ export const NationalCommandCenter = () => {
               <div className="flex items-center gap-2 flex-wrap">
                 <input
                   type="text"
-                  placeholder="Filter token ID..."
+                  placeholder={t('filterTokenId')}
                   value={tableSearch}
                   onChange={(e) => setTableSearch(e.target.value)}
                   className="h-9 px-3 text-body-sm bg-surface-container-low rounded-lg focus:outline-none focus:bg-surface-container-lowest border border-outline-variant/40 w-36 sm:w-44 font-mono"
@@ -470,12 +494,12 @@ export const NationalCommandCenter = () => {
                   onChange={(e) => setTableFilter(e.target.value)}
                   className="h-9 px-2.5 bg-surface-container-low rounded-lg text-body-sm text-on-surface focus:outline-none border border-outline-variant/40 cursor-pointer"
                 >
-                  <option value="ALL">All Statuses</option>
-                  <option value="IN_PROGRESS">In Progress</option>
-                  <option value="OVERDUE">Overdue</option>
-                  <option value="UNDER_REVIEW">Under Review</option>
-                  <option value="ACTION_TAKEN">Action Taken</option>
-                  <option value="RESOLVED">Resolved</option>
+                  <option value="ALL">{t('allStatuses')}</option>
+                  <option value="IN_PROGRESS">{t('statusInProgress')}</option>
+                  <option value="OVERDUE">{t('statusOverdue')}</option>
+                  <option value="UNDER_REVIEW">{t('statusUnderReview')}</option>
+                  <option value="ACTION_TAKEN">{t('statusActionTaken')}</option>
+                  <option value="RESOLVED">{t('statusResolved')}</option>
                 </select>
               </div>
             </div>
@@ -497,15 +521,17 @@ export const NationalCommandCenter = () => {
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-error animate-ping" />
                 <h2 className="font-headline text-headline-sm font-bold text-on-surface">
-                  Critical Escalations
+                  {t('activeEscalations')}
                 </h2>
               </div>
               <span className="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-mono text-[11px] font-bold">
-                Level 3
+                {lang === 'kn' ? 'ಹಂತ 3' : 'Level 3'}
               </span>
             </div>
             <p className="font-body text-body-sm text-secondary pb-4">
-              Autonomous flags requiring District Magistrate intervention under Sakala Act
+              {lang === 'kn'
+                ? 'ಸಕಾಲ ಕಾಯ್ದೆಯಡಿ ಜಿಲ್ಲಾಧಿಕಾರಿಗಳ ಮಧ್ಯಪ್ರವೇಶ ಅಗತ್ಯವಿರುವ ತುರ್ತು ಪ್ರಕರಣಗಳು'
+                : 'Autonomous flags requiring District Magistrate intervention under Sakala Act'}
             </p>
 
             <div className="flex flex-col gap-3">
@@ -514,19 +540,19 @@ export const NationalCommandCenter = () => {
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs font-bold text-error">#{item.token}</span>
                     <span className="px-2 py-0.5 rounded bg-error text-on-error font-mono text-[10px] font-bold">
-                      Overdue 48h
+                      {lang === 'kn' ? '48ಗಂ ಗಡುವು ಮೀರಿದೆ' : 'Overdue 48h'}
                     </span>
                   </div>
                   <p className="font-headline font-bold text-on-surface text-body-sm line-clamp-2 leading-snug">
-                    {item.title}
+                    {lang === 'kn' && item.titleKn ? item.titleKn : item.title}
                   </p>
                   <div className="flex items-center justify-between pt-1">
-                    <span className="text-secondary text-[11px] font-mono truncate max-w-[150px]">{item.departmentName}</span>
+                    <span className="text-secondary text-[11px] font-mono truncate max-w-[150px]">{tDepartment(item.departmentName)}</span>
                     <button
                       onClick={() => navigate(`/supervisor/escalations?token=${item.token}`)}
                       className="px-2.5 py-1 rounded bg-error text-on-error font-body text-label-sm font-bold hover:opacity-90 transition-opacity"
                     >
-                      Summon DM
+                      {lang === 'kn' ? 'ವಿಚಾರಣೆಗೆ ಕಳುಹಿಸಿ' : 'Summon DM'}
                     </button>
                   </div>
                 </div>
@@ -539,28 +565,38 @@ export const NationalCommandCenter = () => {
             <div>
               <div className="flex items-center justify-between pb-2">
                 <h3 className="font-headline text-headline-sm font-bold text-on-surface">
-                  Follow-up Deadlines
+                  {lang === 'kn' ? 'ಅನುಸರಣಾ ಗಡುವುಗಳು' : 'Follow-up Deadlines'}
                 </h3>
-                <span className="text-secondary font-mono text-xs font-bold">Next 24h</span>
+                <span className="text-secondary font-mono text-xs font-bold">
+                  {lang === 'kn' ? 'ಮುಂದಿನ 24ಗಂ' : 'Next 24h'}
+                </span>
               </div>
               <p className="font-body text-body-sm text-secondary pb-4">
-                Automated statutory compliance cutoffs
+                {lang === 'kn' ? 'ಸ್ವಯಂಚಾಲಿತ ಕಾನೂನುಬದ್ಧ ಅನುಸರಣೆ ಗಡುವುಗಳು' : 'Automated statutory compliance cutoffs'}
               </p>
 
               <div className="flex flex-col gap-2.5">
                 <div className="p-3 rounded-lg bg-surface-container-low flex items-center justify-between text-body-sm">
                   <div>
-                    <span className="font-bold text-on-surface block">Ward 14 Water Leak Notice</span>
+                    <span className="font-bold text-on-surface block">
+                      {lang === 'kn' ? 'ವಾರ್ಡ್ 14 ನೀರು ಸೋರಿಕೆ ನೋಟಿಸ್' : 'Ward 14 Water Leak Notice'}
+                    </span>
                     <span className="text-xs text-secondary font-mono">Jal Shakti · Er. Sandeep</span>
                   </div>
-                  <span className="font-mono text-xs font-bold text-amber-700">4h remaining</span>
+                  <span className="font-mono text-xs font-bold text-amber-700">
+                    {lang === 'kn' ? '4ಗಂ ಬಾಕಿ' : '4h remaining'}
+                  </span>
                 </div>
                 <div className="p-3 rounded-lg bg-surface-container-low flex items-center justify-between text-body-sm">
                   <div>
-                    <span className="font-bold text-on-surface block">Vidyanagar Meter Audit</span>
+                    <span className="font-bold text-on-surface block">
+                      {lang === 'kn' ? 'ವಿದ್ಯಾನಗರ ಮೀಟರ್ ಪರಿಶೋಧನೆ' : 'Vidyanagar Meter Audit'}
+                    </span>
                     <span className="text-xs text-secondary font-mono">BESCOM · Naveen Kumar</span>
                   </div>
-                  <span className="font-mono text-xs font-bold text-primary">18h remaining</span>
+                  <span className="font-mono text-xs font-bold text-primary">
+                    {lang === 'kn' ? '18ಗಂ ಬಾಕಿ' : '18h remaining'}
+                  </span>
                 </div>
               </div>
             </div>

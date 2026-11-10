@@ -11,8 +11,8 @@ export const CitizenLayout = () => {
     { to: '/citizen', label: t('navHome'), icon: 'home' },
     { to: '/citizen/register', label: t('navRegister'), icon: 'rate_review' },
     { to: '/citizen/track', label: t('navTrack'), icon: 'search_check' },
-    { to: '/citizen/feedback', label: lang === 'kn' ? 'ಪ್ರತಿಕ್ರಿಯೆ ಮತ್ತು ದೃಢೀಕರಣ' : 'Feedback & Verify', icon: 'reviews' },
-    { to: '/citizen/login', label: lang === 'kn' ? 'ನಾಗರಿಕ ಲಾಗಿನ್' : 'Citizen Sign In', icon: 'account_circle' },
+    { to: '/citizen/feedback', label: t('navFeedback'), icon: 'reviews' },
+    { to: '/citizen/login', label: t('navLogin'), icon: 'account_circle' },
   ];
 
   return (
@@ -22,11 +22,17 @@ export const CitizenLayout = () => {
         <div className="bg-inverse-surface text-inverse-on-surface px-4 py-2 flex items-center justify-between text-xs font-mono border-b border-outline/30">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span>Government of Karnataka & National Civic Redressal Network</span>
+            <span>
+              {lang === 'kn'
+                ? 'ಕರ್ನಾಟಕ ಸರ್ಕಾರ · ಸಾರ್ವಜನಿಕ ಕುಂದುಕೊರತೆ ನಿವಾರಣಾ ಜಾಲ'
+                : 'Government of Karnataka & National Civic Redressal Network'}
+            </span>
           </div>
           <div className="flex items-center gap-4">
-            <span>Public Services Guarantee Act 2011</span>
-            <span className="hidden sm:inline">Toll Free: 1800-GOV-911</span>
+            <span>{t('nationalPortal')}</span>
+            <span className="hidden sm:inline">
+              {lang === 'kn' ? 'ಉಚಿತ ಸಹಾಯವಾಣಿ: 1800-GOV-911' : 'Toll Free: 1800-GOV-911'}
+            </span>
           </div>
         </div>
 
@@ -82,24 +88,30 @@ export const CitizenLayout = () => {
             </div>
             <div>
               <p className="font-headline font-bold text-inverse-on-surface">
-                ResolveTrack Civic Grievance Management System
+                {lang === 'kn'
+                  ? 'ರಿಸಾಲ್ವ್‌ಟ್ರ್ಯಾಕ್ ನಾಗರಿಕ ಕುಂದುಕೊರತೆ ನಿರ್ವಹಣಾ ವ್ಯವಸ್ಥೆ'
+                  : 'ResolveTrack Civic Grievance Management System'}
               </p>
               <p className="text-secondary-fixed-dim/70">
-                Department of Administrative Reforms & Public Grievances
+                {lang === 'kn'
+                  ? 'ಆಡಳಿತ ಸುಧಾರಣೆಗಳು ಮತ್ತು ಸಾರ್ವಜನಿಕ ಕುಂದುಕೊರತೆ ಇಲಾಖೆ (ಕರ್ನಾಟಕ ಸರ್ಕಾರ)'
+                  : 'Department of Administrative Reforms & Public Grievances'}
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-4 font-mono text-[11px]">
             <Link to="/citizen/track" className="hover:text-inverse-on-surface transition-colors">
-              Grievance Status
+              {t('navTrack')}
             </Link>
             <span>·</span>
             <Link to="/citizen/register" className="hover:text-inverse-on-surface transition-colors">
-              File New Grievance
+              {t('navRegister')}
             </Link>
             <span>·</span>
-            <span className="text-primary-fixed">Statutory SLA Window: 48–72h</span>
+            <span className="text-primary-fixed">
+              {lang === 'kn' ? 'ಕಾನೂನುಬದ್ಧ ಪರಿಹಾರ ಗಡುವು: 48–72 ಗಂ' : 'Statutory SLA Window: 48–72h'}
+            </span>
           </div>
         </div>
       </footer>

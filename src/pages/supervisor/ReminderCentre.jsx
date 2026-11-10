@@ -19,7 +19,7 @@ export const ReminderCentre = () => {
   } = useComplaints();
 
   const { currentUser, currentRole, switchRole } = useAuth();
-  const { lang } = useLanguage();
+  const { lang, t, tDepartment, tChannel } = useLanguage();
 
   // Filters & State
   const [searchQuery, setSearchQuery] = useState('');
@@ -349,9 +349,9 @@ export const ReminderCentre = () => {
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
         <Breadcrumb
           items={[
-            { label: 'Admin Command', to: '/admin/overview' },
-            { label: 'Oversight & Monitoring' },
-            { label: 'Intelligent Reminder Centre' },
+            { label: t('navOverview'), to: '/admin/overview' },
+            { label: t('supervisorReview') },
+            { label: t('reminderCentreTitle') },
           ]}
         />
 
@@ -363,14 +363,14 @@ export const ReminderCentre = () => {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="font-headline text-2xl font-bold text-slate-900 tracking-tight">
-                  {lang === 'kn' ? 'ಜ್ಞಾನಶೀಲ ಜ್ಞಾಪಕ ಕೇಂದ್ರ ಮತ್ತು ಅನುಸರಣೆ' : 'Intelligent Reminder Centre & Follow-up Engine'}
+                  {t('reminderCentreTitle')}
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold uppercase bg-teal-100 text-teal-800 border border-teal-300">
-                  Autonomous Engine Active
+                  {lang === 'kn' ? 'ಸ್ವಯಂಚಾಲಿತ ಎಂಜಿನ್ ಸಕ್ರಿಯ' : 'Autonomous Engine Active'}
                 </span>
               </div>
               <p className="font-body text-xs sm:text-sm text-slate-500 mt-0.5">
-                Centralized statutory reminder dispatch, multi-channel citizen nudges, and proactive milestone tracking.
+                {t('reminderCentreSubtitle')}
               </p>
             </div>
           </div>
@@ -379,26 +379,26 @@ export const ReminderCentre = () => {
           <div className="flex items-center gap-2.5 flex-wrap">
             {/* Session Role Switcher */}
             <div className="px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs flex items-center gap-2">
-              <span className="text-slate-500 font-medium">Role:</span>
+              <span className="text-slate-500 font-medium">{t('activeRole')}:</span>
               <select
                 value={currentRole}
                 onChange={(e) => switchRole(e.target.value)}
                 className="bg-transparent font-bold text-slate-800 focus:outline-none cursor-pointer"
               >
-                <option value={USER_ROLES.ADMIN}>Administrator</option>
-                <option value={USER_ROLES.SUPERVISOR}>Supervisor</option>
-                <option value={USER_ROLES.OFFICER}>Department Officer</option>
+                <option value={USER_ROLES.ADMIN}>{lang === 'kn' ? 'ಆಡಳಿತಾಧಿಕಾರಿ' : 'Administrator'}</option>
+                <option value={USER_ROLES.SUPERVISOR}>{lang === 'kn' ? 'ಮೇಲ್ವಿಚಾರಕರು' : 'Supervisor'}</option>
+                <option value={USER_ROLES.OFFICER}>{lang === 'kn' ? 'ಇಲಾಖಾ ಅಧಿಕಾರಿ' : 'Department Officer'}</option>
               </select>
             </div>
 
             {/* Run Automated Engine Button */}
             <button
               onClick={handleTriggerAutomatedEngine}
-              title="Scan active grievances and generate due-today/overdue reminders without duplicates"
+              title={lang === 'kn' ? 'ಸಕ್ರಿಯ ದೂರುಗಳನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ ಮತ್ತು ಜ್ಞಾಪನೆಗಳನ್ನು ರಚಿಸಿ' : 'Scan active grievances and generate due-today/overdue reminders without duplicates'}
               className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold border border-slate-300 flex items-center gap-1.5 transition-all shadow-xs"
             >
               <span className="material-symbols-outlined text-sm text-teal-600">bolt</span>
-              <span>Evaluate Auto-Rules</span>
+              <span>{t('runAutoEngine')}</span>
             </button>
 
             {/* Create Manual Reminder Button */}
@@ -408,7 +408,7 @@ export const ReminderCentre = () => {
                 className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
               >
                 <span className="material-symbols-outlined text-sm">add_alert</span>
-                <span>Create Reminder</span>
+                <span>{t('createManualReminder')}</span>
               </button>
             )}
           </div>
@@ -426,13 +426,15 @@ export const ReminderCentre = () => {
             }`}
           >
             <div className="flex justify-between items-center text-slate-500 mb-1 text-xs font-bold uppercase">
-              <span>Total Reminders</span>
+              <span>{t('totalReminders')}</span>
               <span className="material-symbols-outlined text-slate-600 text-base">notifications</span>
             </div>
             <div className="font-headline text-2xl font-bold text-slate-900">
               {summaryMetrics.total}
             </div>
-            <div className="text-[10px] text-slate-500 mt-1">Logged notices</div>
+            <div className="text-[10px] text-slate-500 mt-1">
+              {lang === 'kn' ? 'ದಾಖಲಾದ ನೋಟಿಸ್‌ಗಳು' : 'Logged notices'}
+            </div>
           </div>
 
           {/* 2. Reminders Due Today */}
@@ -445,7 +447,7 @@ export const ReminderCentre = () => {
             }`}
           >
             <div className="flex justify-between items-center text-amber-800 mb-1 text-xs font-bold uppercase">
-              <span>Due Today</span>
+              <span>{t('remindersDueToday')}</span>
               <span className="material-symbols-outlined text-amber-600 text-base">schedule</span>
             </div>
             <div className="font-headline text-2xl font-bold text-amber-900">
@@ -453,7 +455,7 @@ export const ReminderCentre = () => {
             </div>
             <div className="text-[10px] text-amber-700 mt-1 font-semibold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
-              <span>Action due today</span>
+              <span>{lang === 'kn' ? 'ಇಂದು ಬಾಕಿಯಿದೆ' : 'Action due today'}</span>
             </div>
           </div>
 
@@ -467,13 +469,15 @@ export const ReminderCentre = () => {
             }`}
           >
             <div className="flex justify-between items-center text-blue-800 mb-1 text-xs font-bold uppercase">
-              <span>Upcoming</span>
+              <span>{t('upcomingReminders')}</span>
               <span className="material-symbols-outlined text-blue-600 text-base">hourglass_top</span>
             </div>
             <div className="font-headline text-2xl font-bold text-blue-900">
               {summaryMetrics.upcoming}
             </div>
-            <div className="text-[10px] text-blue-700 mt-1 font-semibold">&lt;48h window</div>
+            <div className="text-[10px] text-blue-700 mt-1 font-semibold">
+              {lang === 'kn' ? '<48 ಗಂಟೆ ಅವಧಿ' : '<48h window'}
+            </div>
           </div>
 
           {/* 4. Sent / Delivered Reminders */}
@@ -486,13 +490,15 @@ export const ReminderCentre = () => {
             }`}
           >
             <div className="flex justify-between items-center text-emerald-800 mb-1 text-xs font-bold uppercase">
-              <span>Delivered</span>
+              <span>{t('sentReminders')}</span>
               <span className="material-symbols-outlined text-emerald-600 text-base">done_all</span>
             </div>
             <div className="font-headline text-2xl font-bold text-emerald-900">
               {summaryMetrics.sent}
             </div>
-            <div className="text-[10px] text-emerald-700 mt-1 font-semibold">Simulated receipt</div>
+            <div className="text-[10px] text-emerald-700 mt-1 font-semibold">
+              {lang === 'kn' ? 'ರವಾನೆ ದೃಢಪಟ್ಟಿದೆ' : 'Simulated receipt'}
+            </div>
           </div>
 
           {/* 5. Failed Reminders */}
@@ -505,25 +511,29 @@ export const ReminderCentre = () => {
             }`}
           >
             <div className="flex justify-between items-center text-rose-800 mb-1 text-xs font-bold uppercase">
-              <span>Failed</span>
+              <span>{t('failedReminders')}</span>
               <span className="material-symbols-outlined text-rose-600 text-base">error</span>
             </div>
             <div className="font-headline text-2xl font-bold text-rose-700">
               {summaryMetrics.failed}
             </div>
-            <div className="text-[10px] text-rose-600 mt-1 font-semibold">Requires fallback retry</div>
+            <div className="text-[10px] text-rose-600 mt-1 font-semibold">
+              {lang === 'kn' ? 'ಮರುಪ್ರಯತ್ನದ ಅಗತ್ಯವಿದೆ' : 'Requires fallback retry'}
+            </div>
           </div>
 
           {/* 6. Pending Follow-ups */}
           <div className="p-4 rounded-xl border border-purple-200 bg-purple-50/40 shadow-sm">
             <div className="flex justify-between items-center text-purple-800 mb-1 text-xs font-bold uppercase">
-              <span>Pending Follow-ups</span>
+              <span>{t('pendingFollowUps')}</span>
               <span className="material-symbols-outlined text-purple-600 text-base">assignment</span>
             </div>
             <div className="font-headline text-2xl font-bold text-purple-900">
               {summaryMetrics.pendingFollowUps}
             </div>
-            <div className="text-[10px] text-purple-700 mt-1 font-semibold">Active docket targets</div>
+            <div className="text-[10px] text-purple-700 mt-1 font-semibold">
+              {lang === 'kn' ? 'ಸಕ್ರಿಯ ದೂರು ಗುರಿಗಳು' : 'Active docket targets'}
+            </div>
           </div>
         </div>
 
@@ -531,7 +541,10 @@ export const ReminderCentre = () => {
         <div className="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-start gap-2.5">
           <span className="material-symbols-outlined text-teal-600 text-base mt-0.5">verified_user</span>
           <div>
-            <strong>Simulated Telemetry Safeguard:</strong> All channel delivery events (WhatsApp, SMS, IVR, Email) are simulated demonstration records in the frontend state. Real statutory delivery requires backend telecom provider integration and delivery confirmation.
+            <strong>{lang === 'kn' ? 'ಅಣಕು ಟೆಲಿಮೆಟ್ರಿ ಸುರಕ್ಷತಾ ಸೂಚನೆ: ' : 'Simulated Telemetry Safeguard: '}</strong>
+            {lang === 'kn'
+              ? 'ಎಲ್ಲಾ ಸಂದೇಶ ರವಾನೆ ಘಟನೆಗಳು (WhatsApp, SMS, IVR, Email) ಮುಂಭಾಗದ ಸ್ಥಿತಿಯಲ್ಲಿರುವ ಅಣಕು ಪ್ರದರ್ಶನ ದಾಖಲೆಗಳಾಗಿವೆ. ನಿಜವಾದ ಸಂದೇಶ ರವಾನೆಗೆ ಟೆಲಿಕಾಂ API ಸಂಪರ್ಕದ ಅಗತ್ಯವಿದೆ.'
+              : 'All channel delivery events (WhatsApp, SMS, IVR, Email) are simulated demonstration records in the frontend state. Real statutory delivery requires backend telecom provider integration and delivery confirmation.'}
           </div>
         </div>
       </div>

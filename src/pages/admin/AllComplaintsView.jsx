@@ -23,7 +23,7 @@ export const AllComplaintsView = () => {
     updateComplaintDetails
   } = useComplaints();
 
-  const { lang, t } = useLanguage();
+  const { lang, t, tDepartment, tCategory } = useLanguage();
   const { currentRole, USER_ROLES } = useAuth();
 
   // Search & Filter States
@@ -79,16 +79,16 @@ export const AllComplaintsView = () => {
     const rejected = complaints.filter(c => c.status === 'REJECTED' || c.verificationStatus === 'REJECTED').length;
 
     return [
-      { id: 'ALL', label: 'Total Complaints', count: total, icon: 'receipt_long', color: 'border-slate-300 text-slate-800 bg-white', trend: '100% Registry' },
-      { id: 'NEWLY_REGISTERED', label: 'Newly Registered', count: newlyRegistered, icon: 'fiber_new', color: 'border-sky-300 text-sky-800 bg-sky-50/50', trend: `${Math.round((newlyRegistered / (total || 1)) * 100)}% of total` },
-      { id: 'PENDING_VERIFICATION', label: 'Pending Verification', count: pendingVerification, icon: 'pending_actions', color: 'border-amber-300 text-amber-800 bg-amber-50/50', trend: 'Requires scrutiny' },
-      { id: 'VERIFIED', label: 'Verified Complaints', count: verified, icon: 'verified', color: 'border-teal-300 text-teal-800 bg-teal-50/50', trend: 'Ready for cadre' },
-      { id: 'ASSIGNED', label: 'Assigned Complaints', count: assigned, icon: 'assignment_ind', color: 'border-blue-300 text-blue-800 bg-blue-50/50', trend: 'Nodal allocated' },
-      { id: 'IN_PROGRESS', label: 'In Progress', count: inProgress, icon: 'autorenew', color: 'border-indigo-300 text-indigo-800 bg-indigo-50/50', trend: 'Field action' },
-      { id: 'RESOLVED', label: 'Resolved Complaints', count: resolved, icon: 'task_alt', color: 'border-emerald-300 text-emerald-800 bg-emerald-50/50', trend: `${Math.round((resolved / (total || 1)) * 100)}% resolution` },
-      { id: 'REJECTED', label: 'Rejected Complaints', count: rejected, icon: 'cancel', color: 'border-rose-300 text-rose-800 bg-rose-50/50', trend: 'Retained in audit' }
+      { id: 'ALL', label: t('totalComplaints'), count: total, icon: 'receipt_long', color: 'border-slate-300 text-slate-800 bg-white', trend: lang === 'kn' ? '100% ನೋಂದಣಿ' : '100% Registry' },
+      { id: 'NEWLY_REGISTERED', label: lang === 'kn' ? 'ಹೊಸ ದೂರುಗಳು' : 'Newly Registered', count: newlyRegistered, icon: 'fiber_new', color: 'border-sky-300 text-sky-800 bg-sky-50/50', trend: `${Math.round((newlyRegistered / (total || 1)) * 100)}% ${lang === 'kn' ? 'ಪ್ರಮಾಣ' : 'of total'}` },
+      { id: 'PENDING_VERIFICATION', label: lang === 'kn' ? 'ಪರಿಶೀಲನೆ ಬಾಕಿ' : 'Pending Verification', count: pendingVerification, icon: 'pending_actions', color: 'border-amber-300 text-amber-800 bg-amber-50/50', trend: lang === 'kn' ? 'ಪರಿಶೀಲನೆ ಅಗತ್ಯ' : 'Requires scrutiny' },
+      { id: 'VERIFIED', label: lang === 'kn' ? 'ಅಂಗೀಕೃತ ದೂರುಗಳು' : 'Verified Complaints', count: verified, icon: 'verified', color: 'border-teal-300 text-teal-800 bg-teal-50/50', trend: lang === 'kn' ? 'ನಿಯೋಜನೆಗೆ ಸಿದ್ಧ' : 'Ready for cadre' },
+      { id: 'ASSIGNED', label: t('assignedComplaints'), count: assigned, icon: 'assignment_ind', color: 'border-blue-300 text-blue-800 bg-blue-50/50', trend: lang === 'kn' ? 'ಅಧಿಕಾರಿಗೆ ಹಂಚಿಕೆ' : 'Nodal allocated' },
+      { id: 'IN_PROGRESS', label: t('inProgress'), count: inProgress, icon: 'autorenew', color: 'border-indigo-300 text-indigo-800 bg-indigo-50/50', trend: lang === 'kn' ? 'ಕ್ಷೇತ್ರ ಕ್ರಮ' : 'Field action' },
+      { id: 'RESOLVED', label: t('resolvedTotal'), count: resolved, icon: 'task_alt', color: 'border-emerald-300 text-emerald-800 bg-emerald-50/50', trend: `${Math.round((resolved / (total || 1)) * 100)}% ${lang === 'kn' ? 'ಪರಿಹಾರ' : 'resolution'}` },
+      { id: 'REJECTED', label: t('glossary.rejected'), count: rejected, icon: 'cancel', color: 'border-rose-300 text-rose-800 bg-rose-50/50', trend: lang === 'kn' ? 'ಪರಿಶೋಧನೆ ದಾಖಲೆ' : 'Retained in audit' }
     ];
-  }, [complaints]);
+  }, [complaints, lang, t]);
 
   // -------------------------------------------------------------------------
   // FILTERING & SEARCH
@@ -313,15 +313,17 @@ export const AllComplaintsView = () => {
         <div>
           <Breadcrumb
             items={[
-              { label: 'Admin Console', path: '/admin/overview' },
-              { label: 'Complaint Intake & Management' }
+              { label: t('navOverview'), path: '/admin/overview' },
+              { label: t('navAllComplaints') }
             ]}
           />
           <h1 className="text-2xl sm:text-3xl font-bold font-headline text-slate-900 mt-1">
-            Complaint Registration & Management
+            {lang === 'kn' ? 'ದೂರು ನೋಂದಣಿ ಮತ್ತು ಕೇಂದ್ರೀಕೃತ ನಿರ್ವಹಣೆ' : 'Complaint Registration & Management'}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Central repository for grievance intake, jurisdictional verification, cadre assignment, and lifecycle monitoring.
+            {lang === 'kn'
+              ? 'ದೂರು ಸ್ವೀಕೃತಿ, ನ್ಯಾಯವ್ಯಾಪ್ತಿ ಪರಿಶೀಲನೆ, ಅಧಿಕಾರಿ ನಿಯೋಜನೆ ಮತ್ತು ಜೀವನಚಕ್ರ ಮೇಲ್ವಿಚಾರಣೆಗಾಗಿ ಕೇಂದ್ರೀಕೃತ ಕೋಶ.'
+              : 'Central repository for grievance intake, jurisdictional verification, cadre assignment, and lifecycle monitoring.'}
           </p>
         </div>
 
@@ -331,7 +333,7 @@ export const AllComplaintsView = () => {
             className="px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-all flex items-center gap-2 shadow-sm"
           >
             <span className="material-symbols-outlined text-base">add_circle</span>
-            <span>Register New Grievance</span>
+            <span>{t('registerGrievance')}</span>
           </Link>
         </div>
       </div>
@@ -388,7 +390,7 @@ export const AllComplaintsView = () => {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              placeholder="Search by Tracking ID, citizen name, phone, title..."
+              placeholder={lang === 'kn' ? 'ಟ್ರ್ಯಾಕಿಂಗ್ ಐಡಿ, ನಾಗರಿಕರ ಹೆಸರು, ಮೊಬೈಲ್ ಮೂಲಕ ಹುಡುಕಿ...' : 'Search by Tracking ID, citizen name, phone, title...'}
               className="w-full h-10 pl-10 pr-3.5 rounded-xl border border-slate-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 text-xs transition-all outline-none"
             />
           </div>
@@ -403,9 +405,9 @@ export const AllComplaintsView = () => {
               }}
               className="w-full h-10 px-3 rounded-xl border border-slate-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 text-xs transition-all outline-none cursor-pointer"
             >
-              <option value="ALL">All Departments</option>
+              <option value="ALL">{lang === 'kn' ? 'ಎಲ್ಲಾ ಇಲಾಖೆಗಳು' : 'All Departments'}</option>
               {departments.map(d => (
-                <option key={d.id} value={d.id}>{d.name}</option>
+                <option key={d.id} value={d.id}>{tDepartment(d.name)}</option>
               ))}
             </select>
           </div>
@@ -420,9 +422,9 @@ export const AllComplaintsView = () => {
               }}
               className="w-full h-10 px-3 rounded-xl border border-slate-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 text-xs transition-all outline-none cursor-pointer"
             >
-              <option value="ALL">All Categories</option>
+              <option value="ALL">{lang === 'kn' ? 'ಎಲ್ಲಾ ವರ್ಗಗಳು' : 'All Categories'}</option>
               {COMPLAINT_CATEGORIES.map(c => (
-                <option key={c.id} value={c.name}>{c.name}</option>
+                <option key={c.id} value={c.name}>{tCategory(c.name)}</option>
               ))}
             </select>
           </div>
@@ -437,11 +439,11 @@ export const AllComplaintsView = () => {
               }}
               className="w-full h-10 px-3 rounded-xl border border-slate-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 text-xs transition-all outline-none cursor-pointer"
             >
-              <option value="ALL">All Priorities</option>
-              <option value="CRITICAL">Critical</option>
-              <option value="HIGH">High</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="LOW">Low</option>
+              <option value="ALL">{lang === 'kn' ? 'ಎಲ್ಲಾ ಆದ್ಯತೆಗಳು' : 'All Priorities'}</option>
+              <option value="CRITICAL">{t('priorityCritical')}</option>
+              <option value="HIGH">{t('priorityHigh')}</option>
+              <option value="MEDIUM">{t('priorityMedium')}</option>
+              <option value="LOW">{t('priorityLow')}</option>
             </select>
           </div>
 
@@ -455,9 +457,9 @@ export const AllComplaintsView = () => {
               }}
               className="w-full h-10 px-3 rounded-xl border border-slate-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 text-xs transition-all outline-none cursor-pointer"
             >
-              <option value="ALL">All Dates</option>
-              <option value="TODAY">Registered Today</option>
-              <option value="LAST_7_DAYS">Last 7 Days</option>
+              <option value="ALL">{lang === 'kn' ? 'ಎಲ್ಲಾ ದಿನಾಂಕಗಳು' : 'All Dates'}</option>
+              <option value="TODAY">{lang === 'kn' ? 'ಇಂದು ದಾಖಲಾದವು' : 'Registered Today'}</option>
+              <option value="LAST_7_DAYS">{lang === 'kn' ? 'ಕಳೆದ 7 ದಿನಗಳು' : 'Last 7 Days'}</option>
             </select>
           </div>
         </div>

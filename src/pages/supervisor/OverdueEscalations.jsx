@@ -39,7 +39,7 @@ export const OverdueEscalations = () => {
   } = useComplaints();
 
   const { currentUser, currentRole, switchRole } = useAuth();
-  const { lang } = useLanguage();
+  const { lang, t, tDepartment } = useLanguage();
 
   // Active View Tabs: 'DASHBOARD' | 'TABLE' | 'ESCALATIONS' | 'ANALYTICS'
   const [activeTab, setActiveTab] = useState('TABLE');
@@ -562,9 +562,9 @@ export const OverdueEscalations = () => {
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
         <Breadcrumb
           items={[
-            { label: 'Admin Command', to: '/admin/overview' },
-            { label: 'Oversight & Monitoring' },
-            { label: 'Overdue Complaints & Intelligent Escalation' },
+            { label: t('navOverview'), to: '/admin/overview' },
+            { label: t('supervisorReview') },
+            { label: t('overdueTitle') },
           ]}
         />
 
@@ -576,14 +576,14 @@ export const OverdueEscalations = () => {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="font-headline text-2xl font-bold text-slate-900 tracking-tight">
-                  {lang === 'kn' ? 'ಅವಧಿ ಮೀರಿದ ದೂರುಗಳು ಮತ್ತು ಜ್ಞಾನಶೀಲ ಹಂತೀಕರಣ' : 'Overdue Complaints & Intelligent Escalation'}
+                  {t('overdueTitle')}
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold uppercase bg-rose-100 text-rose-800 border border-rose-300 animate-pulse">
-                  {summaryMetrics.totalOverdue} Active Breaches
+                  {summaryMetrics.totalOverdue} {lang === 'kn' ? 'ಸಕ್ರಿಯ ಉಲ್ಲಂಘನೆಗಳು' : 'Active Breaches'}
                 </span>
               </div>
               <p className="font-body text-xs sm:text-sm text-slate-500 mt-0.5">
-                Multi-tier follow-up monitoring, automated grace alert cadences, and statutory ombudsman escalations.
+                {t('overdueSubtitle')}
               </p>
             </div>
           </div>
@@ -591,15 +591,15 @@ export const OverdueEscalations = () => {
           {/* Quick Role & Mode Switcher for Demonstration */}
           <div className="flex items-center gap-2 flex-wrap">
             <div className="px-3 py-1 rounded-xl bg-slate-100 border border-slate-200 text-xs flex items-center gap-2">
-              <span className="text-slate-500 font-medium">Session Role:</span>
+              <span className="text-slate-500 font-medium">{t('activeRole')}:</span>
               <select
                 value={currentRole}
                 onChange={(e) => switchRole(e.target.value)}
                 className="bg-transparent font-bold text-slate-800 focus:outline-none cursor-pointer"
               >
-                <option value={USER_ROLES.ADMIN}>Administrator (Full Rights)</option>
-                <option value={USER_ROLES.SUPERVISOR}>Supervisor (Review Rights)</option>
-                <option value={USER_ROLES.OFFICER}>Department Officer (Assigned)</option>
+                <option value={USER_ROLES.ADMIN}>{lang === 'kn' ? 'ಆಡಳಿತಾಧಿಕಾರಿ (ಪೂರ್ಣ ಹಕ್ಕು)' : 'Administrator (Full Rights)'}</option>
+                <option value={USER_ROLES.SUPERVISOR}>{lang === 'kn' ? 'ಮೇಲ್ವಿಚಾರಕರು (ಪರಿಶೀಲನೆ)' : 'Supervisor (Review Rights)'}</option>
+                <option value={USER_ROLES.OFFICER}>{lang === 'kn' ? 'ಇಲಾಖಾ ಅಧಿಕಾರಿ (ನಿಯೋಜಿತ)' : 'Department Officer (Assigned)'}</option>
               </select>
             </div>
 
@@ -612,7 +612,11 @@ export const OverdueEscalations = () => {
               }`}
             >
               <span className="material-symbols-outlined text-sm">monitoring</span>
-              <span>{activeTab === 'ANALYTICS' ? 'Hide Analytics' : 'Breach Analytics'}</span>
+              <span>
+                {activeTab === 'ANALYTICS'
+                  ? (lang === 'kn' ? 'ವಿಶ್ಲೇಷಣೆ ಮರೆಮಾಡಿ' : 'Hide Analytics')
+                  : (lang === 'kn' ? 'ಉಲ್ಲಂಘನೆ ವಿಶ್ಲೇಷಣೆ' : 'Breach Analytics')}
+              </span>
             </button>
           </div>
         </div>
@@ -629,13 +633,15 @@ export const OverdueEscalations = () => {
             }`}
           >
             <div className="flex justify-between items-center text-slate-500 mb-1 text-xs font-bold uppercase">
-              <span>Total Pending</span>
+              <span>{t('pendingReview')}</span>
               <span className="material-symbols-outlined text-slate-600 text-base">pending_actions</span>
             </div>
             <div className="font-headline text-2xl font-bold text-slate-900">
               {summaryMetrics.totalPending}
             </div>
-            <div className="text-[10px] text-slate-500 mt-1">Active redressal queue</div>
+            <div className="text-[10px] text-slate-500 mt-1">
+              {lang === 'kn' ? 'ಸಕ್ರಿಯ ಪರಿಹಾರ ಸರದಿ' : 'Active redressal queue'}
+            </div>
           </div>
 
           {/* 2. Follow-ups Due Today */}
@@ -648,7 +654,7 @@ export const OverdueEscalations = () => {
             }`}
           >
             <div className="flex justify-between items-center text-amber-800 mb-1 text-xs font-bold uppercase">
-              <span>Due Today</span>
+              <span>{t('remindersDueToday')}</span>
               <span className="material-symbols-outlined text-amber-600 text-base">schedule</span>
             </div>
             <div className="font-headline text-2xl font-bold text-amber-800">
@@ -656,7 +662,7 @@ export const OverdueEscalations = () => {
             </div>
             <div className="text-[10px] text-amber-700 mt-1 font-semibold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
-              <span>Action required today</span>
+              <span>{lang === 'kn' ? 'ಇಂದೇ ಕ್ರಮ ಅಗತ್ಯವಿದೆ' : 'Action required today'}</span>
             </div>
           </div>
 
@@ -670,13 +676,15 @@ export const OverdueEscalations = () => {
             }`}
           >
             <div className="flex justify-between items-center text-blue-800 mb-1 text-xs font-bold uppercase">
-              <span>Approaching</span>
+              <span>{lang === 'kn' ? 'ಗಡುವು ಸಮೀಪಿಸುತ್ತಿದೆ' : 'Approaching'}</span>
               <span className="material-symbols-outlined text-blue-600 text-base">hourglass_top</span>
             </div>
             <div className="font-headline text-2xl font-bold text-blue-800">
               {summaryMetrics.approachingDeadline}
             </div>
-            <div className="text-[10px] text-blue-600 mt-1 font-semibold">&lt;48h window remaining</div>
+            <div className="text-[10px] text-blue-600 mt-1 font-semibold">
+              {lang === 'kn' ? '<48 ಗಂಟೆ ಬಾಕಿ ಇದೆ' : '<48h window remaining'}
+            </div>
           </div>
 
           {/* 4. Total Overdue Complaints */}
@@ -689,13 +697,15 @@ export const OverdueEscalations = () => {
             }`}
           >
             <div className="flex justify-between items-center text-rose-800 mb-1 text-xs font-bold uppercase">
-              <span>Total Overdue</span>
+              <span>{t('overdueTickets')}</span>
               <span className="material-symbols-outlined text-rose-600 text-base">alarm</span>
             </div>
             <div className="font-headline text-2xl font-bold text-rose-700">
               {summaryMetrics.totalOverdue}
             </div>
-            <div className="text-[10px] text-rose-600 mt-1 font-semibold">Statutory SLA breached</div>
+            <div className="text-[10px] text-rose-600 mt-1 font-semibold">
+              {lang === 'kn' ? 'ಕಾನೂನುಬದ್ಧ SLA ಮೀರಿದೆ' : 'Statutory SLA breached'}
+            </div>
           </div>
 
           {/* 5. Critical Overdue Complaints */}
@@ -704,13 +714,15 @@ export const OverdueEscalations = () => {
             className="p-4 rounded-xl border border-rose-300 bg-rose-100/50 hover:border-rose-400 transition-all cursor-pointer"
           >
             <div className="flex justify-between items-center text-rose-900 mb-1 text-xs font-bold uppercase">
-              <span>Critical Overdue</span>
+              <span>{lang === 'kn' ? 'ಅತಿ ಗಂಭೀರ ಮೀರಿದ' : 'Critical Overdue'}</span>
               <span className="material-symbols-outlined text-rose-700 text-base">warning</span>
             </div>
             <div className="font-headline text-2xl font-bold text-rose-900">
               {summaryMetrics.criticalOverdue}
             </div>
-            <div className="text-[10px] text-rose-800 mt-1 font-semibold">Section 8 Sakala risk</div>
+            <div className="text-[10px] text-rose-800 mt-1 font-semibold">
+              {lang === 'kn' ? 'ಸಕಾಲ ಕಲಂ 8 ಅಪಾಯ' : 'Section 8 Sakala risk'}
+            </div>
           </div>
 
           {/* 6. Escalations Awaiting Action */}
@@ -723,35 +735,39 @@ export const OverdueEscalations = () => {
             }`}
           >
             <div className="flex justify-between items-center text-purple-800 mb-1 text-xs font-bold uppercase">
-              <span>Escalations</span>
+              <span>{t('activeEscalations')}</span>
               <span className="material-symbols-outlined text-purple-600 text-base">crisis_alert</span>
             </div>
             <div className="font-headline text-2xl font-bold text-purple-700">
               {summaryMetrics.escalationsAwaitingAction}
             </div>
-            <div className="text-[10px] text-purple-600 mt-1 font-semibold">Supervisor / DM desk</div>
+            <div className="text-[10px] text-purple-600 mt-1 font-semibold">
+              {lang === 'kn' ? 'ಮೇಲ್ವಿಚಾರಕ / ಡಿಸಿ ಹಂತ' : 'Supervisor / DM desk'}
+            </div>
           </div>
         </div>
 
         {/* Demonstration Setting & Legend Strip */}
         <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="font-semibold text-slate-700">Deadline Status Codes:</span>
+            <span className="font-semibold text-slate-700">
+              {lang === 'kn' ? 'ಗಡುವಿನ ಸ್ಥಿತಿ ಸಂಕೇತಗಳು:' : 'Deadline Status Codes:'}
+            </span>
             <div className="flex items-center gap-1.5 font-mono text-[11px]">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
-              <span className="text-slate-600">Green: Within Deadline</span>
+              <span className="text-slate-600">{lang === 'kn' ? 'ಹಸಿರು: ಗಡುವಿನ ಒಳಗೆ' : 'Green: Within Deadline'}</span>
             </div>
             <div className="flex items-center gap-1.5 font-mono text-[11px]">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" />
-              <span className="text-slate-600">Orange: Approaching / Due Today</span>
+              <span className="text-slate-600">{lang === 'kn' ? 'ಕಿತ್ತಳೆ: ಸಮೀಪಿಸುತ್ತಿದೆ / ಇಂದು' : 'Orange: Approaching / Due Today'}</span>
             </div>
             <div className="flex items-center gap-1.5 font-mono text-[11px]">
               <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block" />
-              <span className="text-slate-600">Red: Overdue</span>
+              <span className="text-slate-600">{lang === 'kn' ? 'ಕೆಂಪು: ಗಡುವು ಮೀರಿದೆ' : 'Red: Overdue'}</span>
             </div>
             <div className="flex items-center gap-1.5 font-mono text-[11px]">
               <span className="w-2.5 h-2.5 rounded-full bg-purple-600 inline-block" />
-              <span className="text-slate-600">Purple: Escalated</span>
+              <span className="text-slate-600">{lang === 'kn' ? 'ನೇರಳೆ: ಮೇಲ್ಮಟ್ಟಕ್ಕೆ ವರ್ಗಾವಣೆ' : 'Purple: Escalated'}</span>
             </div>
           </div>
 
@@ -763,7 +779,11 @@ export const OverdueEscalations = () => {
               <span className="material-symbols-outlined text-xs">
                 {maskCitizenPrivacy ? 'visibility_off' : 'visibility'}
               </span>
-              <span>{maskCitizenPrivacy ? 'Citizen Privacy Mask Active' : 'Mask Citizen Identity'}</span>
+              <span>
+                {maskCitizenPrivacy
+                  ? (lang === 'kn' ? 'ಗೌಪ್ಯತೆ ಮುಖವಾಡ ಸಕ್ರಿಯ' : 'Citizen Privacy Mask Active')
+                  : (lang === 'kn' ? 'ನಾಗರಿಕರ ಗುರುತು ಮರೆಮಾಡಿ' : 'Mask Citizen Identity')}
+              </span>
             </button>
           </div>
         </div>

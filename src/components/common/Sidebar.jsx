@@ -41,8 +41,8 @@ export const Sidebar = ({ isOpen, onClose }) => {
         {
           title: lang === 'kn' ? 'ಇಲಾಖಾ ಉಲ್ಲೇಖ' : 'Department References',
           links: [
-            { to: '/admin/all-complaints', icon: 'inbox', label: t('navAllComplaints') },
-            { to: '/admin/heatmap', icon: 'map', label: t('navHeatmap') },
+            { to: '/officer/all-complaints', icon: 'inbox', label: t('navAllComplaints') },
+            { to: '/officer/heatmap', icon: 'map', label: t('navHeatmap') },
           ],
         },
       ];
@@ -61,7 +61,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
             { to: '/supervisor/department-performance', icon: 'account_balance', label: t('navDepartments'), badge: 'Q3' },
             { to: '/supervisor/resolution-approval', icon: 'fact_check', label: lang === 'kn' ? 'ಪರಿಹಾರ ಅನುಮೋದನೆ' : 'Resolution Approval', badge: 'Gate' },
             { to: '/supervisor/complaint-audit', icon: 'manage_search', label: t('navAuditSearch') },
-            { to: '/admin/complaint-intelligence', icon: 'rule_settings', label: t('navComplaintIntelligence'), badge: 'Rules' },
+            { to: '/supervisor/complaint-intelligence', icon: 'rule_settings', label: t('navComplaintIntelligence'), badge: 'Rules' },
             { to: '/supervisor/reminder-centre', icon: 'notification_important', label: t('navReminderCentre'), badge: `${reminders.length}` },
           ],
         },

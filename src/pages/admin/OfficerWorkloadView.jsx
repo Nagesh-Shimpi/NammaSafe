@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useComplaints } from '../../context/ComplaintContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 import { Breadcrumb } from '../../components/common/Breadcrumb';
 import { Modal } from '../../components/common/Modal';
 import { PriorityBadge } from '../../components/common/PriorityBadge';
@@ -35,6 +36,8 @@ export const OfficerWorkloadView = () => {
     reassignOfficer
   } = useComplaints();
   const { lang, t, tDepartment } = useLanguage();
+  const { currentRole, USER_ROLES } = useAuth();
+  const isAuthorizedReassign = currentRole === USER_ROLES.ADMIN || currentRole === USER_ROLES.SUPERVISOR;
 
   // Primary filters & active tab
   const [selectedDeptId, setSelectedDeptId] = useState('ALL');
@@ -339,6 +342,10 @@ export const OfficerWorkloadView = () => {
   // Execute Reassignment submission
   const handleExecuteReassignment = (e) => {
     if (e) e.preventDefault();
+    if (!isAuthorizedReassign) {
+      showToast('Unauthorized action blocked: Nodal officer reassignment requires Administrator or Supervisor privileges.');
+      return;
+    }
     if (!currentWizardComplaint || !currentWizardTargetOfficer) return;
 
     const status = requireSupervisorApproval ? 'PENDING_APPROVAL' : 'COMPLETED';

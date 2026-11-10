@@ -204,7 +204,14 @@ export const AllComplaintsView = () => {
     setIsVerifyModalOpen(true);
   };
 
+  const isAuthorizedTriage = currentRole === USER_ROLES.ADMIN || currentRole === USER_ROLES.SUPERVISOR;
+  const isAuthorizedCadre = isAuthorizedTriage || currentRole === USER_ROLES.OFFICER;
+
   const handleConfirmVerify = () => {
+    if (!isAuthorizedTriage) {
+      showToast('Unauthorized action blocked: Verification requires Administrator or Supervisor authority.');
+      return;
+    }
     if (!activeTicket) return;
     verifyComplaint(activeTicket.token, verificationNotes, 'Central Verification Officer');
     showToast(`Grievance #${activeTicket.token} has been verified successfully.`);
@@ -218,6 +225,10 @@ export const AllComplaintsView = () => {
   };
 
   const handleConfirmRequestInfo = () => {
+    if (!isAuthorizedCadre) {
+      showToast('Unauthorized action blocked.');
+      return;
+    }
     if (!activeTicket) return;
     if (!requestInfoMessage.trim()) {
       alert('Please enter a clarification message for the citizen.');
@@ -235,6 +246,10 @@ export const AllComplaintsView = () => {
   };
 
   const handleConfirmReject = () => {
+    if (!isAuthorizedTriage) {
+      showToast('Unauthorized action blocked: Rejection requires Administrator or Supervisor authority.');
+      return;
+    }
     if (!activeTicket) return;
     if (!rejectionReason.trim()) {
       alert('A valid rejection reason is mandatory.');
@@ -252,6 +267,10 @@ export const AllComplaintsView = () => {
   };
 
   const handleConfirmAssign = () => {
+    if (!isAuthorizedTriage) {
+      showToast('Unauthorized action blocked: Officer allocation requires Administrator or Supervisor authority.');
+      return;
+    }
     if (!activeTicket || !selectedOfficerId) return;
     assignComplaintOfficer(activeTicket.token, selectedOfficerId, {
       assignedBy: 'Central Admin Desk',
@@ -270,6 +289,10 @@ export const AllComplaintsView = () => {
   };
 
   const handleConfirmStatus = () => {
+    if (!isAuthorizedCadre) {
+      showToast('Unauthorized action blocked.');
+      return;
+    }
     if (!activeTicket) return;
     if (!isValidStatusTransition(activeTicket.status, targetStatus)) {
       alert(`Invalid transition from ${activeTicket.status} to ${targetStatus} according to Karnataka Redressal Rules.`);
@@ -292,6 +315,10 @@ export const AllComplaintsView = () => {
   };
 
   const handleConfirmEdit = () => {
+    if (!isAuthorizedTriage) {
+      showToast('Unauthorized action blocked: Editing complaint metadata requires Administrator or Supervisor authority.');
+      return;
+    }
     if (!activeTicket) return;
     updateComplaintDetails(activeTicket.token, editFormData, 'Central Admin Desk');
     showToast(`Grievance #${activeTicket.token} details updated successfully.`);

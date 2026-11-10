@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useComplaints } from '../../context/ComplaintContext';
 
 export const SystemSettings = () => {
   const { lang, t } = useLanguage();
+  const { complaints, reminders, escalations, auditLogs, resetDemoState } = useComplaints();
   const [saved, setSaved] = useState(false);
+  const [resetMessage, setResetMessage] = useState(false);
 
   const [settings, setSettings] = useState({
     autoEscalateHoursTier1: 24,
@@ -176,14 +179,43 @@ export const SystemSettings = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-4 pt-2">
-          <button
-            type="submit"
-            className="px-6 py-3 rounded-xl bg-primary text-on-primary font-headline text-label-md font-bold shadow-md hover:bg-primary-container transition-all"
-          >
-            Save & Publish Configuration
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-outline-variant/20">
+          <div className="text-xs font-mono text-secondary bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/30">
+            Local Persisted Store: <strong>{complaints.length}</strong> grievances ·{' '}
+            <strong>{reminders.length}</strong> reminders ·{' '}
+            <strong>{escalations.length}</strong> escalations ·{' '}
+            <strong>{auditLogs.length}</strong> audit logs
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm('Reset local demo storage back to initial seed dataset (including Police Pilot cases)?')) {
+                  resetDemoState();
+                  setResetMessage(true);
+                  setTimeout(() => setResetMessage(false), 3500);
+                }
+              }}
+              className="px-4 py-3 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-800 font-headline text-label-md font-bold transition-all"
+            >
+              Reset Demo Seed Data
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-3 rounded-xl bg-primary text-on-primary font-headline text-label-md font-bold shadow-md hover:bg-primary-container transition-all"
+            >
+              Save & Publish Configuration
+            </button>
+          </div>
         </div>
+
+        {resetMessage && (
+          <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-center gap-2">
+            <span className="material-symbols-outlined text-amber-600 text-base">restart_alt</span>
+            <span>Demo storage restored cleanly to canonical initial seed state.</span>
+          </div>
+        )}
       </form>
     </div>
   );

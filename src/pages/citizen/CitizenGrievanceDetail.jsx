@@ -12,7 +12,14 @@ export const CitizenGrievanceDetail = () => {
   const { lang } = useLanguage();
   const navigate = useNavigate();
 
-  const ticket = complaints.find(c => c.token === id || c.id === id || c.trackingId === id || c.legacyToken === id) || complaints[0];
+  const norm = String(id || '').toUpperCase().trim();
+  const ticket = complaints.find(
+    c =>
+      (c.token && c.token.toUpperCase() === norm) ||
+      (c.id && c.id.toUpperCase() === norm) ||
+      (c.trackingId && c.trackingId.toUpperCase() === norm) ||
+      (c.legacyToken && c.legacyToken.toUpperCase() === norm)
+  ) || null;
 
   if (!ticket) {
     return (

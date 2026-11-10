@@ -303,5 +303,14 @@ export const kn = {
   intelHealthHealthy: 'ಉತ್ತಮ (80–100)',
   intelHealthAttention: 'ಗಮನ ಅಗತ್ಯ (60–79)',
   intelHealthAtRisk: 'ಅಪಾಯದಲ್ಲಿದೆ (40–59)',
-  intelHealthCritical: 'ಗಂಭೀರ (0–39)'
+  intelHealthCritical: 'ಗಂಭೀರ (0–39)',
+
+  // PDF Section 2, 4 & 5: Police Pilot, Language Detection & Translation Aid
+  policePilotNoticeTitle: 'ಪೊಲೀಸ್ ಇಲಾಖೆ ಪ್ರಾಯೋಗಿಕ ವಿಭಾಗ · ಟ್ರ್ಯಾಕಿಂಗ್ ಮಾತ್ರ ಸೂಚನೆ',
+  policePilotNoticeBody: 'ResolveTrack ಕೇವಲ ದೂರು ನೋಂದಣಿ, ಅನುಸರಣೆ, ಜ್ಞಾಪನೆ ಮತ್ತು ಎಸ್‌ಎಲ್‌ಎ ಟ್ರ್ಯಾಕಿಂಗ್‌ಗೆ ಮಾತ್ರ ಸೀಮಿತವಾಗಿದೆ. ಆರೋಪಗಳು, ಅಪರಾಧಗಳ ನಿರ್ಣಯ ಅಥವಾ ಎಫ್‌ಐಆರ್ ದಾಖಲಾತಿ ಸಂಪೂರ್ಣವಾಗಿ ಅಧಿಕೃತ ಪೊಲೀಸ್ ಅಧಿಕಾರಿಗಳಿಗೆ ಮಾತ್ರ ಒಳಪಟ್ಟಿರುತ್ತದೆ.',
+  detectedLanguageLabel: 'ಗುರುತಿಸಲಾದ ದೂರಿನ ಭಾಷೆ',
+  bilingualTranslationAid: 'ದ್ವಿಭಾಷಾ ಅಧಿಕಾರಿ ಅನುವಾದ ನೆರವು (ನಿಯಮ-ಆಧಾರಿತ)',
+  originalTextPreserved: 'ನಾಗರಿಕರು ದಾಖಲಿಸಿದ ಮೂಲ ಪಠ್ಯವನ್ನು ಬದಲಾಯಿಸದೆ ಯಥಾವತ್ತಾಗಿ ಸಂರಕ್ಷಿಸಲಾಗಿದೆ.',
+  intakeModeWeb: 'ನೇರ ಆನ್‌ಲೈನ್ ದೂರು ನಮೂದು',
+  intakeModeDocument: 'ಸ್ಕ್ಯಾನ್ ಮಾಡಿದ ಅರ್ಜಿ / ದಾಖಲೆ ಅಪ್‌ಲೋಡ್'
 };

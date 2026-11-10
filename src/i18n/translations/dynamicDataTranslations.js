@@ -42,10 +42,18 @@ export const DEPARTMENT_TRANSLATIONS = {
   'Social Welfare & Senior Citizen Empowerment': {
     en: 'Social Welfare & Senior Citizen Empowerment',
     kn: 'ಸಮಾಜ ಕಲ್ಯಾಣ ಮತ್ತು ಹಿರಿಯ ನಾಗರಿಕರ ಸಬಲೀಕರಣ ಇಲಾಖೆ'
+  },
+  'Home Affairs & Public Safety': {
+    en: 'Home Affairs & Public Safety (Police Pilot)',
+    kn: 'ಗೃಹ ವ್ಯವಹಾರಗಳು ಮತ್ತು ಸಾರ್ವಜನಿಕ ರಕ್ಷಣೆ (ಪೊಲೀಸ್ ಪ್ರಾಯೋಗಿಕ ವಿಭಾಗ)'
   }
 };
 
 export const CATEGORY_TRANSLATIONS = {
+  'Police & Public Safety': {
+    en: 'Police & Public Safety',
+    kn: 'ಪೊಲೀಸ್ ಮತ್ತು ಸಾರ್ವಜನಿಕ ಸುರಕ್ಷತೆ'
+  },
   'Pothole & Road Hazard': {
     en: 'Pothole & Road Hazard',
     kn: 'ರಸ್ತೆ ಗುಂಡಿ ಮತ್ತು ಸಂಚಾರ ಅಪಾಯ'

@@ -5,6 +5,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { COMPLAINT_CATEGORIES, KARNATAKA_DISTRICTS } from '../../data/complaintCategories';
 import { PRIORITY_CONFIG } from '../../utils/constants';
 import { recommendDepartment, suggestComplaintCategory } from '../../utils/intelligenceEngine';
+import { detectTextLanguage } from '../../utils/languageDetector';
 
 export const RegisterComplaint = () => {
   const { registerNewComplaint, saveDraftComplaint, checkDuplicate, departments } = useComplaints();
@@ -35,6 +36,9 @@ export const RegisterComplaint = () => {
     incidentLocation: '12.9716° N, 77.5946° E (Auto-detected)',
     priority: 'MEDIUM',
     preferredLanguage: 'English',
+    intakeMode: 'DIRECT_WEB',
+    submissionChannel: 'Citizen Web Portal',
+    inwardRefNumber: '',
 
     // Section C: Supporting Documents
     attachments: [
@@ -54,6 +58,11 @@ export const RegisterComplaint = () => {
   const [copiedId, setCopiedId] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Auto-Detected Text Language (Kannada / English / Bilingual)
+  const detectedTextLang = React.useMemo(() => {
+    return detectTextLanguage(`${formData.complaintTitle} ${formData.complaintDescription}`);
+  }, [formData.complaintTitle, formData.complaintDescription]);
 
   // Rule-Based Department & Category Recommendation (Explainable Decision Support)
   const smartSuggestion = React.useMemo(() => {
@@ -270,6 +279,12 @@ export const RegisterComplaint = () => {
         location: formData.incidentLocation,
         priority: formData.priority,
         preferredLanguage: formData.preferredLanguage,
+        detectedLanguage: detectedTextLang.code,
+        intakeMode: formData.intakeMode,
+        submissionChannel: formData.intakeMode === 'SCANNED_DOCUMENT'
+          ? (formData.submissionChannel === 'Citizen Web Portal' ? 'Physical Document / Tapal Scan' : formData.submissionChannel)
+          : 'Citizen Web Portal',
+        inwardRefNumber: formData.inwardRefNumber,
         attachments: formData.attachments,
         declarationConfirmed: formData.declarationConfirmed,
         privacyConsent: formData.privacyConsent,
@@ -590,6 +605,59 @@ export const RegisterComplaint = () => {
 
       {/* Form Container */}
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Intake Mode Switcher: Manual Online Entry vs Scanned Petition / Document Upload */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, intakeMode: 'DIRECT_WEB', submissionChannel: 'Citizen Web Portal' }))}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                formData.intakeMode !== 'SCANNED_DOCUMENT'
+                  ? 'bg-teal-700 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              <span className="material-symbols-outlined text-sm">edit_note</span>
+              <span>{t('intakeModeWeb')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, intakeMode: 'SCANNED_DOCUMENT', submissionChannel: 'Physical Document / Tapal Scan' }))}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                formData.intakeMode === 'SCANNED_DOCUMENT'
+                  ? 'bg-teal-700 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              <span className="material-symbols-outlined text-sm">document_scanner</span>
+              <span>{t('intakeModeDocument')}</span>
+            </button>
+          </div>
+
+          {formData.intakeMode === 'SCANNED_DOCUMENT' && (
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <select
+                name="submissionChannel"
+                value={formData.submissionChannel}
+                onChange={handleInputChange}
+                className="h-9 px-3 rounded-lg border border-slate-300 bg-slate-50 font-semibold outline-none"
+              >
+                <option value="Physical Document / Tapal Scan">Physical Petition / Tapal</option>
+                <option value="Email Complaint Intake">Official Email Intake</option>
+                <option value="Phone Helpline / Desk">Helpline / Station Desk</option>
+              </select>
+              <input
+                type="text"
+                name="inwardRefNumber"
+                value={formData.inwardRefNumber}
+                onChange={handleInputChange}
+                placeholder={lang === 'kn' ? 'ಅರ್ಜಿ ಉಲ್ಲೇಖ ಸಂಖ್ಯೆ (ಐಚ್ಛಿಕ)' : 'Tapal / Inward Ref # (Optional)'}
+                className="h-9 px-3 rounded-lg border border-slate-300 text-xs font-mono outline-none"
+              />
+            </div>
+          )}
+        </div>
+
         {/* ================================================================= */}
         {/* SECTION A: CITIZEN INFORMATION */}
         {/* ================================================================= */}
@@ -789,11 +857,16 @@ export const RegisterComplaint = () => {
           </div>
 
           <div className="space-y-5">
-            {/* Title */}
+            {/* Title with Live Script / Language Detection */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                {lang === 'kn' ? 'ದೂರಿನ ಶೀರ್ಷಿಕೆ / ವಿಷಯ *' : 'Complaint Title / Subject *'}
-              </label>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  {lang === 'kn' ? 'ದೂರಿನ ಶೀರ್ಷಿಕೆ / ವಿಷಯ *' : 'Complaint Title / Subject *'}
+                </label>
+                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-mono font-bold text-teal-800">
+                  {t('detectedLanguageLabel')}: {lang === 'kn' ? detectedTextLang.labelKn : detectedTextLang.label}
+                </span>
+              </div>
               <input
                 type="text"
                 name="complaintTitle"
@@ -841,6 +914,19 @@ export const RegisterComplaint = () => {
                   <span className="material-symbols-outlined text-sm">auto_fix_high</span>
                   <span>{lang === 'kn' ? 'ಸಲಹೆಯನ್ನು ಅನ್ವಯಿಸಿ' : 'Apply Suggestion'}</span>
                 </button>
+              </div>
+            )}
+
+            {/* Police Pilot Statutory Boundary Advisory */}
+            {(formData.departmentId === 'dept-8' || formData.category === 'Police & Public Safety') && (
+              <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-300 text-indigo-950 flex items-start gap-3">
+                <span className="material-symbols-outlined text-indigo-700 text-xl shrink-0 mt-0.5">local_police</span>
+                <div className="text-xs space-y-0.5">
+                  <span className="font-headline font-bold uppercase tracking-wider text-indigo-900 block">
+                    {t('policePilotNoticeTitle')}
+                  </span>
+                  <p className="text-indigo-800 leading-relaxed">{t('policePilotNoticeBody')}</p>
+                </div>
               </div>
             )}
 

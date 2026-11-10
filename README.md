@@ -104,6 +104,22 @@ NammaSafe unites citizen participation with administrative accountability across
 - **Longitudinal Trend Analysis**: Time-series visualization grouping live complaint timestamps into monthly trajectories for intake, resolution, and overdue backlog.
 - **Enterprise CSV Exporters & Printable Gazette**: One-click demonstration export to CSV for department scorecards, officer caseloads, overdue audit logs, and citizen CSAT surveys, plus official printable gazette layouts.
 
+### 8. Kannada & English Multilingual Support + Language Detection & Translation Aid
+- **Bilingual Global UI (`en` / `kn`)**: Instant switcher (`270+` paired English & Kannada keys, `47` standardized Karnataka civic glossary terms, bilingual notification templates, `Noto Sans Kannada` font rendering) with `localStorage` persistence.
+- **Deterministic Script Detection & Translation Aid (`languageDetector.js`)**: Automatically identifies whether incoming citizen text is English, Kannada (`\u0C80-\u0CFF`), or Bilingual Mixed as citizens type, and provides officers an explainable rule-based English/Kannada keyword summary side-by-side in Complaint Details without overwriting original citizen text.
+
+### 9. Complaint Intelligence & Smart Decision Support (`/admin/complaint-intelligence`)
+- **Transparent Heuristic Engine (`intelligenceEngine.js`)**: Zero external/paid AI dependencies; computes explainable Department suggestions, Category predictions, Priority urgency rules, Duplicate & Similar ticket detection, 0–100 Complaint Health Scores, Escalation Risk queues, and Officer Suitability scores.
+- **Human-in-the-Loop Governance**: Recommendations never mutate tickets automatically; administrators review, accept, or override recommendations with complete decision audit logs.
+
+### 10. Pilot Use Case — Police Department & Public Safety (SOLVATHON 2026 Aligned)
+- **Dedicated Police Pilot Category & Roster**: Covers *Cybercrime and online fraud*, *Financial fraud*, *Lost property*, *Public safety and traffic-related complaints*, and *Complaints involving individuals* mapped to `Home Affairs & Public Safety` (`dept-8`, `RTK-2026-000062`–`000066`).
+- **Strict Non-FIR / Tracking-Only Advisory**: Prominent statutory boundary banners confirm that the platform supports grievance registration, follow-up, reminders, and SLA tracking only—allegations, offences, and FIR decisions rest strictly with authorized Police officials.
+
+### 11. Role-Based Access Control (RBAC) & Local Persistence
+- **Route & Action Guards (`RoleGuard.jsx`)**: Protects `/admin/*`, `/supervisor/*`, and `/officer/*` layouts and blocks unauthorized mutations inside state handlers.
+- **Reload-Safe Local Store + Seed Reset**: Persists registered tickets, assignments, reminders, escalations, CSAT ratings, and audit logs to `localStorage` (`resolvetrack_demo_state_v2`) with one-click reset inside `/admin/settings`.
+
 ---
 
 ## 🛠️ Technology Stack
@@ -114,9 +130,9 @@ NammaSafe unites citizen participation with administrative accountability across
 | **Build Tool & Bundler** | Vite 5 (Fast HMR, optimized tree-shaken production rollup) |
 | **Styling & Design System** | Tailwind CSS 3.4 (Civic Government SaaS design tokens, Deep Navy `#0f172a`, Teal `#0d9488`, Amber `#d97706`, Rose `#e11d48`) |
 | **Data Visualizations** | Recharts (Responsive bar charts, pie breakdowns, and SLA compliance gauges) |
-| **Typography & Icons** | Plus Jakarta Sans, Inter, JetBrains Mono, Google Material Symbols |
-| **State Management** | Centralized in-memory shared state (`ComplaintContext.jsx`) with 61+ seed dockets, CSAT records, and notification streams |
-| **Testing** | Node.js verification scripts for data models, identity validation, and workflow state transitions |
+| **Typography & Icons** | Plus Jakarta Sans, Inter, Noto Sans Kannada, JetBrains Mono, Google Material Symbols |
+| **State Management** | Centralized React shared state (`ComplaintContext.jsx`) synced with `localStorage` (`66` seed dockets including Police Pilot cases, CSAT records, and audit streams) |
+| **Testing** | Node.js verification suites + headless Chromium CDP 25-scenario end-to-end test matrix |
 
 ---
 

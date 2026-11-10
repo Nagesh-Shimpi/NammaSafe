@@ -18,7 +18,7 @@ export const ReminderCentre = () => {
     runAutomatedReminderEngine
   } = useComplaints();
 
-  const { currentUser, currentRole, switchRole } = useAuth();
+  const { currentUser, currentRole, switchRole, USER_ROLES } = useAuth();
   const { lang, t, tDepartment, tChannel } = useLanguage();
 
   // Filters & State
@@ -277,6 +277,10 @@ export const ReminderCentre = () => {
   // Submit Manual Reminder
   const handleSubmitCreateReminder = (e) => {
     e.preventDefault();
+    if (currentRole !== USER_ROLES.ADMIN && currentRole !== USER_ROLES.SUPERVISOR) {
+      showToast('Unauthorized action blocked: Only Administrators or Supervisors can create statutory reminders.', 'warning');
+      return;
+    }
     if (!formComplaintToken) return;
 
     const templateObj = REMINDER_TEMPLATES.find(t => t.id === formType);
@@ -307,6 +311,10 @@ export const ReminderCentre = () => {
 
   // Trigger Automated Reminder Engine Simulation
   const handleTriggerAutomatedEngine = () => {
+    if (currentRole !== USER_ROLES.ADMIN && currentRole !== USER_ROLES.SUPERVISOR) {
+      showToast('Unauthorized action blocked: Only Administrators or Supervisors can run the automated reminder engine.', 'warning');
+      return;
+    }
     const res = runAutomatedReminderEngine({ advanceHours });
     if (res.success) {
       showToast(res.message);
@@ -316,6 +324,10 @@ export const ReminderCentre = () => {
   // Retry Failed Reminder Action
   const handleRetryFailed = (reminderId, e) => {
     if (e) e.stopPropagation();
+    if (currentRole !== USER_ROLES.ADMIN && currentRole !== USER_ROLES.SUPERVISOR) {
+      showToast('Unauthorized action blocked: Only Administrators or Supervisors can retry failed dispatches.', 'warning');
+      return;
+    }
     retryFailedReminder(reminderId);
     showToast(`Reminder ${reminderId} retried via simulated fallback gateway. Status updated to Delivered.`);
     if (isDetailDrawerOpen && selectedReminder?.id === reminderId) {

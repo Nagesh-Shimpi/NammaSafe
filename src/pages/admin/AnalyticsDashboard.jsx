@@ -1,24 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useComplaints } from '../../context/ComplaintContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { MetricCard } from '../../components/common/MetricCard';
 import { VelocityAreaChart, DepartmentBarChart, CategoryPieChart } from '../../components/common/Charts';
 import { DISTRICTS, DEPARTMENTS } from '../../utils/constants';
+import {
+  calculateSLACompliance,
+  calculateAverageResolutionTime,
+  calculateCitizenSatisfaction
+} from '../../utils/analyticsCalculations';
 
 export const AnalyticsDashboard = () => {
-  const { metrics, complaints } = useComplaints();
+  const { metrics, complaints = [], feedbackRecords = [] } = useComplaints();
   const { lang, t } = useLanguage();
   const [selectedTimeRange, setSelectedTimeRange] = useState('30D');
 
-  const districtDistribution = [
-    { name: 'Bengaluru Urban', count: 18420, rate: '94.2%', avgDays: '2.1' },
-    { name: 'Mysuru', count: 6840, rate: '92.8%', avgDays: '2.4' },
-    { name: 'Belagavi', count: 5910, rate: '86.4%', avgDays: '3.6' },
-    { name: 'Hubballi-Dharwad', count: 5210, rate: '88.1%', avgDays: '3.1' },
-    { name: 'Mangaluru', count: 4890, rate: '95.6%', avgDays: '1.9' },
-    { name: 'Kalaburagi', count: 4120, rate: '82.5%', avgDays: '4.2' },
-    { name: 'Tumakuru', count: 2901, rate: '89.4%', avgDays: '2.8' },
-  ];
+  const reopenRate = useMemo(() => {
+    if (!complaints.length) return '0.0%';
+    const reopenedCount = complaints.filter(
+      c => c.status === 'REOPENED' || (Array.isArray(c.reopeningRequests) && c.reopeningRequests.length > 0)
+    ).length;
+    return `${((reopenedCount / complaints.length) * 100).toFixed(1)}%`;
+  }, [complaints]);
+
+  const csatSummary = useMemo(
+    () => calculateCitizenSatisfaction(feedbackRecords, complaints),
+    [feedbackRecords, complaints]
+  );
+
+  const avgDays = useMemo(() => calculateAverageResolutionTime(complaints), [complaints]);
+
+  const districtDistribution = useMemo(() => {
+    const map = new Map();
+    complaints.forEach((c) => {
+      const dist = c.district || 'Bengaluru Urban';
+      if (!map.has(dist)) map.set(dist, []);
+      map.get(dist).push(c);
+    });
+    return Array.from(map.entries())
+      .map(([name, list]) => ({
+        name,
+        count: list.length,
+        rate: `${calculateSLACompliance(list)}%`,
+        avgDays: String(calculateAverageResolutionTime(list))
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [complaints]);
 
   return (
     <div className="flex flex-col gap-space-lg">
@@ -60,34 +87,34 @@ export const AnalyticsDashboard = () => {
         <MetricCard
           title="Total Resolved Cases"
           value={metrics.resolved.toLocaleString()}
-          trend="+12.4% vs prev period"
+          trend={`${metrics.resolutionRate || '0%'} resolution rate`}
           trendPositive={true}
           icon="verified"
-          badgeText="94.2% CSAT"
+          badgeText={csatSummary.averageRating ? `${csatSummary.averageRating}/5.0 CSAT` : 'Live CSAT'}
           badgeColor="bg-emerald-100 text-emerald-800 font-bold"
         />
         <MetricCard
           title="First Contact Resolution (FCR)"
           value={metrics.firstContactResolution}
-          trend="+3.1% lift"
+          trend={`${metrics.slaCompliance} SLA Adherence`}
           trendPositive={true}
           icon="speed"
-          badgeText="Target 40% Met"
-          progressPercent={42}
+          badgeText="Live Shared State"
+          progressPercent={parseFloat(metrics.firstContactResolution) || 0}
         />
         <MetricCard
           title="Citizen Reopen Rate"
-          value="3.4%"
-          trend="-0.8% drop"
-          trendPositive={true}
+          value={reopenRate}
+          trend="Computed from active ledger"
+          trendPositive={parseFloat(reopenRate) < 10}
           icon="published_with_changes"
           accentColor="tertiary"
-          badgeText="Low Dispute Risk"
+          badgeText="Dispute Tracking"
         />
         <MetricCard
           title="Avg Redressal Speed"
-          value="2.4 Days"
-          trend="0.6d faster"
+          value={`${avgDays} Days`}
+          trend="Measured across closed tickets"
           trendPositive={true}
           icon="timer"
           badgeText="SLA: <= 3.0d"

@@ -116,13 +116,15 @@ export const KEYWORD_DEPARTMENT_RULES = [
     departmentId: 'dept-8',
     code: 'POLICE',
     departmentName: 'Home Affairs & Public Safety',
-    categoryId: 'cat-other',
-    categoryName: 'Other Government Services',
-    defaultSubcategory: 'General Administrative Inaction',
+    categoryId: 'cat-police',
+    categoryName: 'Police & Public Safety',
+    defaultSubcategory: 'Public safety and traffic-related complaints',
     keywords: [
-      'police', 'noise', 'loudspeaker', 'harassment', 'theft', 'safety', 'law',
-      'crime', 'patrol', 'parking menace', 'illegal bar', 'cctv',
-      'ಪೊಲೀಸ್', 'ಶಬ್ದ ಮಾಲಿನ್ಯ', 'ಸುರಕ್ಷತೆ', 'ಕಳ್ಳತನ'
+      'police', 'cybercrime', 'cyber crime', 'online fraud', 'upi fraud', 'phishing', 'otp scam',
+      'financial fraud', 'bank fraud', 'lost property', 'missing phone', 'lost wallet', 'lost passport',
+      'traffic hazard', 'public safety', 'noise', 'loudspeaker', 'harassment', 'theft', 'safety',
+      'law', 'crime', 'patrol', 'parking menace', 'cctv', 'individual dispute',
+      'ಪೊಲೀಸ್', 'ಸೈಬರ್', 'ಆನ್‌ಲೈನ್ ವಂಚನೆ', 'ಆರ್ಥಿಕ ವಂಚನೆ', 'ಕಳೆದುಹೋದ', 'ಶಬ್ದ ಮಾಲಿನ್ಯ', 'ಸುರಕ್ಷತೆ', 'ಕಳ್ಳತನ', 'ಕಿರುಕುಳ'
     ]
   }
 ];
@@ -1085,3 +1087,4 @@ export function generateIntelligenceAlerts(
 
   return generated;
 }
+

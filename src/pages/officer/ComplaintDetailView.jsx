@@ -7,6 +7,7 @@ import { Breadcrumb } from '../../components/common/Breadcrumb';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { PriorityBadge } from '../../components/common/PriorityBadge';
 import { Modal } from '../../components/common/Modal';
+import { buildBilingualTranslationAid } from '../../utils/languageDetector';
 
 export const ComplaintDetailView = () => {
   const { id } = useParams();
@@ -32,15 +33,16 @@ export const ComplaintDetailView = () => {
     addAuditRecord
   } = useComplaints();
 
-  // Find candidate ticket
+  // Find candidate ticket (never fall back to unrelated complaint on invalid token)
   const ticket = useMemo(() => {
     const norm = String(id || '').toUpperCase().trim();
+    if (!norm) return null;
     return complaints.find(c =>
       (c.token && c.token.toUpperCase() === norm) ||
       (c.trackingId && c.trackingId.toUpperCase() === norm) ||
       (c.id && c.id.toUpperCase() === norm) ||
       (c.legacyToken && c.legacyToken.toUpperCase() === norm)
-    ) || complaints[0];
+    ) || null;
   }, [complaints, id]);
 
   const token = ticket?.trackingId || ticket?.token || ticket?.id || '';
@@ -177,9 +179,16 @@ export const ComplaintDetailView = () => {
   // ACTION HANDLERS
   // -------------------------------------------------------------------------
 
+  const isAuthorizedCadre = currentRole === USER_ROLES.ADMIN || currentRole === USER_ROLES.SUPERVISOR || currentRole === USER_ROLES.OFFICER;
+  const isAuthorizedAdminOrSup = currentRole === USER_ROLES.ADMIN || currentRole === USER_ROLES.SUPERVISOR;
+
   // 1. Submit Resolution Handler (Section 5)
   const handleResolutionSubmit = (e) => {
     e.preventDefault();
+    if (!isAuthorizedCadre) {
+      showToast('Unauthorized action blocked: Citizen role cannot submit departmental resolutions.', 'error');
+      return;
+    }
     if (!resolutionForm.title || !resolutionForm.description) {
       showToast('Please provide a resolution title and description.', 'error');
       return;
@@ -205,6 +214,10 @@ export const ComplaintDetailView = () => {
   // 2. Submit Officer Action Handler (Section 3 Tab 4)
   const handleActionSubmit = (e) => {
     e.preventDefault();
+    if (!isAuthorizedCadre) {
+      showToast('Unauthorized action blocked: Citizen role cannot log departmental actions.', 'error');
+      return;
+    }
     if (!actionForm.description) {
       showToast('Please describe the field inspection or action taken.', 'error');
       return;
@@ -229,6 +242,10 @@ export const ComplaintDetailView = () => {
   // 3. Status Update Handler
   const handleStatusSubmit = (e) => {
     e.preventDefault();
+    if (!isAuthorizedCadre) {
+      showToast('Unauthorized action blocked: Requires authorized officer or supervisor.', 'error');
+      return;
+    }
     updateComplaintStatus(token, statusForm.newStatus, statusForm.remarks, details.assignedOfficer?.name || 'Nodal Cadre');
     addAuditRecord({
       complaintId: token,
@@ -248,6 +265,10 @@ export const ComplaintDetailView = () => {
   // 4. Reassign Officer Handler (Section 3 Tab 3)
   const handleReassignSubmit = (e) => {
     e.preventDefault();
+    if (!isAuthorizedAdminOrSup) {
+      showToast('Unauthorized action blocked: Only Administrators or Supervisors can reassign officers.', 'error');
+      return;
+    }
     if (!reassignForm.targetOfficerId) {
       showToast('Please select a target nodal officer.', 'error');
       return;
@@ -267,6 +288,10 @@ export const ComplaintDetailView = () => {
   // 5. Send Reminder Handler
   const handleReminderSubmit = (e) => {
     e.preventDefault();
+    if (!isAuthorizedAdminOrSup) {
+      showToast('Unauthorized action blocked: Only Administrators or Supervisors can dispatch statutory reminders.', 'error');
+      return;
+    }
     const res = sendComplaintReminder({
       complaintToken: token,
       channel: reminderForm.channel,
@@ -276,6 +301,8 @@ export const ComplaintDetailView = () => {
     });
     if (res.duplicate) {
       showToast(res.message, 'warning');
+    } else if (!res.success) {
+      showToast(res.message || 'Reminder blocked.', 'error');
     } else {
       showToast(`Reminder dispatched via ${reminderForm.channel} to ${reminderForm.recipientName}!`);
       setIsReminderModalOpen(false);
@@ -303,6 +330,10 @@ export const ComplaintDetailView = () => {
   // 7. Edit Complaint Details Handler
   const handleEditDetailsSubmit = (e) => {
     e.preventDefault();
+    if (!isAuthorizedAdminOrSup) {
+      showToast('Unauthorized action blocked: Editing complaint metadata requires Administrator or Supervisor authority.', 'error');
+      return;
+    }
     updateComplaintDetails(token, editForm, 'Central Admin Desk');
     addAuditRecord({
       complaintId: token,
@@ -826,18 +857,66 @@ export const ComplaintDetailView = () => {
                 </div>
               </div>
 
-              {/* Detailed Description */}
-              <div className="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Comprehensive Grievance Narrative</span>
-                <p className="text-sm text-slate-800 leading-relaxed font-body">
-                  {ticket.description}
-                </p>
-                {ticket.titleKn && (
-                  <p className="text-xs text-slate-500 italic pt-2 border-t border-slate-200">
-                    ಕನ್ನಡ ವಿವರಣೆ: {ticket.titleKn}
-                  </p>
-                )}
-              </div>
+              {/* Police Department Pilot Tracking-Only Boundary Banner */}
+              {(ticket.departmentId === 'dept-8' || ticket.category === 'Police & Public Safety') && (
+                <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-300 text-indigo-950 flex items-start gap-3">
+                  <span className="material-symbols-outlined text-indigo-700 text-xl shrink-0 mt-0.5">local_police</span>
+                  <div className="text-xs space-y-0.5">
+                    <span className="font-headline font-bold uppercase tracking-wider text-indigo-900 block">
+                      {t('policePilotNoticeTitle')}
+                    </span>
+                    <p className="text-indigo-800 leading-relaxed">{t('policePilotNoticeBody')}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Detailed Description + Bilingual Officer Translation Aid */}
+              {(() => {
+                const aid = buildBilingualTranslationAid({
+                  title: ticket.title,
+                  description: ticket.description,
+                  titleKn: ticket.titleKn,
+                  descriptionKn: ticket.descriptionKn,
+                  departmentName: ticket.departmentName,
+                  category: ticket.category
+                });
+                return (
+                  <div className="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                        Comprehensive Grievance Narrative
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-900 font-mono text-[10px] font-bold">
+                        {t('detectedLanguageLabel')}: {lang === 'kn' ? aid.detected.labelKn : aid.detected.label}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-800 leading-relaxed font-body">
+                      {ticket.description}
+                    </p>
+                    <p className="text-[11px] text-slate-500 italic">
+                      {t('originalTextPreserved')}
+                    </p>
+
+                    {/* Bilingual Officer Translation Aid */}
+                    <div className="pt-3 border-t border-slate-200 space-y-2">
+                      <span className="text-[11px] font-bold text-teal-800 uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm">translate</span>
+                        <span>{t('bilingualTranslationAid')}</span>
+                      </span>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div className="p-3 rounded-lg bg-white border border-slate-200">
+                          <span className="font-mono text-[10px] font-bold text-slate-400 uppercase block mb-1">English Summary</span>
+                          <p className="text-slate-700">{aid.summaryEn}</p>
+                        </div>
+                        <div className="p-3 rounded-lg bg-white border border-slate-200 font-kannada">
+                          <span className="font-mono text-[10px] font-bold text-slate-400 uppercase block mb-1">ಕನ್ನಡ ಸಾರಾಂಶ</span>
+                          <p className="text-slate-700">{aid.summaryKn}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
 

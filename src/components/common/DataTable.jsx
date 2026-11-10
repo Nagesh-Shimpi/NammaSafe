@@ -44,7 +44,7 @@ export const DataTable = ({
             {currentData.length > 0 ? (
               currentData.map((row, rowIdx) => (
                 <tr
-                  key={row.id || rowIdx}
+                  key={row.token || row.trackingId || row.id || rowIdx}
                   onClick={() => onRowClick && onRowClick(row)}
                   className={`hover:bg-surface-container-low/70 transition-colors group ${
                     onRowClick ? 'cursor-pointer' : ''

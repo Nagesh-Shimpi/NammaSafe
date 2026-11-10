@@ -374,6 +374,10 @@ export const OverdueEscalations = () => {
   // Submit Reminder
   const handleExecuteReminder = (e) => {
     if (e) e.preventDefault();
+    if (currentRole !== USER_ROLES.ADMIN && currentRole !== USER_ROLES.SUPERVISOR) {
+      showToast('Unauthorized action blocked: Only Administrators or Supervisors can dispatch reminders.', 'warning');
+      return;
+    }
     if (!reminderTargetComplaint) return;
 
     const res = sendComplaintReminder({
@@ -411,6 +415,10 @@ export const OverdueEscalations = () => {
   // Submit Escalation
   const handleExecuteEscalation = (e) => {
     if (e) e.preventDefault();
+    if (currentRole !== USER_ROLES.ADMIN && currentRole !== USER_ROLES.SUPERVISOR) {
+      showToast('Unauthorized action blocked: Escalation requires Administrator or Supervisor authority.', 'warning');
+      return;
+    }
     if (!escalateTargetComplaint) return;
 
     const res = escalateComplaintLevel({
@@ -442,6 +450,10 @@ export const OverdueEscalations = () => {
   // Submit Review Note
   const handleExecuteReviewNote = (e) => {
     if (e) e.preventDefault();
+    if (currentRole === USER_ROLES.CITIZEN) {
+      showToast('Unauthorized action blocked: Citizens cannot log internal review notes.', 'warning');
+      return;
+    }
     if (!reviewNoteComplaint || !reviewNoteText.trim()) return;
 
     addComplaintReviewNote({
@@ -466,6 +478,10 @@ export const OverdueEscalations = () => {
 
   // Execute Deadline Change
   const handleExecuteDeadlineChange = (presetType) => {
+    if (currentRole !== USER_ROLES.ADMIN && currentRole !== USER_ROLES.SUPERVISOR) {
+      showToast('Unauthorized action blocked: Only Administrators or Supervisors can alter statutory SLA deadlines.', 'warning');
+      return;
+    }
     if (!deadlineComplaint) return;
     const now = new Date();
     let updatedDue = '';
@@ -509,6 +525,10 @@ export const OverdueEscalations = () => {
   // Submit Resolution
   const handleExecuteResolve = (e) => {
     if (e) e.preventDefault();
+    if (currentRole === USER_ROLES.CITIZEN) {
+      showToast('Unauthorized action blocked: Citizens cannot force departmental resolution.', 'warning');
+      return;
+    }
     if (!resolveTargetComplaint) return;
 
     resolveComplaintDirect({

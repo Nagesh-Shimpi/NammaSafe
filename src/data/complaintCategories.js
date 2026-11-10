@@ -188,6 +188,23 @@ export const COMPLAINT_CATEGORIES = [
       'Grievance Call Centre Unresponsiveness',
       'General Administrative Inaction'
     ]
+  },
+  {
+    id: 'cat-police',
+    name: 'Police & Public Safety',
+    nameKn: 'ಪೊಲೀಸ್ ಮತ್ತು ಸಾರ್ವಜನಿಕ ಸುರಕ್ಷತೆ (ಪ್ರಾಯೋಗಿಕ ವಿಭಾಗ)',
+    departmentId: 'dept-8',
+    departmentName: 'Home Affairs & Public Safety',
+    icon: 'local_police',
+    defaultSlaHours: 24,
+    isPilotTrackingOnly: true,
+    subcategories: [
+      'Cybercrime and online fraud',
+      'Financial fraud',
+      'Lost property',
+      'Public safety and traffic-related complaints',
+      'Complaints involving individuals'
+    ]
   }
 ];
 

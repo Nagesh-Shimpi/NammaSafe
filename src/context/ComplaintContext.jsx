@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
 import { COMPLAINTS_DATA } from '../data/complaintsData';
 import { DEPARTMENTS_DATA } from '../data/departmentsData';
 import { OFFICERS_DATA } from '../data/officersData';
@@ -23,27 +23,82 @@ import {
   generateIntelligenceAlerts,
   calculateComplaintHealth
 } from '../utils/intelligenceEngine';
+import {
+  calculateResolutionRate,
+  calculateSLACompliance,
+  calculateCitizenSatisfaction,
+  calculateAverageResolutionTime
+} from '../utils/analyticsCalculations';
+import { detectTextLanguage } from '../utils/languageDetector';
+
+const DEMO_STORAGE_KEY = 'resolvetrack_demo_state_v2';
+
+function loadPersistedDemoState() {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    const raw = window.localStorage.getItem(DEMO_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.complaints) || parsed.complaints.length === 0) return null;
+    return parsed;
+  } catch (e) {
+    return null;
+  }
+}
 
 const MERGED_COMPLAINTS = (() => {
-  const map = new Map();
-  COMPLAINTS_DATA.forEach(c => {
-    map.set(c.token, { ...c });
-    if (c.legacyToken) map.set(c.legacyToken, { ...c });
-    if (c.id && c.id !== c.token) map.set(c.id, { ...c });
-  });
-  INITIAL_OVERDUE_COMPLAINTS.forEach(oc => {
-    if (map.has(oc.token)) {
-      const existing = map.get(oc.token);
-      map.set(oc.token, { ...existing, ...oc });
+  const list = [];
+  const aliasToIndex = new Map();
+
+  const registerAliases = (record, idx) => {
+    [record.token, record.trackingId, record.legacyToken, record.id]
+      .filter(Boolean)
+      .forEach((k) => aliasToIndex.set(String(k).toUpperCase(), idx));
+  };
+
+  COMPLAINTS_DATA.forEach((c) => {
+    const existingIdx = [c.token, c.trackingId, c.legacyToken, c.id]
+      .filter(Boolean)
+      .map((k) => aliasToIndex.get(String(k).toUpperCase()))
+      .find((i) => i !== undefined);
+
+    if (existingIdx !== undefined) {
+      list[existingIdx] = { ...list[existingIdx], ...c };
+      registerAliases(list[existingIdx], existingIdx);
     } else {
-      map.set(oc.token, { ...oc });
+      const idx = list.length;
+      const normalized = { ...c, id: c.token || c.trackingId || c.id };
+      list.push(normalized);
+      registerAliases(normalized, idx);
     }
   });
-  const unique = new Map();
-  for (const item of map.values()) {
-    unique.set(item.token, item);
-  }
-  return Array.from(unique.values());
+
+  INITIAL_OVERDUE_COMPLAINTS.forEach((oc) => {
+    const existingIdx = [oc.token, oc.trackingId, oc.legacyToken, oc.id]
+      .filter(Boolean)
+      .map((k) => aliasToIndex.get(String(k).toUpperCase()))
+      .find((i) => i !== undefined);
+
+    if (existingIdx !== undefined) {
+      const canonical = list[existingIdx];
+      list[existingIdx] = {
+        ...canonical,
+        ...oc,
+        id: canonical.id || canonical.token,
+        token: canonical.token,
+        trackingId: canonical.trackingId || canonical.token,
+        legacyToken: canonical.legacyToken || (oc.token !== canonical.token ? oc.token : canonical.legacyToken)
+      };
+      registerAliases(list[existingIdx], existingIdx);
+    } else {
+      const idx = list.length;
+      const normalized = { ...oc, id: oc.token || oc.id };
+      list.push(normalized);
+      registerAliases(normalized, idx);
+    }
+  });
+
+  return list;
 })();
 
 export const INITIAL_REASSIGNMENTS = [
@@ -124,25 +179,28 @@ export const INITIAL_REASSIGNMENTS = [
 const ComplaintContext = createContext();
 
 export const ComplaintProvider = ({ children }) => {
-  const [complaints, setComplaints] = useState(MERGED_COMPLAINTS);
+  const initialPersisted = useMemo(() => loadPersistedDemoState(), []);
+
+  const [complaints, setComplaints] = useState(() => initialPersisted?.complaints || MERGED_COMPLAINTS);
   const [departments, setDepartments] = useState(DEPARTMENTS_DATA);
-  const [officers, setOfficers] = useState(OFFICERS_DATA);
+  const [officers, setOfficers] = useState(() => initialPersisted?.officers || OFFICERS_DATA);
   const [citizens, setCitizens] = useState(CITIZENS_DATA);
-  const [reminders, setReminders] = useState(INITIAL_REMINDER_RECORDS);
-  const [escalations, setEscalations] = useState(INITIAL_ESCALATION_RECORDS);
-  const [notifications, setNotifications] = useState(NOTIFICATIONS_DATA);
-  const [communications, setCommunications] = useState(COMMUNICATIONS_DATA);
-  const [reassignments, setReassignments] = useState(INITIAL_REASSIGNMENTS);
-  const [complaintHistory, setComplaintHistory] = useState(INITIAL_COMPLAINT_HISTORY);
-  const [feedbackRecords, setFeedbackRecords] = useState(INITIAL_FEEDBACK_RECORDS);
-  const [citizenNotifications, setCitizenNotifications] = useState(INITIAL_CITIZEN_NOTIFICATIONS);
-  const [auditLogs, setAuditLogs] = useState(INITIAL_AUDIT_LOGS);
+  const [reminders, setReminders] = useState(() => initialPersisted?.reminders || INITIAL_REMINDER_RECORDS);
+  const [escalations, setEscalations] = useState(() => initialPersisted?.escalations || INITIAL_ESCALATION_RECORDS);
+  const [notifications, setNotifications] = useState(() => initialPersisted?.notifications || NOTIFICATIONS_DATA);
+  const [communications, setCommunications] = useState(() => initialPersisted?.communications || COMMUNICATIONS_DATA);
+  const [reassignments, setReassignments] = useState(() => initialPersisted?.reassignments || INITIAL_REASSIGNMENTS);
+  const [complaintHistory, setComplaintHistory] = useState(() => initialPersisted?.complaintHistory || INITIAL_COMPLAINT_HISTORY);
+  const [feedbackRecords, setFeedbackRecords] = useState(() => initialPersisted?.feedbackRecords || INITIAL_FEEDBACK_RECORDS);
+  const [citizenNotifications, setCitizenNotifications] = useState(() => initialPersisted?.citizenNotifications || INITIAL_CITIZEN_NOTIFICATIONS);
+  const [auditLogs, setAuditLogs] = useState(() => initialPersisted?.auditLogs || INITIAL_AUDIT_LOGS);
 
   // Complaint Intelligence & Decision Support Shared State
   const [intelligenceAlerts, setIntelligenceAlerts] = useState(() =>
+    initialPersisted?.intelligenceAlerts ||
     generateIntelligenceAlerts(MERGED_COMPLAINTS, OFFICERS_DATA, INITIAL_REMINDER_RECORDS, INITIAL_ESCALATION_RECORDS)
   );
-  const [intelligenceReviews, setIntelligenceReviews] = useState([
+  const [intelligenceReviews, setIntelligenceReviews] = useState(() => initialPersisted?.intelligenceReviews || [
     {
       id: 'REV-INT-101',
       complaintId: 'RTK-2026-000001',
@@ -164,7 +222,74 @@ export const ComplaintProvider = ({ children }) => {
       reviewDate: '2026-11-06 14:35'
     }
   ]);
-  const [relatedComplaintPairs, setRelatedComplaintPairs] = useState([]);
+  const [relatedComplaintPairs, setRelatedComplaintPairs] = useState(() => initialPersisted?.relatedComplaintPairs || []);
+
+  // Persist complete interactive workspace state in browser localStorage across reloads
+  useEffect(() => {
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return;
+      const snapshot = {
+        complaints,
+        officers,
+        reminders,
+        escalations,
+        notifications,
+        communications,
+        reassignments,
+        complaintHistory,
+        feedbackRecords,
+        citizenNotifications,
+        auditLogs,
+        intelligenceAlerts,
+        intelligenceReviews,
+        relatedComplaintPairs,
+        savedAt: new Date().toISOString()
+      };
+      window.localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(snapshot));
+    } catch (e) {
+      // Ignore storage quota warnings in headless/private sessions
+    }
+  }, [
+    complaints,
+    officers,
+    reminders,
+    escalations,
+    notifications,
+    communications,
+    reassignments,
+    complaintHistory,
+    feedbackRecords,
+    citizenNotifications,
+    auditLogs,
+    intelligenceAlerts,
+    intelligenceReviews,
+    relatedComplaintPairs
+  ]);
+
+  const resetDemoState = () => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem(DEMO_STORAGE_KEY);
+      }
+    } catch (e) {
+      // ignore
+    }
+    setComplaints(MERGED_COMPLAINTS);
+    setOfficers(OFFICERS_DATA);
+    setReminders(INITIAL_REMINDER_RECORDS);
+    setEscalations(INITIAL_ESCALATION_RECORDS);
+    setNotifications(NOTIFICATIONS_DATA);
+    setCommunications(COMMUNICATIONS_DATA);
+    setReassignments(INITIAL_REASSIGNMENTS);
+    setComplaintHistory(INITIAL_COMPLAINT_HISTORY);
+    setFeedbackRecords(INITIAL_FEEDBACK_RECORDS);
+    setCitizenNotifications(INITIAL_CITIZEN_NOTIFICATIONS);
+    setAuditLogs(INITIAL_AUDIT_LOGS);
+    setIntelligenceAlerts(
+      generateIntelligenceAlerts(MERGED_COMPLAINTS, OFFICERS_DATA, INITIAL_REMINDER_RECORDS, INITIAL_ESCALATION_RECORDS)
+    );
+    setRelatedComplaintPairs([]);
+  };
 
   // Generate Unique Canonical Token ID (RTK-2026-XXXXXX)
   const generateTrackingId = () => {
@@ -341,6 +466,9 @@ export const ComplaintProvider = ({ children }) => {
     const isDraft = formData.isDraft === true;
     const initialStatus = isDraft ? 'DRAFT' : 'NEWLY_REGISTERED';
     const initialVerification = isDraft ? 'DRAFT' : 'PENDING';
+    const detectedLangInfo = detectTextLanguage(
+      `${formData.title || formData.complaintTitle || ''} ${formData.description || formData.complaintDescription || ''}`
+    );
 
     const newTicket = {
       id: trackingId,
@@ -381,6 +509,9 @@ export const ComplaintProvider = ({ children }) => {
       healthScore: 98,
       assignedOfficer: null,
       preferredLanguage: formData.preferredLanguage || 'English',
+      detectedLanguage: formData.detectedLanguage || detectedLangInfo.code,
+      intakeMode: formData.intakeMode || 'DIRECT_WEB',
+      inwardRefNumber: formData.inwardRefNumber || null,
       submissionChannel: formData.submissionChannel || 'Citizen Web Portal',
       actions: [
         {
@@ -777,15 +908,22 @@ export const ComplaintProvider = ({ children }) => {
 
   // Update Status
   const updateComplaintStatus = (id, newStatus, remarks, officerName = 'Nodal Officer') => {
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const matched = complaints.find(c => c.id === id || c.token === id || c.trackingId === id || c.legacyToken === id);
+    if (!matched) return { success: false, message: 'Complaint not found.' };
+
+    const wasActive = !['RESOLVED', 'CLOSED', 'REJECTED'].includes(matched.status);
+    const becomesResolvedOrClosed = ['RESOLVED', 'CLOSED'].includes(newStatus);
+
     setComplaints(prev => prev.map(c => {
-      if (c.id === id || c.token === id) {
+      if (c.id === matched.id || c.token === matched.token) {
         const curActions = Array.isArray(c.actions) ? c.actions : [];
         const newActions = [
           ...curActions,
           {
             id: curActions.length + 1,
             type: 'STATUS_UPDATE',
-            date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+            date: nowStr,
             user: officerName,
             text: `Status updated to ${newStatus}. Remarks: ${remarks || 'Routine operational update.'}`
           }
@@ -793,6 +931,10 @@ export const ComplaintProvider = ({ children }) => {
         return {
           ...c,
           status: newStatus,
+          updatedAt: nowStr,
+          resolvedAt: newStatus === 'RESOLVED' ? (c.resolvedAt || nowStr) : c.resolvedAt,
+          closureDate: newStatus === 'CLOSED' ? (c.closureDate || nowStr) : c.closureDate,
+          daysOverdue: becomesResolvedOrClosed ? 0 : c.daysOverdue,
           actions: newActions,
           healthScore: computeHealthScore({ ...c, status: newStatus }),
           resolutionSummary: newStatus === 'RESOLVED' || newStatus === 'ACTION_TAKEN' ? (remarks || c.resolutionSummary) : c.resolutionSummary
@@ -800,6 +942,22 @@ export const ComplaintProvider = ({ children }) => {
       }
       return c;
     }));
+
+    if (wasActive && becomesResolvedOrClosed && matched.assignedOfficer?.id) {
+      setOfficers(prev => prev.map(o => {
+        if (o.id === matched.assignedOfficer.id) {
+          return {
+            ...o,
+            activeCaseload: Math.max(0, (o.activeCaseload || 1) - 1),
+            pendingCount: Math.max(0, (o.pendingCount || 1) - 1),
+            resolvedCount: (o.resolvedCount || 0) + 1
+          };
+        }
+        return o;
+      }));
+    }
+
+    return { success: true };
   };
 
   // Reassign Officer with Full Audit Trail & Cadre Notification
@@ -1846,6 +2004,10 @@ export const ComplaintProvider = ({ children }) => {
     const resDesc = resolutionData.resolutionDescription || 'On-site corrective works completed.';
     const actionTaken = resolutionData.actionTaken || 'Remediation completed per technical specifications.';
     const category = resolutionData.resolutionCategory || 'Physical Repair';
+    const preMatch = complaints.find(
+      c => c.token === complaintId || c.trackingId === complaintId || c.id === complaintId || c.legacyToken === complaintId
+    );
+    const wasActiveBefore = preMatch ? !['RESOLVED', 'CLOSED', 'REJECTED'].includes(preMatch.status) : false;
 
     let updatedTicket = null;
 
@@ -1891,6 +2053,20 @@ export const ComplaintProvider = ({ children }) => {
     }));
 
     if (updatedTicket) {
+      if (wasActiveBefore && updatedTicket.assignedOfficer?.id) {
+        setOfficers(prev => prev.map(o => {
+          if (o.id === updatedTicket.assignedOfficer.id) {
+            return {
+              ...o,
+              activeCaseload: Math.max(0, (o.activeCaseload || 1) - 1),
+              pendingCount: Math.max(0, (o.pendingCount || 1) - 1),
+              resolvedCount: (o.resolvedCount || 0) + 1
+            };
+          }
+          return o;
+        }));
+      }
+
       setComplaintHistory(prev => [
         {
           id: `HIST-${Date.now().toString().slice(-5)}`,
@@ -2100,8 +2276,12 @@ export const ComplaintProvider = ({ children }) => {
 
   // Escalate Complaint Level with Level 0-3 Support & Deduplication Safeguard
   const escalateComplaintLevel = ({ complaintToken, targetLevel, reason, reviewingAuthority, remarks, initiatedBy = 'Supervisor Oversight' }) => {
-    const matched = complaints.find(c => c.token === complaintToken || c.id === complaintToken);
+    const matched = complaints.find(c => c.token === complaintToken || c.trackingId === complaintToken || c.id === complaintToken);
     if (!matched) return { success: false, message: 'Complaint not found' };
+
+    if (matched.status === 'CLOSED' || matched.status === 'RESOLVED') {
+      return { success: false, message: `Complaint #${complaintToken} is already ${matched.status} and cannot be escalated.` };
+    }
 
     // Safeguard: Check if complaint is already at or above targetLevel actively
     const existingEsc = escalations.find(e => e.complaintToken === complaintToken && e.escalationLevel === targetLevel && e.currentStatus === 'ACTIVE_ESCALATION');
@@ -2257,9 +2437,15 @@ export const ComplaintProvider = ({ children }) => {
     return { success: true };
   };
 
-  // Direct Resolution Utility
-  const resolveComplaintDirect = (token, remarks = 'Complaint marked as resolved directly by nodal authority.') => {
-    return updateComplaintStatus(token, 'RESOLVED', remarks);
+  // Direct Resolution Utility (supports token string or payload object)
+  const resolveComplaintDirect = (tokenOrPayload, remarks = 'Complaint marked as resolved directly by nodal authority.') => {
+    if (tokenOrPayload && typeof tokenOrPayload === 'object') {
+      const targetToken = tokenOrPayload.complaintToken || tokenOrPayload.token || tokenOrPayload.id;
+      const summary = tokenOrPayload.resolutionSummary || remarks;
+      const actor = tokenOrPayload.resolvedBy || 'Nodal Authority';
+      return updateComplaintStatus(targetToken, 'RESOLVED', summary, actor);
+    }
+    return updateComplaintStatus(tokenOrPayload, 'RESOLVED', remarks);
   };
 
   // Update Follow-up Deadline & Compute Days Overdue/Remaining
@@ -2663,28 +2849,50 @@ export const ComplaintProvider = ({ children }) => {
     setNotifications(prev => prev.map(n => n.id === notifId ? { ...n, unread: false } : n));
   };
 
-  // Computed Key Metrics
+  // Computed Key Metrics (Derived strictly from shared complaint, escalation & feedback state)
   const metrics = useMemo(() => {
     const total = complaints.length;
-    const overdue = complaints.filter(c => c.status === 'OVERDUE' || c.daysOverdue > 0 || (c.hoursRemaining !== undefined && c.hoursRemaining < 0)).length;
-    const pending = complaints.filter(c => c.status === 'IN_PROGRESS' || c.status === 'SUBMITTED' || c.status === 'UNDER_REVIEW').length;
-    const resolved = complaints.filter(c => c.status === 'RESOLVED' || c.status === 'ACTION_TAKEN' || c.status === 'CLOSED').length;
-    const escalationsCount = complaints.filter(c => (c.escalationLevel && c.escalationLevel > 0) || (c.escalationTier && c.escalationTier !== 'NONE')).length;
+    const todayPrefix = new Date().toISOString().substring(0, 10);
+    const newToday = complaints.filter(
+      c => (c.createdAt || '').startsWith(todayPrefix) || c.status === 'NEWLY_REGISTERED' || c.status === 'SUBMITTED'
+    ).length;
+    const inProgress = complaints.filter(c =>
+      ['IN_PROGRESS', 'ASSIGNED', 'REOPENED', 'ADDITIONAL_INFO_REQUIRED'].includes(c.status)
+    ).length;
+    const overdue = complaints.filter(
+      c => c.status === 'OVERDUE' || (c.daysOverdue || 0) > 0 || (typeof c.hoursRemaining === 'number' && c.hoursRemaining < 0)
+    ).length;
+    const pending = complaints.filter(c => !['RESOLVED', 'CLOSED', 'REJECTED'].includes(c.status)).length;
+    const resolved = complaints.filter(c => ['RESOLVED', 'ACTION_TAKEN', 'CLOSED'].includes(c.status)).length;
+    const escalationsCount = complaints.filter(
+      c => (c.escalationLevel && c.escalationLevel > 0) || (c.escalationTier && c.escalationTier !== 'NONE')
+    ).length;
     const avgHealthScore = Math.round(complaints.reduce((acc, c) => acc + (c.healthScore || 80), 0) / (total || 1));
 
+    const firstContactCohort = complaints.filter(c => !(c.reopeningRequests && c.reopeningRequests.length > 0));
+    const fcrRate = total > 0 ? calculateResolutionRate(firstContactCohort) : 0;
+    const slaRate = calculateSLACompliance(complaints);
+    const csat = calculateCitizenSatisfaction(feedbackRecords, complaints);
+
     return {
-      total: total + 48285,
-      newToday: 1842,
-      inProgress: pending + 3415,
-      pending: pending + 1200,
-      overdue: overdue + 180,
-      resolved: resolved + 41640,
-      escalations: escalationsCount + 40,
-      slaCompliance: '92.4%',
-      firstContactResolution: '41.8%',
+      total,
+      newToday,
+      inProgress,
+      pending,
+      overdue,
+      resolved,
+      escalations: Math.max(
+        escalationsCount,
+        escalations.filter(e => e.currentStatus === 'ACTIVE_ESCALATION' || e.status === 'ACTIVE_ESCALATION').length
+      ),
+      slaCompliance: `${slaRate}%`,
+      firstContactResolution: `${fcrRate}%`,
+      resolutionRate: `${calculateResolutionRate(complaints)}%`,
+      avgSatisfaction: csat.averageRating,
+      avgResolutionDays: calculateAverageResolutionTime(complaints),
       avgHealthScore
     };
-  }, [complaints]);
+  }, [complaints, escalations, feedbackRecords]);
 
   return (
     <ComplaintContext.Provider
@@ -2758,7 +2966,8 @@ export const ComplaintProvider = ({ children }) => {
         dismissIntelligenceAlert,
         refreshIntelligenceAlerts,
         markComplaintsRelated,
-        recordIntelligenceDecision
+        recordIntelligenceDecision,
+        resetDemoState
       }}
     >
       {children}

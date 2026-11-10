@@ -113,6 +113,7 @@ export function App() {
         <Route path="officer-performance" element={<OfficerRoster />} />
         <Route path="department-performance" element={<DepartmentScorecards />} />
         <Route path="scorecards" element={<DepartmentScorecards />} />
+        <Route path="complaint-intelligence" element={<ComplaintIntelligenceView />} />
         <Route path="resolution-approval" element={<ResolutionApprovalView />} />
         <Route path="reminders" element={<ReminderCentre />} />
         <Route path="reminder-centre" element={<ReminderCentre />} />
@@ -123,6 +124,8 @@ export function App() {
         <Route index element={<Navigate to="/officer/dashboard" replace />} />
         <Route path="dashboard" element={<OfficerDashboard />} />
         <Route path="assigned-complaints" element={<AssignedComplaintsView />} />
+        <Route path="all-complaints" element={<AllComplaintsView />} />
+        <Route path="heatmap" element={<GrievanceHeatmapView />} />
         <Route path="complaints/:id" element={<ComplaintDetailView />} />
         <Route path="update-status/:id" element={<UpdateStatusView />} />
         <Route path="update-status" element={<UpdateStatusView />} />

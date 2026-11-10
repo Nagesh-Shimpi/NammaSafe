@@ -218,6 +218,16 @@ export const ComplaintDetailsModal = ({ isOpen, onClose, ticket, onAssignOfficer
           {/* TAB 3: COMPLAINT DESCRIPTION */}
           {activeTab === 'description' && (
             <div className="space-y-4">
+              {(ticket.departmentId === 'dept-8' || ticket.category === 'Police & Public Safety') && (
+                <div className="p-3.5 rounded-xl bg-indigo-50 border border-indigo-300 text-indigo-950 text-xs flex items-start gap-2.5">
+                  <span className="material-symbols-outlined text-indigo-700 text-base shrink-0 mt-0.5">local_police</span>
+                  <div>
+                    <strong className="block">Police Department Pilot · Tracking-Only Advisory</strong>
+                    <span className="text-indigo-800">Supports registration, follow-up &amp; SLA tracking only. Offence adjudication and FIR registration remain strictly with authorized Police officials.</span>
+                  </div>
+                </div>
+              )}
+
               <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Title</span>
                 <p className="text-base font-bold text-slate-900 mt-1">{ticket.title}</p>
@@ -482,13 +492,6 @@ export const ComplaintDetailsModal = ({ isOpen, onClose, ticket, onAssignOfficer
                   <span>Verify Complaint</span>
                 </button>
                 <button
-                  onClick={() => onRequestInfo?.(ticket)}
-                  className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
-                >
-                  <span className="material-symbols-outlined text-sm">contact_support</span>
-                  <span>Request Info</span>
-                </button>
-                <button
                   onClick={() => onReject?.(ticket)}
                   className="px-3.5 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
                 >
@@ -496,6 +499,16 @@ export const ComplaintDetailsModal = ({ isOpen, onClose, ticket, onAssignOfficer
                   <span>Reject</span>
                 </button>
               </>
+            )}
+
+            {!['CLOSED', 'RESOLVED', 'REJECTED'].includes(ticket.status) && (
+              <button
+                onClick={() => onRequestInfo?.(ticket)}
+                className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-sm">contact_support</span>
+                <span>Request Info</span>
+              </button>
             )}
 
             <button

@@ -302,5 +302,14 @@ export const en = {
   intelHealthHealthy: 'Healthy (80–100)',
   intelHealthAttention: 'Attention Required (60–79)',
   intelHealthAtRisk: 'At Risk (40–59)',
-  intelHealthCritical: 'Critical (0–39)'
+  intelHealthCritical: 'Critical (0–39)',
+
+  // PDF Section 2, 4 & 5: Police Pilot, Language Detection & Translation Aid
+  policePilotNoticeTitle: 'Police Department Pilot · Tracking-Only Advisory',
+  policePilotNoticeBody: 'ResolveTrack supports grievance registration, follow-up, reminders, and SLA tracking only. Decisions regarding allegations, cognizable offences, or FIR registration remain exclusively with authorized Police officials.',
+  detectedLanguageLabel: 'Detected Input Language',
+  bilingualTranslationAid: 'Bilingual Officer Translation Aid (Rule-Based)',
+  originalTextPreserved: 'Citizen-entered text is preserved verbatim without automatic rewriting.',
+  intakeModeWeb: 'Direct Online Entry',
+  intakeModeDocument: 'Scanned Petition / Document Upload'
 };

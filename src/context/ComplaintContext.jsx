@@ -17,6 +17,12 @@ import { INITIAL_CITIZEN_NOTIFICATIONS } from '../data/citizenNotificationsData'
 import { INITIAL_AUDIT_LOGS } from '../data/auditLogsData';
 import { PRIORITY_CONFIG, isValidStatusTransition } from '../utils/constants';
 import { generateNextTrackingId } from '../utils/trackingIdGenerator';
+import {
+  recommendDepartment,
+  detectPotentialDuplicates,
+  generateIntelligenceAlerts,
+  calculateComplaintHealth
+} from '../utils/intelligenceEngine';
 
 const MERGED_COMPLAINTS = (() => {
   const map = new Map();
@@ -132,46 +138,169 @@ export const ComplaintProvider = ({ children }) => {
   const [citizenNotifications, setCitizenNotifications] = useState(INITIAL_CITIZEN_NOTIFICATIONS);
   const [auditLogs, setAuditLogs] = useState(INITIAL_AUDIT_LOGS);
 
+  // Complaint Intelligence & Decision Support Shared State
+  const [intelligenceAlerts, setIntelligenceAlerts] = useState(() =>
+    generateIntelligenceAlerts(MERGED_COMPLAINTS, OFFICERS_DATA, INITIAL_REMINDER_RECORDS, INITIAL_ESCALATION_RECORDS)
+  );
+  const [intelligenceReviews, setIntelligenceReviews] = useState([
+    {
+      id: 'REV-INT-101',
+      complaintId: 'RTK-2026-000001',
+      ruleType: 'PRIORITY_RECOMMENDATION',
+      originalRecommendation: 'HIGH Priority (Drinking Water Pipeline Contamination)',
+      adminDecision: 'ACCEPTED',
+      decisionReason: 'Confirmed public health hazard under Ward 14 municipal oversight.',
+      reviewedBy: 'Shri Vikram Malhotra, IAS',
+      reviewDate: '2026-11-08 11:20'
+    },
+    {
+      id: 'REV-INT-102',
+      complaintId: 'GRV-2024-8839',
+      ruleType: 'OFFICER_WORKLOAD_IMBALANCE',
+      originalRecommendation: 'Reassign from V. R. Chandrashekar (27/30 load) to Rajeshwari Hegde',
+      adminDecision: 'ACCEPTED',
+      decisionReason: 'Rebalanced road safety backlog to prevent Section 8 penalty.',
+      reviewedBy: 'Zonal Administrator',
+      reviewDate: '2026-11-06 14:35'
+    }
+  ]);
+  const [relatedComplaintPairs, setRelatedComplaintPairs] = useState([]);
+
   // Generate Unique Canonical Token ID (RTK-2026-XXXXXX)
   const generateTrackingId = () => {
     return generateNextTrackingId(complaints);
   };
 
-  // Duplicate Complaint Detection heuristic
-  const checkDuplicate = (title, departmentId, district) => {
+  // Duplicate Complaint Detection heuristic (Upgraded via intelligenceEngine)
+  const checkDuplicate = (title, departmentId, district, description = '') => {
     if (!title || title.length < 5) return null;
-    const normalized = title.trim().toLowerCase();
-    const matches = complaints.filter(c => {
-      const sameDept = departmentId ? c.departmentId === departmentId : true;
-      const sameDistrict = district ? (c.district || '').toLowerCase() === district.toLowerCase() : true;
-      const wordsA = normalized.split(/\s+/).filter(w => w.length > 3);
-      const wordsB = (c.title || '').toLowerCase().split(/\s+/).filter(w => w.length > 3);
-      const common = wordsA.filter(w => wordsB.includes(w));
-      const textSimilarity = wordsA.length > 0 ? (common.length / wordsA.length) : 0;
-      return (sameDept && sameDistrict && textSimilarity > 0.35);
-    });
-    return matches.length > 0 ? matches[0] : null;
+    const matches = detectPotentialDuplicates(
+      { title, description, departmentId, district },
+      complaints,
+      { minScore: 45, maxResults: 1 }
+    );
+    return matches.length > 0 ? matches[0].similarComplaint : null;
   };
 
-  // Automated Department Identification
+  // Automated Department Identification (Upgraded via intelligenceEngine)
   const autoIdentifyDepartment = (text) => {
-    const lower = (text || '').toLowerCase();
-    if (lower.includes('water') || lower.includes('leak') || lower.includes('pipe') || lower.includes('drinking') || lower.includes('ನೀರು')) {
-      return departments.find(d => d.code === 'JAL') || departments[1];
+    const rec = recommendDepartment({ title: text, description: '' }, departments);
+    return rec.recommendedDepartment || departments[0];
+  };
+
+  // Intelligence Alert Review Actions
+  const markIntelligenceAlertReviewed = (alertId, reviewedBy = 'Central Administrator') => {
+    const today = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    setIntelligenceAlerts(prev =>
+      prev.map(a =>
+        a.id === alertId
+          ? { ...a, reviewStatus: 'REVIEWED', reviewedBy, reviewedDate: today }
+          : a
+      )
+    );
+  };
+
+  const dismissIntelligenceAlert = (alertId, reviewedBy = 'Central Administrator') => {
+    const today = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    setIntelligenceAlerts(prev =>
+      prev.map(a =>
+        a.id === alertId
+          ? { ...a, reviewStatus: 'DISMISSED', reviewedBy, reviewedDate: today }
+          : a
+      )
+    );
+  };
+
+  const refreshIntelligenceAlerts = () => {
+    setIntelligenceAlerts(prev =>
+      generateIntelligenceAlerts(complaints, officers, reminders, escalations, prev)
+    );
+  };
+
+  // Link Related / Duplicate Complaints without auto-rejecting
+  const markComplaintsRelated = (primaryToken, relatedToken, linkedBy = 'Administrator') => {
+    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const exists = relatedComplaintPairs.some(
+      p => (p.primaryToken === primaryToken && p.relatedToken === relatedToken) ||
+           (p.primaryToken === relatedToken && p.relatedToken === primaryToken)
+    );
+    if (exists) return { success: false, message: 'Complaints are already marked as related.' };
+
+    const newPair = {
+      id: `REL-${Date.now().toString().slice(-5)}`,
+      primaryToken,
+      relatedToken,
+      linkedBy,
+      timestamp
+    };
+    setRelatedComplaintPairs(prev => [newPair, ...prev]);
+
+    setComplaintHistory(prev => [
+      {
+        id: `HIST-${Date.now().toString().slice(-4)}`,
+        complaintToken: primaryToken,
+        eventType: 'Related Complaint Linked',
+        description: `Marked as related to historical grievance #${relatedToken} via Smart Decision Support review.`,
+        responsibleUser: linkedBy,
+        timestamp,
+        previousValue: 'Unlinked',
+        newValue: `Related to #${relatedToken}`
+      },
+      ...prev
+    ]);
+    return { success: true, pair: newPair };
+  };
+
+  // Record Admin Intelligence Decision (Accept / Override Recommendation) & optionally mutate complaint
+  const recordIntelligenceDecision = ({
+    complaintId,
+    ruleType,
+    originalRecommendation,
+    adminDecision,
+    decisionReason = 'Reviewed via Complaint Intelligence Workbench',
+    reviewedBy = 'Administrator',
+    applyUpdate = null
+  }) => {
+    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const reviewRecord = {
+      id: `REV-INT-${Date.now().toString().slice(-4)}`,
+      complaintId,
+      ruleType,
+      originalRecommendation,
+      adminDecision,
+      decisionReason,
+      reviewedBy,
+      reviewDate: timestamp
+    };
+
+    setIntelligenceReviews(prev => [reviewRecord, ...prev]);
+
+    if (applyUpdate && complaintId) {
+      setComplaints(prev =>
+        prev.map(c => {
+          if (c.token === complaintId || c.trackingId === complaintId || c.id === complaintId) {
+            return { ...c, ...applyUpdate, updatedAt: timestamp };
+          }
+          return c;
+        })
+      );
+
+      setComplaintHistory(prev => [
+        {
+          id: `HIST-${Date.now().toString().slice(-4)}`,
+          complaintToken: complaintId,
+          eventType: `Intelligence Review (${ruleType})`,
+          description: `Decision: ${adminDecision}. ${decisionReason}`,
+          responsibleUser: reviewedBy,
+          timestamp,
+          previousValue: originalRecommendation,
+          newValue: JSON.stringify(applyUpdate)
+        },
+        ...prev
+      ]);
     }
-    if (lower.includes('road') || lower.includes('pothole') || lower.includes('highway') || lower.includes('traffic') || lower.includes('ರಸ್ತೆ') || lower.includes('ಗುಂಡಿ')) {
-      return departments.find(d => d.code === 'MORTH') || departments[0];
-    }
-    if (lower.includes('meter') || lower.includes('power') || lower.includes('bill') || lower.includes('electric') || lower.includes('ವಿದ್ಯುತ್')) {
-      return departments.find(d => d.code === 'POWER') || departments[3];
-    }
-    if (lower.includes('sewage') || lower.includes('drain') || lower.includes('tax') || lower.includes('garbage') || lower.includes('ಖಾತಾ')) {
-      return departments.find(d => d.code === 'URBAN') || departments[2];
-    }
-    if (lower.includes('pension') || lower.includes('welfare') || lower.includes('scheme') || lower.includes('old age') || lower.includes('ಪಿಂಚಣಿ')) {
-      return departments.find(d => d.code === 'WELFARE') || departments[5];
-    }
-    return departments[0];
+
+    return { success: true, reviewRecord };
   };
 
   // Compute Health Score (0 - 100)
@@ -2620,7 +2749,16 @@ export const ComplaintProvider = ({ children }) => {
         submitResolution,
         recordCitizenAcceptance,
         recordReopening,
-        recordFinalClosure
+        recordFinalClosure,
+        // Complaint Intelligence & Decision Support Module
+        intelligenceAlerts,
+        intelligenceReviews,
+        relatedComplaintPairs,
+        markIntelligenceAlertReviewed,
+        dismissIntelligenceAlert,
+        refreshIntelligenceAlerts,
+        markComplaintsRelated,
+        recordIntelligenceDecision
       }}
     >
       {children}

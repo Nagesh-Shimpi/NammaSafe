@@ -4,6 +4,7 @@ import { useComplaints } from '../../context/ComplaintContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { COMPLAINT_CATEGORIES, KARNATAKA_DISTRICTS } from '../../data/complaintCategories';
 import { PRIORITY_CONFIG } from '../../utils/constants';
+import { recommendDepartment, suggestComplaintCategory } from '../../utils/intelligenceEngine';
 
 export const RegisterComplaint = () => {
   const { registerNewComplaint, saveDraftComplaint, checkDuplicate, departments } = useComplaints();
@@ -53,6 +54,33 @@ export const RegisterComplaint = () => {
   const [copiedId, setCopiedId] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Rule-Based Department & Category Recommendation (Explainable Decision Support)
+  const smartSuggestion = React.useMemo(() => {
+    const combinedLen = (formData.complaintTitle + formData.complaintDescription).trim().length;
+    if (combinedLen < 8) return null;
+    const deptMatch = recommendDepartment(
+      { title: formData.complaintTitle, description: formData.complaintDescription },
+      departments
+    );
+    const catMatch = suggestComplaintCategory(
+      { title: formData.complaintTitle, description: formData.complaintDescription },
+      COMPLAINT_CATEGORIES
+    );
+    if (!deptMatch.matchedKeywords.length && !catMatch.matchedKeywords.length) return null;
+    return { deptMatch, catMatch };
+  }, [formData.complaintTitle, formData.complaintDescription, departments]);
+
+  const handleApplySmartSuggestion = () => {
+    if (!smartSuggestion) return;
+    const { deptMatch, catMatch } = smartSuggestion;
+    setFormData(prev => ({
+      ...prev,
+      category: catMatch.primaryCategory?.name || prev.category,
+      subcategory: catMatch.suggestedSubcategory || prev.subcategory,
+      departmentId: deptMatch.recommendedDepartment?.id || prev.departmentId
+    }));
+  };
 
   // Available taluks based on selected district
   const currentDistrictObj = KARNATAKA_DISTRICTS.find(d => d.name === formData.district) || KARNATAKA_DISTRICTS[0];
@@ -778,6 +806,43 @@ export const RegisterComplaint = () => {
               />
               {errors.complaintTitle && <p className="text-xs text-rose-600 mt-1">{errors.complaintTitle}</p>}
             </div>
+
+            {/* Smart Rule-Based Department & Category Suggestion Panel */}
+            {smartSuggestion && (
+              <div className="p-4 rounded-xl bg-teal-50/70 border border-teal-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in">
+                <div className="space-y-1 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded bg-teal-700 text-white font-mono text-[10px] font-bold uppercase">
+                      {lang === 'kn' ? 'ನಿಯಮ-ಆಧಾರಿತ ಸಲಹೆ' : 'Rule-Based Suggestion'}
+                    </span>
+                    <span className="font-mono font-bold text-teal-800">
+                      {smartSuggestion.deptMatch.matchingScore}/100 Match
+                    </span>
+                  </div>
+                  <p className="font-semibold text-slate-900">
+                    {lang === 'kn' ? 'ಸೂಚಿಸಲಾದ ಇಲಾಖೆ:' : 'Suggested Department:'}{' '}
+                    <span className="text-teal-900 font-bold">
+                      {tDepartment(smartSuggestion.deptMatch.recommendedDepartment?.name)}
+                    </span>{' '}
+                    · {lang === 'kn' ? 'ವರ್ಗ:' : 'Category:'}{' '}
+                    <span className="text-teal-900 font-bold">
+                      {tCategory(smartSuggestion.catMatch.primaryCategory?.name)}
+                    </span>
+                  </p>
+                  <p className="text-[11px] text-slate-600">
+                    {lang === 'kn' ? smartSuggestion.deptMatch.explanationKn : smartSuggestion.deptMatch.explanation}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleApplySmartSuggestion}
+                  className="px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold shrink-0 shadow-xs transition-all flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-sm">auto_fix_high</span>
+                  <span>{lang === 'kn' ? 'ಸಲಹೆಯನ್ನು ಅನ್ವಯಿಸಿ' : 'Apply Suggestion'}</span>
+                </button>
+              </div>
+            )}
 
             {/* Category, Subcategory, Department Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

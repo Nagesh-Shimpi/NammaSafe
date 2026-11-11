@@ -11,6 +11,7 @@ lerna-debug.log*
 scratch
 .system_generated
 .gemini
+.netlify
 
 # Node modules & dependencies
 node_modules
